@@ -1,5 +1,14 @@
+// ======================== SISTEMA MULTI-TENANT ========================
+const getTenantId = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('b') || 'default';
+};
+
+const tenantId = getTenantId();
+const storageKey = (key) => `${tenantId}_${key}`;
+
 // ======================== INICIALIZACIÓN DE DATOS ========================
-let products = JSON.parse(localStorage.getItem('su_products')) || [
+let products = JSON.parse(localStorage.getItem(storageKey('su_products'))) || [
   { id: 1, name: "Urbana Clasica", category: "hamburguesas", price: 12.90, description: "Carne 150g, lechuga, tomate", available: true, image: "" },
   { id: 2, name: "Urbana Doble", category: "hamburguesas", price: 18.50, description: "Doble carne 300g, doble queso", available: true, image: "" },
   { id: 3, name: "Costillitas BBQ", category: "alitas", price: 28.90, description: "Costillas de cerdo con salsa BBQ", available: true, image: "" },
@@ -12,10 +21,7 @@ let products = JSON.parse(localStorage.getItem('su_products')) || [
   { id: 10, name: "Chicha Morada", category: "bebidas", price: 5.00, description: "Bebida tradicional", available: true, image: "" }
 ];
 
-let orders = JSON.parse(localStorage.getItem('su_orders')) || [
-   { id: 1001, customer: { name: "Maria Garcia", phone: "987654321", address: "Av. Los Olivos 123" }, items: [{id: 2, name: "Urbana Doble", quantity: 2, price: 18.50, extras: {sauces: ["Mayonesa"], potato: "Normales", salad: "Sin Ensalada"}}], subtotal: 37.00, deliveryFee: 2.00, total: 39.00, paymentMethod: "yape", type: "delivery", status: "pending", createdAt: new Date().toISOString() },
-   { id: 1002, customer: { name: "Carlos Mendoza", phone: "912345678", address: "Recojo en local" }, items: [{id: 8, name: "Pizza Familiar", quantity: 1, price: 32.90, extras: {}}], subtotal: 32.90, deliveryFee: 0, total: 32.90, paymentMethod: "efectivo", type: "recojo", status: "preparing", createdAt: new Date().toISOString() }
-];
+let orders = JSON.parse(localStorage.getItem(storageKey('su_orders'))) || [];
 
 let cart = [];
 let currentCategory = 'todos';
@@ -24,21 +30,91 @@ let currentView = 'cliente';
 let currentCustomProductId = null;
 let currentDispatchOrderId = null;
 
-let isAdminAuthenticated = sessionStorage.getItem('su_admin_auth') === 'true';
+let isAdminAuthenticated = sessionStorage.getItem(storageKey('su_admin_auth')) === 'true';
+
+// UI de Planes y Suscripciones (Fase 2)
+function updatePlanUI() {
+  const sub = window.SaaS.getTenantSubscription();
+  const plan = window.SaaS.getPlanLimits();
+  const badge = document.getElementById('planBadge');
+  if (badge) {
+    badge.textContent = plan.name;
+    badge.className = `px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${sub.planId === 'pro' ? 'bg-primary text-white border-primary' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`;
+  }
+
+  // Si no es PRO, ocultamos opciones premium y mostramos CTA de mejora
+  const isPro = sub.planId === 'pro';
+  const brandingSection = document.getElementById('brandingConfig'); 
+  if (brandingSection) brandingSection.classList.toggle('hidden', !isPro);
+  
+  const upgradeCTA = document.getElementById('upgradeCTA');
+  if (upgradeCTA) upgradeCTA.classList.toggle('hidden', isPro);
+
+  // Footer Branding (Solo pro puede removerlo, pero la lógica hasFeature lo controla)
+  const footerBadge = document.getElementById('pideClickFooterBadge');
+  if (footerBadge) {
+    footerBadge.classList.toggle('hidden', isPro && !window.SaaS.hasFeature('whatsappFollowup')); 
+    // En realidad, si es PRO y el usuario elige quitarlo (fase posterior), se ocultaría. 
+    // Por ahora, solo los PRO tienen la sección de configuración de marca visible.
+  }
+  
+  // Mostrar mensaje si alcanzó límite de productos
+  const btnNewProduct = document.querySelector('button[onclick="openProductModal()"]');
+  if (btnNewProduct) {
+    const atLimit = products.length >= plan.maxProducts;
+    btnNewProduct.disabled = atLimit && !isPro;
+    if (atLimit && !isPro) {
+      btnNewProduct.title = "Límite de productos alcanzado (Plan Esencial)";
+      btnNewProduct.classList.add('opacity-50', 'grayscale');
+    } else {
+      btnNewProduct.title = "";
+      btnNewProduct.classList.remove('opacity-50', 'grayscale');
+    }
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadGlobalImages(); // Solo carga el banner ahora
-  loadCustomSettings(); // Carga eslogan y redes sociales
-  renderProducts();
-  renderOrders();
-  updateOrderCounts();
-  renderAdminProducts();
+  initApp();
 });
+
+function initApp() {
+  const params = new URLSearchParams(window.location.search);
+  const b = params.get('b');
+
+  if (!b) {
+    showLandingPage();
+  } else {
+    // Aquí podríamos validar si el negocio existe o está bloqueado
+    // Por ahora, permitimos el acceso si hay un parámetro 'b'
+    window.SaaS.registerTenant(b); // Registro global para Super Admin
+    document.getElementById('mainNav').classList.remove('hidden');
+    const footerAdm = document.getElementById('footerAdminContainer');
+    if (footerAdm) footerAdm.classList.remove('hidden');
+    loadGlobalImages(); 
+    loadCustomSettings(); 
+    renderProducts();
+    renderOrders();
+    updateOrderCounts();
+    renderAdminProducts();
+    updatePlanUI(); // Actualizar UI de planes
+    switchView('cliente');
+  }
+}
+
+function showLandingPage() {
+  document.getElementById('landingView').classList.remove('hidden');
+  document.getElementById('mainNav').classList.add('hidden');
+  document.getElementById('clienteView').classList.add('hidden');
+  document.getElementById('adminView').classList.add('hidden');
+  document.getElementById('cartIndicator').classList.add('hidden');
+  const footerAdm = document.getElementById('footerAdminContainer');
+  if (footerAdm) footerAdm.classList.add('hidden');
+}
 
 function saveData() {
   try {
-    localStorage.setItem('su_products', JSON.stringify(products));
-    localStorage.setItem('su_orders', JSON.stringify(orders));
+    localStorage.setItem(storageKey('su_products'), JSON.stringify(products));
+    localStorage.setItem(storageKey('su_orders'), JSON.stringify(orders));
   } catch (e) {
     console.error("Error guardando en localStorage:", e);
     showNotification("Error", "No se pudo guardar. Es posible que las imágenes sean demasiado pesadas.", "error");
@@ -82,7 +158,7 @@ function showNotification(title, message, type = 'success') {
 // ======================== GESTIÓN DE IMÁGENES GLOBALES ========================
 function loadGlobalImages() {
   // LOGO ELIMINADO DE AQUI - Ahora es estático en HTML
-  const banner = localStorage.getItem('su_banner');
+  const banner = localStorage.getItem(storageKey('su_banner'));
   if (banner) document.getElementById('mainBanner').src = banner;
 }
 
@@ -92,7 +168,7 @@ function uploadGlobalImage(type, input) {
     reader.onload = function(e) {
       if (type === 'banner') {
         try {
-          localStorage.setItem('su_banner', e.target.result);
+          localStorage.setItem(storageKey('su_banner'), e.target.result);
           const bannerImg = document.getElementById('mainBanner');
           if (bannerImg) bannerImg.src = e.target.result;
           showNotification("Éxito", "Banner actualizado correctamente");
@@ -107,15 +183,15 @@ function uploadGlobalImage(type, input) {
 
 // ======================== GESTIÓN DE PERSONALIZACIÓN ========================
 function loadCustomSettings() {
-  const slogan = localStorage.getItem('su_custom_slogan') || "Tu frase favorita aquí";
-  const tiktok = localStorage.getItem('su_custom_tiktok') || "#";
-  const instagram = localStorage.getItem('su_custom_instagram') || "#";
-  const whatsappNum = localStorage.getItem('su_custom_whatsapp') || "";
-  const deliveryWhatsappNum = localStorage.getItem('su_custom_delivery_whatsapp') || "";
-  const facebook = localStorage.getItem('su_custom_facebook') || "#";
-  const location = localStorage.getItem('su_custom_location') || "#";
-  const openTime = localStorage.getItem('su_custom_open_time') || "08:00";
-  const closeTime = localStorage.getItem('su_custom_close_time') || "23:00";
+  const slogan = localStorage.getItem(storageKey('su_custom_slogan')) || "Tu frase favorita aquí";
+  const tiktok = localStorage.getItem(storageKey('su_custom_tiktok')) || "#";
+  const instagram = localStorage.getItem(storageKey('su_custom_instagram')) || "#";
+  const whatsappNum = localStorage.getItem(storageKey('su_custom_whatsapp')) || "";
+  const deliveryWhatsappNum = localStorage.getItem(storageKey('su_custom_delivery_whatsapp')) || "";
+  const facebook = localStorage.getItem(storageKey('su_custom_facebook')) || "#";
+  const location = localStorage.getItem(storageKey('su_custom_location')) || "#";
+  const openTime = localStorage.getItem(storageKey('su_custom_open_time')) || "08:00";
+  const closeTime = localStorage.getItem(storageKey('su_custom_close_time')) || "23:00";
 
   const whatsappUrl = whatsappNum ? `https://wa.me/51${whatsappNum}` : "#";
 
@@ -173,15 +249,15 @@ function saveCustomSettings() {
   whatsapp = whatsapp.replace(/\D/g, '');
   deliveryWhatsapp = deliveryWhatsapp.replace(/\D/g, '');
 
-  localStorage.setItem('su_custom_slogan', slogan);
-  localStorage.setItem('su_custom_tiktok', tiktok);
-  localStorage.setItem('su_custom_instagram', instagram);
-  localStorage.setItem('su_custom_whatsapp', whatsapp);
-  localStorage.setItem('su_custom_delivery_whatsapp', deliveryWhatsapp);
-  localStorage.setItem('su_custom_facebook', facebook);
-  localStorage.setItem('su_custom_location', location);
-  localStorage.setItem('su_custom_open_time', openTime);
-  localStorage.setItem('su_custom_close_time', closeTime);
+  localStorage.setItem(storageKey('su_custom_slogan'), slogan);
+  localStorage.setItem(storageKey('su_custom_tiktok'), tiktok);
+  localStorage.setItem(storageKey('su_custom_instagram'), instagram);
+  localStorage.setItem(storageKey('su_custom_whatsapp'), whatsapp);
+  localStorage.setItem(storageKey('su_custom_delivery_whatsapp'), deliveryWhatsapp);
+  localStorage.setItem(storageKey('su_custom_facebook'), facebook);
+  localStorage.setItem(storageKey('su_custom_location'), location);
+  localStorage.setItem(storageKey('su_custom_open_time'), openTime);
+  localStorage.setItem(storageKey('su_custom_close_time'), closeTime);
 
   loadCustomSettings(); // Recargar visualmente
   showNotification("Éxito", "Personalización guardada correctamente");
@@ -204,6 +280,15 @@ function switchView(view) {
   if (adminNav) {
     adminNav.classList.toggle('hidden', view !== 'admin');
     adminNav.classList.toggle('flex', view === 'admin');
+  }
+
+  // Ocultar landing si entramos a un negocio
+  const b = new URLSearchParams(window.location.search).get('b');
+  if (b) {
+    document.getElementById('landingView').classList.add('hidden');
+    document.getElementById('mainNav').classList.remove('hidden');
+    const footerAdm = document.getElementById('footerAdminContainer');
+    if (footerAdm) footerAdm.classList.remove('hidden');
   }
 
   // Actualizar estados visuales de los botones de navegación (si existen)
@@ -649,7 +734,7 @@ function openDispatchModal(id) {
       <p><strong>Pedido:</strong> ${itemsText}</p><p class="text-lg font-bold text-right">Total: S/. ${o.total.toFixed(2)}</p>
     </div>`;
   const waMsg = encodeURIComponent(`*Pedido #${o.id}*\nCliente: ${o.customer.name}\nDir: ${o.customer.address}\nMaps: ${mapsLink}\nTotal: S/. ${o.total.toFixed(2)}`);
-  const deliveryNum = localStorage.getItem('su_custom_delivery_whatsapp') || "999999999";
+  const deliveryNum = localStorage.getItem(storageKey('su_custom_delivery_whatsapp')) || "999999999";
   document.getElementById('whatsappDeliveryLink').href = `https://wa.me/51${deliveryNum}?text=${waMsg}`;
   document.getElementById('printArea').innerHTML = `<div style="font-family: monospace; width: 100%;"><h2 style="text-align:center;">PIDECLICK</h2><p style="text-align:center; font-size:10px;">${formatDate(o.createdAt)}</p><hr><p>Pedido: #${o.id}</p><p>Cliente: ${o.customer.name}</p><p>Dir: ${o.customer.address}</p><p>Telf: ${o.customer.phone}</p><hr>${o.items.map(i => `<p>${i.quantity}x ${i.name} - S/.${(i.price*i.quantity).toFixed(2)}</p>`).join('')}<hr><p><strong>TOTAL: S/. ${o.total.toFixed(2)}</strong></p></div>`;
   document.getElementById('dispatchModal').classList.remove('hidden');
@@ -724,6 +809,15 @@ function saveProduct(e) {
 }
 
 function finishSave(id, name, category, price, description, available, image) {
+  const plan = window.SaaS.getPlanLimits();
+  
+  if (!id) { // Solo verificamos el límite al crear productos nuevos
+    if (products.length >= plan.maxProducts) {
+      showNotification("Límite Alcanzado", `Tu plan actual solo permite ${plan.maxProducts} productos.`, "warning");
+      return;
+    }
+  }
+
   if (id) {
     const idx = products.findIndex(p => p.id == id);
     if (idx !== -1) {
@@ -736,6 +830,7 @@ function finishSave(id, name, category, price, description, available, image) {
   saveData(); 
   renderProducts(); 
   renderAdminProducts();
+  updatePlanUI(); // Actualizar botón de nuevo producto
   closeProductModal(); 
   showNotification("Éxito", "Producto guardado correctamente");
 }
@@ -842,7 +937,7 @@ function loginAdmin(e) {
   // Credenciales por defecto: admin / admin123
   if (user === 'admin' && pass === 'admin123') {
     isAdminAuthenticated = true;
-    sessionStorage.setItem('su_admin_auth', 'true');
+    sessionStorage.setItem(storageKey('su_admin_auth'), 'true');
     closeLoginModal();
     switchView('admin');
     showNotification("Bienvenido", "Sesión iniciada correctamente");
@@ -853,7 +948,7 @@ function loginAdmin(e) {
 
 function logoutAdmin() {
   isAdminAuthenticated = false;
-  sessionStorage.removeItem('su_admin_auth');
+  sessionStorage.removeItem(storageKey('su_admin_auth'));
   switchView('cliente');
   showNotification("Sesión Cerrada", "Has salido del panel de administración");
 }

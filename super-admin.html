@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin | PideClick SaaS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#F97316',
+            background: '#09090B',
+            surface: '#18181B',
+            graySoft: '#27272A'
+          },
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            body: ['DM Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen font-body selection:bg-primary/30">
+
+  <!-- LOGIN OVERLAY -->
+  <div id="superLogin" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/90 backdrop-blur-xl">
+    <div class="max-w-md w-full p-8 bg-zinc-900 rounded-3xl border border-zinc-800 shadow-2xl">
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-primary/20">
+          <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <h1 class="text-3xl font-black font-display text-white">Super Admin</h1>
+        <p class="text-zinc-400">Panel de Control de PideClick</p>
+      </div>
+      <form onsubmit="verifySuperAdmin(event)" class="space-y-4">
+        <input type="password" id="superPass" placeholder="Contraseña Maestra" class="w-full px-6 py-4 bg-zinc-800 rounded-2xl border border-zinc-700 outline-none focus:border-primary transition-all text-center text-xl">
+        <button type="submit" class="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-2xl font-bold text-lg transition-all shadow-xl shadow-primary/20">Entrar al Sistema</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- DASHBOARD (Hidden initially) -->
+  <div id="superDashboard" class="hidden">
+    <nav class="border-b border-zinc-800 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center font-bold">P</div>
+          <h2 class="text-xl font-bold font-display">PideClick <span class="text-primary">Master Panel</span></h2>
+        </div>
+        <button onclick="location.reload()" class="text-sm text-zinc-400 hover:text-white transition-colors">Cerrar Sesión</button>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="p-6 bg-zinc-900 rounded-3xl border border-zinc-800">
+          <p class="text-zinc-400 text-sm font-medium uppercase tracking-widest mb-2">Total Negocios</p>
+          <p class="text-4xl font-black font-display" id="totalTenants">0</p>
+        </div>
+        <div class="p-6 bg-zinc-900 rounded-3xl border border-zinc-800 border-primary/20">
+          <p class="text-primary text-sm font-medium uppercase tracking-widest mb-2">Clientes PRO</p>
+          <p class="text-4xl font-black font-display" id="proTenants">0</p>
+        </div>
+        <div class="p-6 bg-zinc-900 rounded-3xl border border-zinc-800">
+          <p class="text-zinc-400 text-sm font-medium uppercase tracking-widest mb-2">Plan Esencial</p>
+          <p class="text-4xl font-black font-display" id="freeTenants">0</p>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden shadow-2xl">
+        <div class="px-8 py-6 border-b border-zinc-800 flex justify-between items-center">
+          <h3 class="text-xl font-bold font-display text-white">Lista de Negocios</h3>
+          <button onclick="refreshTenantList()" class="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="bg-zinc-950/50 text-zinc-500 text-xs font-bold uppercase tracking-widest">
+                <th class="px-8 py-4">ID Negocio / Nombre</th>
+                <th class="px-8 py-4">Plan Actual</th>
+                <th class="px-8 py-4">Última Actividad</th>
+                <th class="px-8 py-4 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tenantTableBody" class="divide-y divide-zinc-800">
+              <!-- JS rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="subscription-manager.js"></script>
+  <script>
+    // Configuración Inicial
+    const MASTER_PASS = "admin123"; // En producción esto debería estar en un backend
+    
+    function verifySuperAdmin(e) {
+      e.preventDefault();
+      const pass = document.getElementById('superPass').value;
+      if (pass === MASTER_PASS) {
+        document.getElementById('superLogin').classList.add('hidden');
+        document.getElementById('superDashboard').classList.remove('hidden');
+        renderDashboard();
+      } else {
+        alert("Contraseña Incorrecta");
+      }
+    }
+
+    function renderDashboard() {
+      const tenants = window.SaaS.getAllTenants();
+      document.getElementById('totalTenants').textContent = tenants.length;
+      
+      let proCount = 0;
+      tenants.forEach(id => {
+        const sub = JSON.parse(localStorage.getItem(`su_global_sub_${id}`) || '{}');
+        if (sub.planId === 'pro') proCount++;
+      });
+      
+      document.getElementById('proTenants').textContent = proCount;
+      document.getElementById('freeTenants').textContent = tenants.length - proCount;
+      
+      refreshTenantList();
+    }
+
+    function refreshTenantList() {
+      const tenants = window.SaaS.getAllTenants();
+      const tbody = document.getElementById('tenantTableBody');
+      tbody.innerHTML = '';
+
+      if (tenants.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="px-8 py-12 text-center text-zinc-500 italic">No hay negocios registrados aún. Los negocios aparecerán aquí cuando alguien entre a su URL.</td></tr>';
+        return;
+      }
+
+      tenants.forEach(id => {
+        const subData = JSON.parse(localStorage.getItem(`su_global_sub_${id}`) || '{"planId":"essential"}');
+        const plan = window.SaaS.PLANS[subData.planId.toUpperCase()] || window.SaaS.PLANS.ESSENTIAL;
+        
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/[0.02] transition-all group";
+        tr.innerHTML = `
+          <td class="px-8 py-6">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center font-bold text-lg text-primary uppercase">${id.charAt(0)}</div>
+              <div>
+                <p class="font-bold text-white uppercase">${id}</p>
+                <a href="index.html?b=${id}" target="_blank" class="text-xs text-primary hover:underline">Ver Tienda →</a>
+              </div>
+            </div>
+          </td>
+          <td class="px-8 py-6">
+            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${subData.planId === 'pro' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
+              ${plan.name}
+            </span>
+          </td>
+          <td class="px-8 py-6 text-sm text-zinc-400">
+            ${subData.updatedAt ? new Date(subData.updatedAt).toLocaleDateString() : 'N/A'}
+          </td>
+          <td class="px-8 py-6 text-right">
+            ${subData.planId === 'pro' 
+              ? `<button onclick="changePlan('${id}', 'essential')" class="text-xs font-bold text-zinc-500 hover:text-white transition-colors">Bajar a Esencial</button>`
+              : `<button onclick="changePlan('${id}', 'pro')" class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-primary/10">Activar PRO</button>`
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function changePlan(id, newPlan) {
+      if (confirm(`¿Seguro que quieres cambiar el plan de "${id}" a ${newPlan.toUpperCase()}?`)) {
+        window.SaaS.updateTenantPlan(id, newPlan);
+        renderDashboard();
+      }
+    }
+  </script>
+</body>
+</html>

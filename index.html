@@ -33,19 +33,17 @@
 <body class="min-h-screen bg-zinc-950 text-white selection:bg-primary/30">
 
   <!-- NAVIGATION -->
-  <nav class="fixed top-0 left-0 right-0 z-50 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800">
+  <nav id="mainNav" class="fixed top-0 left-0 right-0 z-50 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800 hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
       <div class="flex items-center justify-between h-16">
         
-        <!-- LOGO FIJO PIDECLICK (Ya no usa ID dinámico) -->
+        <!-- LOGO FIJO PIDECLICK -->
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-xl overflow-hidden shadow-md bg-primary flex items-center justify-center">
-             <!-- Logo Estático PideClick -->
-             <img src="/img/logo2.png" alt="Logo PideClick" class="w-full h-full object-cover">
+          <div class="w-10 h-10 rounded-xl overflow-hidden shadow-md bg-primary flex items-center justify-center">
+             <img src="img/logo2.png" alt="Logo PideClick" class="w-full h-full object-cover">
           </div>
           <div>
-            <h1 class="text-xl font-bold text-white font-display">PideClick</h1>
-            <p class="text-xs text-zinc-300 -mt-1 hidden sm:block">Tu menú digital</p>
+            <h1 class="text-lg font-bold text-white font-display">PideClick</h1>
           </div>
         </div>
 
@@ -53,8 +51,7 @@
         <div id="adminNavActions" class="hidden items-center gap-2 bg-zinc-900 rounded-xl p-1 shadow-md shadow-black/20 border border-zinc-800">
           <button onclick="logoutAdmin()" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-zinc-300 hover:text-white flex items-center gap-2">
             <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-            <span class="hidden sm:inline">Cerrar Sesión</span>
-            <span class="sm:hidden text-xs">Salir</span>
+            <span class="hidden sm:inline">Salir</span>
           </button>
         </div>
 
@@ -72,8 +69,545 @@
   <!-- MAIN CONTENT -->
   <main class="pt-20 relative z-10 pb-24">
     
+    <!-- LANDING PAGE VIEW (SaaS) -->
+    <div id="landingView" class="hidden">
+      <section class="min-h-[90vh] flex flex-col items-center justify-center px-4 py-12">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center text-center lg:text-left">
+          <!-- Text Content -->
+          <div class="space-y-8 order-2 lg:order-1">
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20 text-primary text-sm font-bold uppercase tracking-widest animate-pulse">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              Disponible para todo el Perú
+            </div>
+            <h1 class="text-5xl sm:text-7xl font-black font-display text-white leading-[1.1]">
+              Vende Más con tu <br>
+              <span class="bg-gradient-to-r from-primary to-amber-500 bg-clip-text text-transparent">Menú Digital</span>
+            </h1>
+            <p class="text-xl text-zinc-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              La solución preferida por +100 restaurantes. Recibe pedidos directos a tu WhatsApp, ahorra comisiones y profesionaliza tu atención en segundos.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <button onclick="window.location.href='?b=demo'" class="px-10 py-5 bg-primary hover:bg-primary-dark text-white rounded-2xl font-bold text-xl transition-all shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 flex items-center justify-center gap-3">
+                Ver Demo Gratis
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </button>
+              <a href="https://wa.me/51972498691?text=Hola,%20quisiera%20crear%20mi%20menu%20digital%20con%20PideClick" target="_blank" class="px-10 py-5 bg-zinc-900 border border-zinc-800 hover:border-primary text-white rounded-2xl font-bold text-xl transition-all hover:bg-zinc-800 flex items-center justify-center gap-2">
+                Empezar Ahora
+              </a>
+            </div>
+            <div class="flex items-center gap-6 justify-center lg:justify-start pt-4">
+              <div class="flex -space-x-3">
+                <div class="w-10 h-10 rounded-full bg-zinc-800 border-2 border-zinc-950 flex items-center justify-center text-xs font-bold text-zinc-400">JD</div>
+                <div class="w-10 h-10 rounded-full bg-zinc-800 border-2 border-zinc-950 flex items-center justify-center text-xs font-bold text-zinc-400">MP</div>
+                <div class="w-10 h-10 rounded-full bg-zinc-800 border-2 border-zinc-950 flex items-center justify-center text-xs font-bold text-zinc-400">RC</div>
+              </div>
+              <p class="text-sm text-zinc-500"><span class="text-white font-bold">+100 negocios</span> ya confían en nosotros</p>
+            </div>
+          </div>
+
+          <!-- Hero Image -->
+          <div class="order-1 lg:order-2 relative group">
+            <div class="absolute -inset-10 bg-primary/20 blur-[100px] rounded-full opacity-30 group-hover:opacity-50 transition-opacity"></div>
+            <div class="relative group/hero">
+              <img src="img/hero.png" alt="PideClick App Mockup" class="w-full max-w-[500px] mx-auto drop-shadow-[0_35px_35px_rgba(0,0,0,0.5)] transform hover:rotate-2 transition-transform duration-500 rounded-[3rem]">
+              <!-- Floating Badge -->
+              <div class="absolute -bottom-6 -left-6 sm:left-0 bg-zinc-900/90 backdrop-blur-md p-4 rounded-2xl border border-zinc-800 shadow-2xl animate-bounce">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  </div>
+                  <div class="text-left">
+                    <p class="text-xs text-zinc-400 uppercase tracking-tighter font-bold">Nuevo Pedido</p>
+                    <p class="text-sm font-bold text-white">S/. 45.00 Recibido</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BENEFICIOS (Selling point) -->
+      <section class="py-20 px-4 bg-zinc-900/30">
+        <div class="max-w-7xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-5xl font-black font-display mb-4 text-white">¿Por qué elegir <span class="text-primary">PideClick</span>?</h2>
+            <p class="text-zinc-400 text-lg">Diseñado para hacer crecer tu negocio sin complicaciones.</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div class="space-y-8">
+              <div class="flex gap-6">
+                <div class="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 shrink-0 border border-emerald-500/20">
+                  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div>
+                  <h4 class="text-xl font-bold mb-2">0% Comisiones por Venta</h4>
+                  <p class="text-zinc-400 leading-relaxed">Olvídate de las apps que se quedan con tu ganancia. En PideClick, el 100% de la venta es para ti.</p>
+                </div>
+              </div>
+              <div class="flex gap-6">
+                <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 shrink-0 border border-blue-500/20">
+                  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div>
+                  <h4 class="text-xl font-bold mb-2">Sin Descargas para Clientes</h4>
+                  <p class="text-zinc-400 leading-relaxed">Tus clientes solo escanean un QR o abren un link. Sin instalar nada, directo al grano.</p>
+                </div>
+              </div>
+              <div class="flex gap-6">
+                <div class="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 shrink-0 border border-amber-500/20">
+                  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                  <h4 class="text-xl font-bold mb-2">Gestión Ultra-Rápida</h4>
+                  <p class="text-zinc-400 leading-relaxed">Cambia precios, agota productos o sube nuevas fotos desde tu celular en tiempo real.</p>
+                </div>
+              </div>
+            </div>
+            <div class="relative">
+              <!-- Animated Glow Orbs -->
+              <div class="absolute -top-20 -right-20 w-64 h-64 bg-primary/20 blur-[100px] rounded-full animate-pulse"></div>
+              <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-amber-500/10 blur-[100px] rounded-full animate-pulse" style="animation-delay: 2s"></div>
+              
+              <!-- Ultra-Premium Dashboard Mockup -->
+              <div class="relative bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden group/premium">
+                
+                <!-- Sidebar + Main Content Layout -->
+                <div class="flex h-[450px]">
+                  <!-- Sidebar Mockup -->
+                  <div class="w-16 border-r border-white/5 flex flex-col items-center py-8 gap-8 bg-black/20">
+                    <div class="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                      <img src="img/logo2.png" class="w-6 h-6 object-contain invert grayscale brightness-200">
+                    </div>
+                    <div class="flex flex-col gap-6 opacity-30">
+                      <div class="w-6 h-6 bg-zinc-700 rounded-md"></div>
+                      <div class="w-6 h-6 bg-zinc-700 rounded-md"></div>
+                      <div class="w-6 h-6 bg-zinc-700 rounded-md"></div>
+                    </div>
+                  </div>
+
+                  <!-- Main Panel Content -->
+                  <div class="flex-1 p-8 overflow-hidden">
+                    <!-- Top Bar -->
+                    <div class="flex justify-between items-center mb-10">
+                      <div>
+                        <h4 class="text-xs font-black text-zinc-500 uppercase tracking-[0.3em] mb-1">Business Overview</h4>
+                        <div class="h-6 bg-white/5 rounded-full w-40 animate-pulse"></div>
+                      </div>
+                      <div class="flex items-center gap-4">
+                        <div class="flex -space-x-2">
+                          <div class="w-8 h-8 rounded-full bg-zinc-800 border-2 border-zinc-900"></div>
+                          <div class="w-8 h-8 rounded-full bg-zinc-700 border-2 border-zinc-900"></div>
+                        </div>
+                        <div class="w-10 h-10 bg-zinc-800 rounded-xl border border-white/5"></div>
+                      </div>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div class="grid grid-cols-2 gap-6 mb-10">
+                      <div class="bg-gradient-to-br from-white/[0.03] to-transparent p-5 rounded-3xl border border-white/[0.05] relative overflow-hidden group/card transition-transform hover:-translate-y-1">
+                        <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-4">Ingresos Hoy</p>
+                        <div class="flex items-end gap-2">
+                           <span class="text-3xl font-black text-white">S/. 1,240</span>
+                           <span class="text-[10px] text-emerald-500 font-bold mb-1">+12%</span>
+                        </div>
+                        <!-- Simple SVG Chart Line -->
+                        <div class="absolute bottom-0 left-0 right-0 h-8 opacity-20 group-hover/card:opacity-40 transition-opacity">
+                          <svg viewBox="0 0 100 20" class="w-full h-full preserve-3d">
+                            <path d="M0 20 Q 25 5, 50 15 T 100 0" fill="none" stroke="#F97316" stroke-width="2" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="bg-gradient-to-br from-white/[0.03] to-transparent p-5 rounded-3xl border border-white/[0.05] relative overflow-hidden group/card transition-transform hover:-translate-y-1">
+                        <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-4">Pedidos</p>
+                        <div class="flex items-end gap-2">
+                           <span class="text-3xl font-black text-white">48</span>
+                           <span class="text-[10px] text-emerald-500 font-bold mb-1">+5%</span>
+                        </div>
+                        <div class="absolute bottom-0 left-0 right-0 h-8 opacity-20 group-hover/card:opacity-40 transition-opacity">
+                          <svg viewBox="0 0 100 20" class="w-full h-full preserve-3d">
+                            <path d="M0 10 Q 25 18, 50 8 T 100 12" fill="none" stroke="#F97316" stroke-width="2" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Order List Mockup (High Fidelity) -->
+                    <div class="space-y-4">
+                      <div class="flex items-center justify-between p-4 bg-black/40 rounded-3xl border border-white/5 group/row hover:bg-black/60 transition-all cursor-default">
+                        <div class="flex items-center gap-4">
+                          <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center group-hover/row:scale-110 transition-transform">
+                             <img src="img/logo2.png" class="w-8 h-8 object-contain opacity-20 grayscale grayscale-0 group-hover/row:opacity-100 transition-opacity">
+                          </div>
+                          <div>
+                            <p class="text-sm font-bold text-white mb-0.5">Hamburguesa Royal</p>
+                            <p class="text-[10px] text-zinc-500">Mesa 04 • 12:45 PM</p>
+                          </div>
+                        </div>
+                        <div class="text-right">
+                          <p class="text-sm font-black text-primary mb-1">S/. 24.50</p>
+                          <div class="px-3 py-1 bg-primary/10 text-primary text-[8px] font-black rounded-full border border-primary/20 uppercase tracking-[0.2em] inline-block">Preparando</div>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between p-4 bg-black/20 rounded-3xl border border-white/5 opacity-50 grayscale hover:grayscale-0 transition-all">
+                        <div class="flex items-center gap-4">
+                          <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center">
+                            <img src="img/logo2.png" class="w-8 h-8 object-contain opacity-20 grayscale">
+                          </div>
+                          <div>
+                            <p class="text-sm font-bold text-white mb-0.5">Alitas BBQ (x12)</p>
+                            <p class="text-[10px] text-zinc-500">Delivery • 12:30 PM</p>
+                          </div>
+                        </div>
+                        <div class="text-right">
+                          <p class="text-sm font-black text-zinc-300 mb-1">S/. 35.00</p>
+                          <div class="px-3 py-1 bg-zinc-800 text-zinc-400 text-[8px] font-black rounded-full border border-zinc-700 uppercase tracking-[0.2em] inline-block">Entregado</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Interactive Float Labels -->
+                <div class="absolute inset-0 pointer-events-none opacity-0 group-hover/premium:opacity-100 transition-opacity duration-700">
+                  <div class="absolute top-1/4 right-[5%] px-6 py-3 bg-white text-black font-black text-xs rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform translate-y-4 group-hover/premium:translate-y-0 transition-transform">Diseño Pro</div>
+                  <div class="absolute bottom-1/4 left-[10%] px-6 py-3 bg-primary text-white font-black text-xs rounded-2xl shadow-[0_20px_40px_rgba(249,115,22,0.4)] transform -translate-y-4 group-hover/premium:translate-y-0 transition-transform animation-delay-500">Gestión Real</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMPARATIVA DE COMISIONES (Ahorro) -->
+      <section class="py-24 px-4 bg-black relative overflow-hidden">
+        <div class="absolute inset-0 bg-primary/5 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+        <div class="max-w-7xl mx-auto relative z-10">
+          <div class="text-center mb-20">
+            <h2 class="text-3xl sm:text-6xl font-black font-display mb-6">Deja de regalar tu <span class="text-primary">Dinero</span></h2>
+            <p class="text-zinc-400 text-lg max-w-2xl mx-auto">Comparativa real basada en ventas mensuales de S/. 5,000</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-5xl mx-auto">
+            <!-- Otras Apps -->
+            <div class="bg-zinc-900/50 border border-white/5 rounded-[3rem] p-10 relative group">
+              <div class="flex items-center gap-4 mb-8 grayscale opacity-50">
+                <div class="w-12 h-12 bg-zinc-800 rounded-2xl flex items-center justify-center text-2xl">🛵</div>
+                <h4 class="text-xl font-bold">Apps de Delivery</h4>
+              </div>
+              <div class="space-y-6">
+                <div class="flex justify-between items-center text-zinc-400">
+                  <span>Comisión (30%)</span>
+                  <span class="font-bold text-red-500">- S/. 1,500</span>
+                </div>
+                <div class="flex justify-between items-center text-zinc-400">
+                  <span>Costo por Transacción</span>
+                  <span class="font-bold text-red-400">- S/. 150</span>
+                </div>
+                <div class="h-px bg-white/5"></div>
+                <div class="flex justify-between items-center">
+                  <span class="text-lg font-bold">Ganancia Neta</span>
+                  <span class="text-2xl font-black text-white">S/. 3,350</span>
+                </div>
+              </div>
+              <div class="absolute inset-0 border-2 border-red-500/20 rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+            </div>
+
+            <!-- PideClick -->
+            <div class="bg-zinc-900 border-2 border-primary rounded-[3rem] p-10 relative shadow-2xl shadow-primary/10">
+              <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-white text-xs font-black rounded-full uppercase tracking-widest shadow-xl">Tu Mejor Opción</div>
+              <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                  <img src="img/logo2.png" class="w-8 h-8 object-contain">
+                </div>
+                <h4 class="text-2xl font-black text-white">Con PideClick</h4>
+              </div>
+              <div class="space-y-6">
+                <div class="flex justify-between items-center text-zinc-300">
+                  <span>Comisión (0%)</span>
+                  <span class="font-black text-emerald-500">+ S/. 0</span>
+                </div>
+                <div class="flex justify-between items-center text-zinc-300">
+                  <span>Inversión Mensual</span>
+                  <span class="font-medium">S/. 30</span>
+                </div>
+                <div class="h-px bg-white/10"></div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xl font-black">Ganancia Neta</span>
+                  <span class="text-4xl font-black text-primary animate-pulse">S/. 4,970</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="text-center mt-12 text-zinc-500 font-medium italic">¡Ahorras más de <span class="text-emerald-500 font-bold">S/. 1,600 mensual</span> para reinvertir en tu local!</p>
+        </div>
+      </section>
+
+      <section class="py-24 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+          <h2 class="text-3xl sm:text-5xl font-black font-display mb-20 text-white">Vende en 3 Pasos</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+            <div class="hidden md:block absolute top-10 left-1/4 right-1/4 h-0.5 bg-zinc-800"></div>
+            
+            <div class="relative group">
+              <div class="w-20 h-20 bg-zinc-900 border border-zinc-800 rounded-3xl flex items-center justify-center mx-auto mb-8 text-2xl font-black text-primary shadow-xl group-hover:border-primary/50 transition-all">1</div>
+              <h4 class="text-xl font-bold mb-3">Define tu Enlace</h4>
+              <p class="text-zinc-400">Elige el nombre de tu negocio y obtén tu URL personalizada al instante.</p>
+            </div>
+            
+            <div class="relative group">
+              <div class="w-20 h-20 bg-zinc-900 border border-zinc-800 rounded-3xl flex items-center justify-center mx-auto mb-8 text-2xl font-black text-primary shadow-xl group-hover:border-primary/50 transition-all">2</div>
+              <h4 class="text-xl font-bold mb-3">Sube tu Menú</h4>
+              <p class="text-zinc-400">Carga tus fotos y precios. Organiza todo por categorías de forma intuitiva.</p>
+            </div>
+            
+            <div class="relative group">
+              <div class="w-20 h-20 bg-primary rounded-3xl flex items-center justify-center mx-auto mb-8 text-2xl font-black text-white shadow-xl shadow-primary/20 animate-pulse">3</div>
+              <h4 class="text-xl font-bold mb-3">¡A Vender!</h4>
+              <p class="text-zinc-400">Comparte tu link por redes sociales y recibe pedidos directo a tu WhatsApp.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VITRINA DE FUNCIONALIDADES (Feature Showcase) -->
+      <section class="py-24 px-4 bg-zinc-950 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto relative z-10">
+          <div class="text-center mb-20">
+            <h2 class="text-3xl sm:text-6xl font-black font-display mb-6 text-white">Más que un QR, una <span class="text-primary">Solución Total</span></h2>
+            <p class="text-zinc-400 text-lg max-w-2xl mx-auto">Todo lo que necesitas para digitalizar y escalar tu restaurante en un solo lugar.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1: Menú Inteligente -->
+            <div class="p-8 bg-zinc-900/50 border border-white/5 rounded-[2.5rem] hover:border-primary/20 transition-all group">
+              <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+              </div>
+              <h4 class="text-xl font-bold text-white mb-3">Menú Inteligente</h4>
+              <p class="text-zinc-500 text-sm leading-relaxed">Categorías personalizadas, fotos de alta resolución y descripciones que antojan a tus clientes desde el primer clic.</p>
+            </div>
+
+            <!-- Feature 2: Gestión de Mesas -->
+            <div class="p-8 bg-zinc-900/50 border border-white/5 rounded-[2.5rem] hover:border-primary/20 transition-all group">
+              <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+              <h4 class="text-xl font-bold text-white mb-3">Control de Mesas</h4>
+              <p class="text-zinc-500 text-sm leading-relaxed">Identifica pedidos por número de mesa automáticamente. Olvida las confusiones y mejora la velocidad de tu servicio.</p>
+            </div>
+
+            <!-- Feature 3: WhatsApp Directo -->
+            <div class="p-8 bg-zinc-900/50 border border-white/5 rounded-[2.5rem] hover:border-primary/20 transition-all group">
+              <div class="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 mb-6 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+              </div>
+              <h4 class="text-xl font-bold text-white mb-3">Pedidos Estructurados</h4>
+              <p class="text-zinc-500 text-sm leading-relaxed">Recibe la orden de tus clientes de forma limpia y detallada en tu WhatsApp. Sin errores de escritura, directo a la cocina.</p>
+            </div>
+
+            <!-- Feature 4: Panel Real-Time -->
+            <div class="p-8 bg-zinc-900/50 border border-white/5 rounded-[2.5rem] hover:border-primary/20 transition-all group">
+              <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <h4 class="text-xl font-bold text-white mb-3">Gestión al Instante</h4>
+              <p class="text-zinc-500 text-sm leading-relaxed">¿Se agotó un producto? Desactívalo en un segundo. ¿Cambió el precio? Actualízalo desde tu celular sin imprimir nada nuevo.</p>
+            </div>
+
+            <!-- Feature 5: Branding Pro -->
+            <div class="p-8 bg-zinc-900/50 border border-white/5 rounded-[2.5rem] hover:border-primary/20 transition-all group">
+              <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+              </div>
+              <h4 class="text-xl font-bold text-white mb-3">Identidad Única</h4>
+              <p class="text-zinc-500 text-sm leading-relaxed">Tu logo, tus colores y tus redes sociales. PideClick se adapta a tu marca para que te veas siempre profesional.</p>
+            </div>
+
+            <!-- Feature 6: Reportes de Venta -->
+            <div class="p-8 bg-zinc-900/50 border border-white/5 rounded-[2.5rem] hover:border-primary/20 transition-all group">
+              <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+              </div>
+              <h4 class="text-xl font-bold text-white mb-3">Estadísticas Clave</h4>
+              <p class="text-zinc-500 text-sm leading-relaxed">Conoce qué es lo que más vendes y a qué hora. Toma mejores decisiones basadas en datos reales de tu negocio.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="py-24 px-4 bg-zinc-900/50 border-y border-zinc-800/10" id="pricing">
+        <div class="max-w-6xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-5xl font-black font-display mb-4 text-white">Planes Hechos para <span class="text-primary">Crecer</span></h2>
+            <p class="text-zinc-400 font-medium">Empieza gratis, escala cuando estés listo.</p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <!-- Plan Esencial -->
+            <div class="p-8 bg-zinc-950 rounded-[2.5rem] border border-zinc-800 flex flex-col hover:border-zinc-700 transition-all shadow-xl">
+              <div class="mb-8">
+                <h3 class="text-2xl font-bold text-white mb-2">Plan Esencial</h3>
+                <p class="text-zinc-500 text-sm">Perfecto para emprendedores.</p>
+                <div class="mt-6 flex items-baseline gap-1">
+                  <span class="text-4xl font-black text-white">S/. 0</span>
+                  <span class="text-zinc-500 text-sm">/ de por vida</span>
+                </div>
+              </div>
+              <ul class="space-y-4 mb-10 flex-1">
+                <li class="flex items-center gap-3 text-zinc-300">
+                  <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Hasta 10 productos
+                </li>
+                <li class="flex items-center gap-3 text-zinc-300">
+                  <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Menú digital optimizado
+                </li>
+                <li class="flex items-center gap-3 text-zinc-300">
+                  <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Pedidos por WhatsApp
+                </li>
+                <li class="flex items-center gap-3 text-zinc-500">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  Branding Personalizado
+                </li>
+              </ul>
+              <button onclick="window.location.href='index.html?b=nuevo-negocio'" class="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl font-bold transition-all">Empezar Gratis</button>
+            </div>
+
+            <!-- Plan PRO -->
+            <div class="p-8 bg-zinc-950 rounded-[2.5rem] border-2 border-primary flex flex-col relative scale-105 shadow-2xl shadow-primary/10">
+              <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-xs font-bold rounded-full uppercase tracking-widest shadow-lg">Más Popular</div>
+              <div class="mb-8">
+                <h3 class="text-2xl font-bold text-white mb-2">Plan PRO</h3>
+                <p class="text-zinc-500 text-sm">Todo lo que necesitas para escalar.</p>
+                <div class="mt-6 flex items-baseline gap-1">
+                  <span class="text-4xl font-black text-white">S/. 30</span>
+                  <span class="text-zinc-500 text-sm">/ mes</span>
+                </div>
+              </div>
+              <ul class="space-y-4 mb-10 flex-1">
+                <li class="flex items-center gap-3 text-zinc-300">
+                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Productos <strong>Ilimitados</strong>
+                </li>
+                <li class="flex items-center gap-3 text-zinc-300">
+                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Branding Personalizado
+                </li>
+                <li class="flex items-center gap-3 text-zinc-300">
+                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Banners Promocionales
+                </li>
+                <li class="flex items-center gap-3 text-zinc-300">
+                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Estadísticas de Venta
+                </li>
+                <li class="flex items-center gap-3 text-zinc-300">
+                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  Soporte VIP
+                </li>
+              </ul>
+              <a href="https://wa.me/51987654321?text=Hola,%20quisiera%20activar%20el%20Plan%20PRO%20de%20PideClick" target="_blank" class="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-2xl font-bold transition-all shadow-xl shadow-primary/20 text-center">Mejorar Ahora</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="py-24 px-4 bg-zinc-950">
+        <div class="max-w-3xl mx-auto">
+          <h2 class="text-3xl sm:text-4xl font-black font-display mb-12 text-center">Preguntas Frecuentes</h2>
+          <div class="space-y-6">
+            <div class="p-6 bg-zinc-900 rounded-3xl border border-zinc-800">
+              <h4 class="text-lg font-bold mb-2">¿Cómo recibo el dinero de mis ventas?</h4>
+              <p class="text-zinc-400 italic font-medium">Directo a tu cuenta.</p>
+              <p class="text-zinc-400 mt-2">PideClick no toca tu dinero. El cliente te envía el pedido y tú le compartes tus métodos de pago (Yape, Plin, Transferencia) o cobras en efectivo al entregar.</p>
+            </div>
+            <div class="p-6 bg-zinc-900 rounded-3xl border border-zinc-800">
+              <h4 class="text-lg font-bold mb-2">¿Mis clientes deben instalar una App?</h4>
+              <p class="text-zinc-400 italic font-medium">¡No!</p>
+              <p class="text-zinc-400 mt-2">PideClick es una aplicación web. Tus clientes acceden escaneando un código QR o haciendo clic en un enlace desde Instagram, Facebook o WhatsApp.</p>
+            </div>
+            <div class="p-6 bg-zinc-900 rounded-3xl border border-zinc-800">
+              <h4 class="text-lg font-bold mb-2">¿Puedo usarlo desde mi celular?</h4>
+              <p class="text-zinc-400 italic font-medium">Claro que sí.</p>
+              <p class="text-zinc-400 mt-2">El panel de administración está optimizado para móviles. Puedes subir productos y gestionar pedidos desde la palma de tu mano.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TESTIMONIOS (Social Proof) -->
+      <section class="py-24 px-4 bg-zinc-950">
+        <div class="max-w-7xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-5xl font-black font-display mb-4 text-white">Lo que dicen los <span class="text-primary">Dueños</span></h2>
+            <p class="text-zinc-400 text-lg font-medium">Más de 100 negocios ya transformaron su atención.</p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Testimonio 1 -->
+            <div class="p-8 bg-zinc-900 border border-zinc-800 rounded-[2.5rem] hover:border-primary/30 transition-all group">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center font-bold text-lg text-primary border border-zinc-700">CP</div>
+                <div>
+                  <h4 class="text-white font-bold">Carlos P.</h4>
+                  <p class="text-zinc-500 text-xs uppercase tracking-widest font-bold">Dueño de "El Fuego"</p>
+                </div>
+              </div>
+              <p class="text-zinc-400 italic leading-relaxed">"Desde que implementamos PideClick, el flujo de pedidos en WhatsApp es mucho más ordenado. ¡Mis clientes aman no tener que descargar nada!"</p>
+              <div class="mt-6 flex gap-1">
+                <span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span>
+              </div>
+            </div>
+
+            <!-- Testimonio 2 -->
+            <div class="p-8 bg-zinc-900 border border-primary/20 rounded-[2.5rem] relative shadow-2xl shadow-primary/5">
+              <div class="absolute -top-3 right-8 px-4 py-1 bg-primary text-white text-[10px] font-black rounded-full uppercase tracking-widest">Caso de Éxito</div>
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center font-bold text-lg text-primary border border-primary/20">MA</div>
+                <div>
+                  <h4 class="text-white font-bold">María A.</h4>
+                  <p class="text-primary text-xs uppercase tracking-widest font-bold">Gerente de "Sushi Zen"</p>
+                </div>
+              </div>
+              <p class="text-zinc-300 italic leading-relaxed font-medium">"El ahorro en comisiones fue brutal. Pasamos de perder S/. 2,000 al mes en otras apps a pagar solo una suscripción fija. 100% recomendado."</p>
+              <div class="mt-6 flex gap-1">
+                <span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span>
+              </div>
+            </div>
+
+            <!-- Testimonio 3 -->
+            <div class="p-8 bg-zinc-900 border border-zinc-800 rounded-[2.5rem] hover:border-primary/30 transition-all opacity-80 hover:opacity-100">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center font-bold text-lg text-primary border border-zinc-700">LR</div>
+                <div>
+                  <h4 class="text-white font-bold">Luis R.</h4>
+                  <p class="text-zinc-500 text-xs uppercase tracking-widest font-bold">Piquetería "Don Lucho"</p>
+                </div>
+              </div>
+              <p class="text-zinc-400 italic leading-relaxed">"Lo que más me gusta es poder cambiar los precios desde mi celular. Si un plato se agota, lo desactivo en un segundo."</p>
+              <div class="mt-6 flex gap-1">
+                <span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span><span class="text-primary text-xl">★</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA FINAL -->
+
+      <section class="py-32 px-4 text-center">
+        <h2 class="text-4xl sm:text-7xl font-black font-display mb-8 text-white leading-tight">Digitaliza tu éxito <br><span class="text-primary">hoy mismo</span>.</h2>
+        <button onclick="window.location.href='index.html?b=mi-negocio'" class="px-12 py-6 bg-primary hover:bg-primary-dark text-white rounded-[2rem] font-black text-2xl transition-all shadow-2xl shadow-primary/30 hover:scale-110 active:scale-95">
+          Crear mi Menú Gratis
+        </button>
+      </section>
+    </div>
+
     <!-- CLIENTE VIEW -->
-    <div id="clienteView" class="fade-in">
+    <div id="clienteView" class="hidden fade-in">
       
       <!-- BANNER SECTION -->
       <section class="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
@@ -142,15 +676,32 @@
     <div id="adminView" class="hidden fade-in">
       <div class="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
         
-        <!-- CONFIG IMÁGENES (Solo Banner ahora) -->
-        <div class="bg-zinc-900 rounded-2xl p-4 mb-6 shadow-md shadow-black/20 border border-zinc-800">
-          <h3 class="font-bold text-white mb-3">Configuracion de Imagenes</h3>
+        <!-- CONFIG IMÁGENES & MARCA (Premium) -->
+        <div id="brandingConfig" class="bg-zinc-900 rounded-2xl p-4 mb-6 shadow-md shadow-black/20 border border-zinc-800">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-white font-display">Personalizacion de Marca (PRO)</h3>
+            <span class="px-2 py-0.5 bg-primary/20 text-primary text-[10px] font-bold rounded border border-primary/30">PREMIUM</span>
+          </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Logo eliminado de aquí -->
             <div>
-              <label class="text-sm text-zinc-300 block mb-1">Banner Promocional (Se ve arriba)</label>
+              <label class="text-sm text-zinc-300 block mb-1">Banner Promocional</label>
               <input type="file" accept="image/*" onchange="uploadGlobalImage('banner', this)" class="w-full text-sm text-zinc-300 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-primary file:text-white hover:file:bg-amber-600">
             </div>
+          </div>
+        </div>
+
+        <!-- UPGRADE CTA (Solo para Plan Esencial) -->
+        <div id="upgradeCTA" class="bg-gradient-to-r from-primary/20 to-orange-900/10 rounded-2xl p-6 mb-6 border border-primary/30 hidden">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h4 class="text-xl font-bold text-white mb-1">Pásate al Plan Pro</h4>
+              <p class="text-zinc-300 text-sm">Desbloquea branding personalizado, productos ilimitados y estadísticas avanzadas.</p>
+            </div>
+            <a href="https://wa.me/51987654321?text=Quiero%20subir%20mi%20plan%20a%20PRO" target="_blank" class="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-all shadow-lg shadow-primary/20 whitespace-nowrap">
+              Mejorar Ahora
+            </a>
+          </div>
+        </div>
 
         <!-- CONFIG PERSONALIZACIÓN (Slogan y Redes Sociales) -->
         <div class="bg-zinc-900 rounded-2xl p-4 mb-6 shadow-md shadow-black/20 border border-zinc-800">
@@ -199,16 +750,17 @@
               <input type="time" id="adminCloseTime" class="w-full px-4 py-2 bg-zinc-800 rounded-xl border border-zinc-700 text-white focus:border-primary outline-none">
             </div>
           </div>
-          <button onclick="saveCustomSettings()" class="w-full btn-primary py-2.5 rounded-xl text-white font-medium">Guardar Cambios de Personalizacion</button>
-        </div>
-          </div>
+          <button onclick="saveCustomSettings()" class="w-full btn-primary py-2.5 rounded-xl text-white font-medium mt-4">Guardar Cambios de Personalizacion</button>
         </div>
 
         <!-- HEADER ADMIN -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h2 class="text-2xl font-bold text-white font-display">Panel de Administracion</h2>
-            <p class="text-zinc-300">Gestiona pedidos y productos</p>
+            <div class="flex items-center gap-2">
+              <p class="text-zinc-300">Gestiona pedidos y productos</p>
+              <div id="planBadge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-zinc-800 text-zinc-400 border border-zinc-700">Plan ...</div>
+            </div>
           </div>
           <button onclick="openProductModal()" class="btn-primary px-5 py-2.5 rounded-xl text-white font-medium flex items-center gap-2 shadow-lg shadow-primary/20">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -260,15 +812,15 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
       <div class="flex flex-col md:flex-row justify-between items-center gap-6">
         <div class="flex items-center gap-3 justify-center md:justify-start">
-  <img src="/img/logo2.png" 
+  <img src="img/logo2.png" 
        alt="Logo PideClick" 
        class="w-16 md:w-20 h-auto object-contain">
   <div>
     <h4 class="text-xl font-black font-display text-white">PideClick</h4>
-    <p class="text-zinc-400 text-sm">Solución digital para tu negocio.</p>
+    <p id="pideClickFooterBadge" class="text-zinc-400 text-sm">Solución digital para tu negocio.</p>
   </div>
 </div>
-        <div class="flex items-center gap-2 bg-zinc-900 rounded-xl p-1 shadow-md shadow-black/20 border border-zinc-800">
+        <div id="footerAdminContainer" class="flex items-center gap-2 bg-zinc-900 rounded-xl p-1 shadow-md shadow-black/20 border border-zinc-800">
           <button id="btnAdmin" onclick="switchView('admin')" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition-all text-zinc-300 hover:text-white">Admin</button>
         </div>
         <div class="flex items-center gap-4">
@@ -596,6 +1148,7 @@
     </div>
   </div>
 
+  <script src="subscription-manager.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
