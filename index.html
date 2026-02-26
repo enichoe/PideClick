@@ -1,34 +1,65 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <!-- Básico -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> 🍽️ PideClick</title>
+  <title>PideClick | Plataforma SaaS para Restaurantes 🍽️</title>
+  <meta name="description" content="PideClick es una plataforma SaaS para restaurantes que permite recibir pedidos online, gestionar menús digitales y aumentar ventas de forma simple y moderna.">
+  <meta name="keywords" content="pedidos online, restaurante, menú digital, sistema para restaurantes, SaaS Perú, PideClick">
+  <meta name="author" content="PideClick">
+
+  <!-- SEO Técnico -->
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#F97316">
+
+  <!-- Open Graph (Facebook, WhatsApp) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PideClick | Plataforma SaaS para Restaurantes">
+  <meta property="og:description" content="Crea tu tienda digital para restaurante y recibe pedidos online fácilmente.">
+  <meta property="og:image" content="https://pide-click.vercel.app/img/hero.png">
+  <meta property="og:url" content="https://pide-click.vercel.app/">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PideClick | Pedidos Online para Restaurantes">
+  <meta name="twitter:description" content="Digitaliza tu restaurante y aumenta tus ventas con PideClick.">
+  <meta name="twitter:image" content="https://pide-click.vercel.app/img/hero.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/img/logo2.png">
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Fuentes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
- <script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          primary: '#F97316',        // Naranja vibrante
-          'primary-dark': '#EA580C',  // Naranja oscuro
-          background: '#09090B',      // Zinc 950
-          surface: '#18181B',         // Zinc 900
-          success: '#10B981',         // Esmeralda
-          graySoft: '#27272A'         // Zinc 800
-        },
-        fontFamily: {
-          display: ['Space Grotesk', 'sans-serif'],
-          body: ['DM Sans', 'sans-serif']
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#F97316',
+            'primary-dark': '#EA580C',
+            background: '#09090B',
+            surface: '#18181B',
+            success: '#10B981',
+            graySoft: '#27272A'
+          },
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            body: ['DM Sans', 'sans-serif']
+          }
         }
       }
     }
-  }
-</script>
+  </script>
 </head>
 <body class="min-h-screen bg-zinc-950 text-white selection:bg-primary/30">
 
