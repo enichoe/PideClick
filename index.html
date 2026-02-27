@@ -800,13 +800,72 @@
         </div>
 
         <!-- TABS ADMIN -->
-        <div class="flex gap-2 mb-6 border-b border-zinc-700 pb-4">
-          <button onclick="switchAdminTab('pedidos')" id="tabPedidos" class="px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary">Pedidos</button>
-          <button onclick="switchAdminTab('productos')" id="tabProductos" class="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white">Productos</button>
+        <div class="flex gap-2 mb-6 border-b border-zinc-700 pb-4 overflow-x-auto">
+          <button onclick="switchAdminTab('dashboard')" id="tabDashboard" class="px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary whitespace-nowrap">Dashboard</button>
+          <button onclick="switchAdminTab('pedidos')" id="tabPedidos" class="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white whitespace-nowrap">Pedidos</button>
+          <button onclick="switchAdminTab('productos')" id="tabProductos" class="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white whitespace-nowrap">Productos</button>
+          <button onclick="switchAdminTab('clientes')" id="tabClientes" class="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white whitespace-nowrap">Clientes</button>
+        </div>
+
+        <!-- DASHBOARD PANEL -->
+        <div id="dashboardPanel" class="fade-in">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 shadow-xl">
+              <p class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-2">Ventas del Día</p>
+              <h4 class="text-3xl font-black text-white font-display" id="statsTodaySales">S/. 0.00</h4>
+              <div class="mt-2 text-[10px] text-emerald-500 font-bold flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                Hoy
+              </div>
+            </div>
+            <div class="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 shadow-xl">
+              <p class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-2">Pedidos de Hoy</p>
+              <h4 class="text-3xl font-black text-white font-display" id="statsTodayOrders">0</h4>
+              <p class="mt-2 text-[10px] text-zinc-500">Recibidos en las últimas 24h</p>
+            </div>
+            <div class="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 shadow-xl">
+              <p class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-2">Ticket Promedio</p>
+              <h4 class="text-3xl font-black text-white font-display" id="statsAvgTicket">S/. 0.00</h4>
+              <p class="mt-2 text-[10px] text-zinc-500">Basado en ventas cerradas</p>
+            </div>
+            <div class="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 shadow-xl flex flex-col justify-center">
+              <p class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-2">Estado del Local</p>
+              <div id="dashboardStoreStatus" class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-zinc-500"></div>
+                <span class="text-lg font-bold text-white italic">Cargando...</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+             <div class="lg:col-span-2 bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl">
+               <h4 class="text-lg font-bold text-white mb-4 font-display">Resumen Semanal</h4>
+               <div class="h-48 flex items-end justify-between gap-2 px-2">
+                  <div class="flex-1 bg-primary/20 rounded-t-lg h-[20%] relative group">
+                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-zinc-800 text-white text-[10px] px-2 py-1 rounded hidden group-hover:block">S/. 45</div>
+                  </div>
+                  <div class="flex-1 bg-primary/20 rounded-t-lg h-[35%] relative group"></div>
+                  <div class="flex-1 bg-primary/20 rounded-t-lg h-[25%] relative group"></div>
+                  <div class="flex-1 bg-primary/20 rounded-t-lg h-[50%] relative group"></div>
+                  <div class="flex-1 bg-primary/20 rounded-t-lg h-[70%] relative group"></div>
+                  <div class="flex-1 bg-primary/40 rounded-t-lg h-[85%] relative group"></div>
+                  <div class="flex-1 bg-primary rounded-t-lg h-[60%] relative group"></div>
+               </div>
+               <div class="flex justify-between mt-4 text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+                 <span>Lun</span><span>Mar</span><span>Mie</span><span>Jue</span><span>Vie</span><span>Sab</span><span>Dom</span>
+               </div>
+             </div>
+             <div class="bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl">
+               <h4 class="text-lg font-bold text-white mb-4 font-display">Mejor Vendido</h4>
+               <div id="statsTopProduct" class="space-y-4">
+                 <p class="text-zinc-500 text-sm italic">Cargando datos...</p>
+               </div>
+             </div>
+          </div>
         </div>
 
         <!-- ORDERS PANEL -->
-        <div id="ordersPanel">
+        <div id="ordersPanel" class="hidden">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             <div class="bg-zinc-900 rounded-2xl p-5 border border-zinc-800 shadow-md shadow-black/20">
               <div class="flex items-center gap-3">
@@ -833,6 +892,15 @@
         <!-- PRODUCTS PANEL -->
         <div id="productsPanel" class="hidden">
           <div id="adminProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- CLIENTES PANEL -->
+        <div id="clientesPanel" class="hidden fade-in">
+          <div class="mb-4">
+            <h3 class="text-xl font-bold text-white font-display">Directorio de Clientes</h3>
+            <p class="text-sm text-zinc-400">Listado de clientes e historial de compras para marketing y retención.</p>
+          </div>
+          <div id="adminClientesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
       </div>
     </div>
@@ -1164,8 +1232,8 @@
       </div>
       <form onsubmit="loginAdmin(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1 ml-1">Usuario</label>
-          <input type="text" id="loginUser" required class="w-full px-4 py-3 bg-zinc-800 rounded-xl border border-zinc-700 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="admin">
+          <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1 ml-1">Email Registrado</label>
+          <input type="email" id="loginUser" required class="w-full px-4 py-3 bg-zinc-800 rounded-xl border border-zinc-700 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="ejemplo@correo.com">
         </div>
         <div>
           <label class="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1 ml-1">Contraseña</label>
@@ -1179,6 +1247,9 @@
     </div>
   </div>
 
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
   <script src="subscription-manager.js"></script>
   <script src="script.js"></script>
 </body>

@@ -7,8 +7,8 @@ const getTenantId = () => {
 const tenantId = getTenantId();
 const storageKey = (key) => `${tenantId}_${key}`;
 
-// ======================== INICIALIZACIÓN DE DATOS ========================
-let products = JSON.parse(localStorage.getItem(storageKey('su_products'))) || [
+// ======================== INITIAL DATA (FALLBACK) ========================
+let defaultProducts = [
   { id: 1, name: "Urbana Clasica", category: "hamburguesas", price: 12.90, description: "Carne 150g, lechuga, tomate", available: true, image: "" },
   { id: 2, name: "Urbana Doble", category: "hamburguesas", price: 18.50, description: "Doble carne 300g, doble queso", available: true, image: "" },
   { id: 3, name: "Costillitas BBQ", category: "alitas", price: 28.90, description: "Costillas de cerdo con salsa BBQ", available: true, image: "" },
@@ -20,6 +20,9 @@ let products = JSON.parse(localStorage.getItem(storageKey('su_products'))) || [
   { id: 9, name: "Coca Cola 500ml", category: "bebidas", price: 4.50, description: "Bebida gaseosa", available: true, image: "" },
   { id: 10, name: "Chicha Morada", category: "bebidas", price: 5.00, description: "Bebida tradicional", available: true, image: "" }
 ];
+
+let products = [];
+let restaurantData = null;
 
 let orders = JSON.parse(localStorage.getItem(storageKey('su_orders'))) || [];
 
@@ -42,10 +45,10 @@ function updatePlanUI() {
     badge.className = `px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${sub.planId === 'pro' ? 'bg-primary text-white border-primary' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`;
   }
 
-  // Si no es PRO, ocultamos opciones premium y mostramos CTA de mejora
+  // Si no es PRO, mostramos CTA de mejora, PERO dejamos el branding visible para que pruebe el banner
   const isPro = sub.planId === 'pro';
   const brandingSection = document.getElementById('brandingConfig'); 
-  if (brandingSection) brandingSection.classList.toggle('hidden', !isPro);
+  if (brandingSection) brandingSection.classList.remove('hidden'); // Siempre visible
   
   const upgradeCTA = document.getElementById('upgradeCTA');
   if (upgradeCTA) upgradeCTA.classList.toggle('hidden', isPro);
@@ -77,28 +80,213 @@ document.addEventListener('DOMContentLoaded', () => {
   initApp();
 });
 
-function initApp() {
-  const params = new URLSearchParams(window.location.search);
-  const b = params.get('b');
+// ======================== SUPABASE CORE LOGIC ========================
+async function fetchRestaurantFromSupabase(slug) {
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('restaurants')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+    
+    // Si da error porque no encontró la fila (PGRST116), la creamos
+    if (error && error.code === 'PGRST116') {
+       console.log("No se encontró el restaurante en Supabase, inicializándolo...");
+       const { data: newRest, error: insertError } = await window.supabaseClient
+         .from('restaurants')
+         .insert([{ slug: slug, name: 'Mi Nuevo Negocio' }])
+         .select()
+         .single();
+         
+       if (!insertError) return newRest;
+       console.warn("No se pudo crear el negocio de forma automática", insertError);
+       return null;
+    }
 
-  if (!b) {
-    showLandingPage();
-  } else {
-    // Aquí podríamos validar si el negocio existe o está bloqueado
-    // Por ahora, permitimos el acceso si hay un parámetro 'b'
-    window.SaaS.registerTenant(b); // Registro global para Super Admin
-    document.getElementById('mainNav').classList.remove('hidden');
-    const footerAdm = document.getElementById('footerAdminContainer');
-    if (footerAdm) footerAdm.classList.remove('hidden');
-    loadGlobalImages(); 
-    loadCustomSettings(); 
-    renderProducts();
-    renderOrders();
-    updateOrderCounts();
-    renderAdminProducts();
-    updatePlanUI(); // Actualizar UI de planes
-    switchView('cliente');
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    console.warn("Supabase: No se pudo cargar el restaurante, revisa conexión o permisos.", err);
+    return null;
   }
+}
+
+async function fetchProductsFromSupabase(restaurantId) {
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('products')
+      .select('*')
+      .eq('restaurant_id', restaurantId);
+    
+    if (error) throw error;
+    // Forzar que siempre devuelva un arreglo, incluso si está vacío
+    return data || [];
+  } catch (err) {
+    console.warn("Supabase: No se pudieron cargar los productos, usando datos locales.");
+    return null; // El fallback decidirá qué poner
+  }
+}
+
+async function initApp() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const b = params.get('b');
+
+    if (!b) {
+      showLandingPage();
+    } else {
+      window.SaaS.registerTenant(b);
+      document.getElementById('mainNav').classList.remove('hidden');
+      const footerAdm = document.getElementById('footerAdminContainer');
+      if (footerAdm) footerAdm.classList.remove('hidden');
+
+      const { data: { session } } = await window.supabaseClient.auth.getSession();
+      isAdminAuthenticated = !!session;
+
+      restaurantData = await fetchRestaurantFromSupabase(b);
+      
+      let dbProducts = null;
+      if (restaurantData && restaurantData.id) {
+          dbProducts = await fetchProductsFromSupabase(restaurantData.id);
+      }
+
+      if (dbProducts !== null) {
+        products = dbProducts;
+      } else {
+        products = JSON.parse(localStorage.getItem(storageKey('su_products'))) || defaultProducts;
+      }
+      
+      if (!products || !Array.isArray(products)) products = [];
+
+      if (isAdminAuthenticated && restaurantData) {
+        const { data: dbOrders } = await window.supabaseClient
+          .from('orders')
+          .select('*')
+          .eq('restaurant_id', restaurantData.id)
+          .order('created_at', { ascending: false });
+        
+        if (dbOrders) orders = dbOrders;
+        setupRealtimeOrders(restaurantData.id);
+        updateDashboardStats(); 
+      } else {
+        orders = JSON.parse(localStorage.getItem(storageKey('su_orders'))) || [];
+      }
+
+      // Safe renders
+      try { loadGlobalImages(); } catch(e){ console.error(e) }
+      try { loadCustomSettings(); } catch(e){ console.error(e) }
+      try { renderProducts(); } catch(e){ console.error(e) }
+      try { renderOrders(); } catch(e){ console.error(e) }
+      try { updateOrderCounts(); } catch(e){ console.error(e) }
+      try { renderAdminProducts(); } catch(e){ console.error(e) }
+      try { updatePlanUI(); } catch(e){ console.error(e) }
+      
+      if (isAdminAuthenticated) {
+        switchView('admin');
+        switchAdminTab('dashboard'); 
+      } else {
+        switchView('cliente');
+      }
+    }
+  } catch (error) {
+    console.error("DEBUG CRITICAL INIT ERROR:", error);
+    alert("Error crítico al cargar la aplicación: " + error.message);
+  }
+}
+
+
+async function updateDashboardStats() {
+  if (!restaurantData || !isAdminAuthenticated) return;
+
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Filtrar pedidos de hoy
+  const todayOrders = orders.filter(o => o.created_at && o.created_at.startsWith(today));
+  
+  // Sumar ventas de hoy (solo listos o entregados)
+  const todaySales = todayOrders
+    .filter(o => o.status === 'ready' || o.status === 'delivered')
+    .reduce((sum, o) => sum + (o.total || 0), 0);
+
+  // Totales generales para ticket promedio
+  const closedOrders = orders.filter(o => o.status === 'ready' || o.status === 'delivered');
+  const totalSalesValue = closedOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+  const avgTicketValue = closedOrders.length > 0 ? totalSalesValue / closedOrders.length : 0;
+
+  // Actualizar UI del Dashboard
+  const elSales = document.getElementById('statsTodaySales');
+  const elOrders = document.getElementById('statsTodayOrders');
+  const elAvg = document.getElementById('statsAvgTicket');
+  
+  if (elSales) elSales.textContent = `S/. ${todaySales.toFixed(2)}`;
+  if (elOrders) elOrders.textContent = todayOrders.length;
+  if (elAvg) elAvg.textContent = `S/. ${avgTicketValue.toFixed(2)}`;
+
+  // Estado del local en Dashboard
+  const dbStatusEl = document.getElementById('dashboardStoreStatus');
+  if (dbStatusEl) {
+    const isOpen = isStoreOpen();
+    dbStatusEl.innerHTML = `
+      <div class="w-3 h-3 rounded-full ${isOpen ? 'bg-emerald-500' : 'bg-red-500'}"></div>
+      <span class="text-lg font-bold text-white italic">${isOpen ? 'Abierto' : 'Cerrado'}</span>
+    `;
+  }
+
+  // Mejor Vendido
+  const topProductEl = document.getElementById('statsTopProduct');
+  if (topProductEl) {
+    const counts = {};
+    closedOrders.forEach(o => {
+      if (o.items) o.items.forEach(item => {
+        counts[item.name] = (counts[item.name] || 0) + (item.quantity || 1);
+      });
+    });
+
+    const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 3);
+    if (sorted.length > 0) {
+      topProductEl.innerHTML = sorted.map(([name, count], i) => `
+        <div class="flex items-center justify-between p-3 bg-zinc-800 border border-zinc-700/50 rounded-xl">
+          <div class="flex items-center gap-3">
+            <span class="text-primary font-bold">#${i+1}</span>
+            <span class="text-white text-sm">${name}</span>
+          </div>
+          <span class="bg-primary/20 text-primary px-2 py-0.5 rounded text-[10px] font-bold">${count} uds</span>
+        </div>
+      `).join('');
+    } else {
+      topProductEl.innerHTML = `<p class="text-zinc-500 text-sm italic">Sin ventas registradas</p>`;
+    }
+  }
+}
+
+function setupRealtimeOrders(restaurantId) {
+  window.supabaseClient
+    .channel('orders-changes')
+    .on('postgres_changes', { 
+      event: 'INSERT', 
+      schema: 'public', 
+      table: 'orders',
+      filter: `restaurant_id=eq.${restaurantId}`
+    }, payload => {
+      orders.unshift(payload.new);
+      renderOrders();
+      updateOrderCounts();
+      showNotification("Nuevo Pedido", `Pedido #${payload.new.id} recibido`, "success");
+    })
+    .on('postgres_changes', { 
+      event: 'UPDATE', 
+      schema: 'public', 
+      table: 'orders',
+      filter: `restaurant_id=eq.${restaurantId}`
+    }, payload => {
+      const index = orders.findIndex(o => o.id === payload.new.id);
+      if (index !== -1) {
+        orders[index] = payload.new;
+        renderOrders();
+        updateOrderCounts();
+      }
+    })
+    .subscribe();
 }
 
 function showLandingPage() {
@@ -111,14 +299,39 @@ function showLandingPage() {
   if (footerAdm) footerAdm.classList.add('hidden');
 }
 
-function saveData() {
+// ======================== SUPABASE STORAGE HELPER ========================
+async function uploadImageToSupabase(file, folder = 'products') {
+  if (!file) return null;
+  
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+  const filePath = `${folder}/${fileName}`;
+
   try {
-    localStorage.setItem(storageKey('su_products'), JSON.stringify(products));
-    localStorage.setItem(storageKey('su_orders'), JSON.stringify(orders));
-  } catch (e) {
-    console.error("Error guardando en localStorage:", e);
-    showNotification("Error", "No se pudo guardar. Es posible que las imágenes sean demasiado pesadas.", "error");
+    const { data, error } = await window.supabaseClient.storage
+      .from('pideclick')
+      .upload(filePath, file);
+
+    if (error) throw error;
+
+    // Obtener URL pública
+    const { data: { publicUrl } } = window.supabaseClient.storage
+      .from('pideclick')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  } catch (err) {
+    console.error("DEBUG STORAGE ERROR:", err);
+    alert(`Error de Storage (Subida de Imagen):\nCausa probable: El bucket 'pideclick' no existe, o no tiene políticas de RLS (INSERT) habilitadas.\n\nDetalle técnico: ${err.message}`);
+    showNotification("Error", "No se pudo subir la imagen al servidor.", "error");
+    return null;
   }
+}
+
+function saveData() {
+  // Los pedidos ahora se gestionan vía Supabase Realtime/DB.
+  // Limpiando código legacy de localStorage de la Fase 1.
+  console.log("Sistema sincronizado con Supabase Cloud.");
 }
 
 // ======================== SISTEMA DE NOTIFICACIONES (TOAST) ========================
@@ -157,41 +370,82 @@ function showNotification(title, message, type = 'success') {
 
 // ======================== GESTIÓN DE IMÁGENES GLOBALES ========================
 function loadGlobalImages() {
-  // LOGO ELIMINADO DE AQUI - Ahora es estático en HTML
-  const banner = localStorage.getItem(storageKey('su_banner'));
+  const banner = restaurantData?.banner_url || localStorage.getItem(storageKey('su_banner'));
   if (banner) document.getElementById('mainBanner').src = banner;
 }
 
-function uploadGlobalImage(type, input) {
+async function uploadGlobalImage(type, input) {
+  const bSlug = new URLSearchParams(window.location.search).get('b') || 'default';
+  
   if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      if (type === 'banner') {
-        try {
-          localStorage.setItem(storageKey('su_banner'), e.target.result);
-          const bannerImg = document.getElementById('mainBanner');
-          if (bannerImg) bannerImg.src = e.target.result;
-          showNotification("Éxito", "Banner actualizado correctamente");
-        } catch (err) {
-          showNotification("Error", "La imagen es demasiado pesada", "error");
-        }
+    const file = input.files[0];
+    showNotification("Cargando", "Subiendo imagen...", "warning");
+    
+    const publicUrl = await uploadImageToSupabase(file, 'restaurants');
+    
+    if (publicUrl && type === 'banner') {
+      let errorData = null;
+      let newRest = null;
+
+      // Si el restaurante ya existe, actualizamos. Si no, lo insertamos.
+      if (restaurantData && restaurantData.id) {
+        const { error } = await window.supabaseClient
+          .from('restaurants')
+          .update({ banner_url: publicUrl })
+          .eq('id', restaurantData.id);
+        errorData = error;
+      } else {
+        const { data, error } = await window.supabaseClient
+          .from('restaurants')
+          .insert([{ banner_url: publicUrl, slug: bSlug, name: 'Mi Nuevo Negocio' }])
+          .select()
+          .single();
+        errorData = error;
+        newRest = data;
       }
-    };
-    reader.readAsDataURL(input.files[0]);
+        
+      if (!errorData) {
+        if (newRest) restaurantData = newRest;
+        if (restaurantData) restaurantData.banner_url = publicUrl;
+        document.getElementById('mainBanner').src = publicUrl;
+        showNotification("Éxito", "Banner guardado en la base de datos");
+      } else {
+        console.error("DEBUG UPLOAD IMAGE DB ERROR:", errorData);
+        alert("ERROR SUBIENDO BANNER A DB:\nVerifica que la tabla 'restaurants' existe y tenga políticas correctas.\nDetalle: " + (errorData.message || JSON.stringify(errorData)));
+        showNotification("Error", "No se pudo guardar la URL en la BD", "error");
+      }
+    }
+  } else {
+    showNotification("Error", "No se seleccionó ninguna imagen", "error");
   }
 }
 
 // ======================== GESTIÓN DE PERSONALIZACIÓN ========================
 function loadCustomSettings() {
-  const slogan = localStorage.getItem(storageKey('su_custom_slogan')) || "Tu frase favorita aquí";
-  const tiktok = localStorage.getItem(storageKey('su_custom_tiktok')) || "#";
-  const instagram = localStorage.getItem(storageKey('su_custom_instagram')) || "#";
-  const whatsappNum = localStorage.getItem(storageKey('su_custom_whatsapp')) || "";
-  const deliveryWhatsappNum = localStorage.getItem(storageKey('su_custom_delivery_whatsapp')) || "";
-  const facebook = localStorage.getItem(storageKey('su_custom_facebook')) || "#";
-  const location = localStorage.getItem(storageKey('su_custom_location')) || "#";
-  const openTime = localStorage.getItem(storageKey('su_custom_open_time')) || "08:00";
-  const closeTime = localStorage.getItem(storageKey('su_custom_close_time')) || "23:00";
+  // Si hay datos del backend, forzamos que sea el punto de verdad, ignorando vacíos que puedan traer default
+  const slogan = restaurantData?.slogan || localStorage.getItem(storageKey('su_custom_slogan')) || "Tu frase favorita aquí";
+  const tiktok = restaurantData?.tiktok_url || localStorage.getItem(storageKey('su_custom_tiktok')) || "#";
+  const instagram = restaurantData?.instagram_url || localStorage.getItem(storageKey('su_custom_instagram')) || "#";
+  const whatsappNum = restaurantData?.whatsapp_num || localStorage.getItem(storageKey('su_custom_whatsapp')) || "";
+  const deliveryWhatsappNum = restaurantData?.delivery_whatsapp_num || localStorage.getItem(storageKey('su_custom_delivery_whatsapp')) || "";
+  const facebook = restaurantData?.facebook_url || localStorage.getItem(storageKey('su_custom_facebook')) || "#";
+  const location = restaurantData?.location_url || localStorage.getItem(storageKey('su_custom_location')) || "#";
+  const openTime = restaurantData?.open_time || localStorage.getItem(storageKey('su_custom_open_time')) || "08:00";
+  const closeTime = restaurantData?.close_time || localStorage.getItem(storageKey('su_custom_close_time')) || "23:00";
+
+  // Sicronizamos de vuelta al local storage x si aca falla Supabase después
+  if (restaurantData) {
+    localStorage.setItem(storageKey('su_custom_slogan'), slogan);
+    localStorage.setItem(storageKey('su_custom_tiktok'), tiktok);
+    localStorage.setItem(storageKey('su_custom_instagram'), instagram);
+    localStorage.setItem(storageKey('su_custom_whatsapp'), whatsappNum);
+    localStorage.setItem(storageKey('su_custom_delivery_whatsapp'), deliveryWhatsappNum);
+    localStorage.setItem(storageKey('su_custom_facebook'), facebook);
+    localStorage.setItem(storageKey('su_custom_location'), location);
+    localStorage.setItem(storageKey('su_custom_open_time'), openTime);
+    localStorage.setItem(storageKey('su_custom_close_time'), closeTime);
+    if(restaurantData.banner_url) localStorage.setItem(storageKey('su_banner'), restaurantData.banner_url);
+  }
 
   const whatsappUrl = whatsappNum ? `https://wa.me/51${whatsappNum}` : "#";
 
@@ -211,6 +465,7 @@ function loadCustomSettings() {
   if (locationEl) locationEl.href = location;
 
   updateStoreStatusUI(openTime, closeTime);
+  updateDashboardStats(); // Forzamos recálculo del estado Abierto/Cerrado en vivo
 
   // Actualizar Inputs Admin
   const adminSlogan = document.getElementById('adminSlogan');
@@ -234,33 +489,90 @@ function loadCustomSettings() {
   if (adminCloseTime) adminCloseTime.value = closeTime;
 }
 
-function saveCustomSettings() {
-  const slogan = document.getElementById('adminSlogan').value;
-  const tiktok = document.getElementById('adminTiktok').value;
-  const instagram = document.getElementById('adminInstagram').value;
-  let whatsapp = document.getElementById('adminWhatsapp').value;
-  let deliveryWhatsapp = document.getElementById('adminDeliveryWhatsapp').value;
-  const facebook = document.getElementById('adminFacebook').value;
-  const location = document.getElementById('adminLocation').value;
-  const openTime = document.getElementById('adminOpenTime').value;
-  const closeTime = document.getElementById('adminCloseTime').value;
+async function saveCustomSettings() {
+  const sloganEl = document.getElementById('adminSlogan');
+  const tiktokEl = document.getElementById('adminTiktok');
+  const instagramEl = document.getElementById('adminInstagram');
+  const whatsappEl = document.getElementById('adminWhatsapp');
+  const deliveryWhatsappEl = document.getElementById('adminDeliveryWhatsapp');
+  const facebookEl = document.getElementById('adminFacebook');
+  const locationEl = document.getElementById('adminLocation');
+  const openTimeEl = document.getElementById('adminOpenTime');
+  const closeTimeEl = document.getElementById('adminCloseTime');
+
+  const slogan = sloganEl.value.trim() || restaurantData?.slogan || "Tu frase favorita aquí";
+  const tiktok = tiktokEl.value.trim() || restaurantData?.tiktok_url || "#";
+  const instagram = instagramEl.value.trim() || restaurantData?.instagram_url || "#";
+  let whatsapp = whatsappEl.value.trim() || restaurantData?.whatsapp_num || "";
+  let deliveryWhatsapp = deliveryWhatsappEl.value.trim() || restaurantData?.delivery_whatsapp_num || "";
+  const facebook = facebookEl.value.trim() || restaurantData?.facebook_url || "#";
+  const location = locationEl.value.trim() || restaurantData?.location_url || "#";
+  const openTime = openTimeEl.value.trim() || restaurantData?.open_time || "08:00";
+  const closeTime = closeTimeEl.value.trim() || restaurantData?.close_time || "23:00";
 
   // Limpiar los números de WhatsApp
   whatsapp = whatsapp.replace(/\D/g, '');
   deliveryWhatsapp = deliveryWhatsapp.replace(/\D/g, '');
+  
+  const bSlug = new URLSearchParams(window.location.search).get('b') || 'default';
 
-  localStorage.setItem(storageKey('su_custom_slogan'), slogan);
-  localStorage.setItem(storageKey('su_custom_tiktok'), tiktok);
-  localStorage.setItem(storageKey('su_custom_instagram'), instagram);
-  localStorage.setItem(storageKey('su_custom_whatsapp'), whatsapp);
-  localStorage.setItem(storageKey('su_custom_delivery_whatsapp'), deliveryWhatsapp);
-  localStorage.setItem(storageKey('su_custom_facebook'), facebook);
-  localStorage.setItem(storageKey('su_custom_location'), location);
-  localStorage.setItem(storageKey('su_custom_open_time'), openTime);
-  localStorage.setItem(storageKey('su_custom_close_time'), closeTime);
+  // Usar UPSERT para insertar o actualizar en base al slug (requiere que slug sea UNIQUE en BD)
+  // O en nuestro caso, actualizamos usando el ID si lo tenemos, si no, intentamos con el slug
+  const updatePayload = {
+        slogan,
+        tiktok_url: tiktok,
+        instagram_url: instagram,
+        whatsapp_num: whatsapp,
+        delivery_whatsapp_num: deliveryWhatsapp,
+        facebook_url: facebook,
+        location_url: location,
+        open_time: openTime,
+        close_time: closeTime
+  };
 
-  loadCustomSettings(); // Recargar visualmente
-  showNotification("Éxito", "Personalización guardada correctamente");
+  let errorData = null;
+
+  if (restaurantData && restaurantData.id) {
+    const { data: updatedData, error } = await window.supabaseClient
+      .from('restaurants')
+      .update(updatePayload)
+      .eq('id', restaurantData.id)
+      .select()
+      .single();
+      
+    // Si error es PGRST116 (0 filas actualizadas), significa que RLS bloqueó el UPDATE silenciosamente
+    errorData = error;
+    if (error && error.code === 'PGRST116') {
+      errorData = { message: "Violación RLS: Permiso denegado para actualizar (0 filas afectadas)" };
+    } else if (updatedData) {
+      restaurantData = updatedData;
+    }
+  } else {
+    // Intenta insertarlo asignando el slug correspondiente
+    const { data, error } = await window.supabaseClient
+      .from('restaurants')
+      .insert([{ ...updatePayload, slug: bSlug, name: 'Mi Nuevo Negocio' }])
+      .select()
+      .single();
+      
+    errorData = error;
+    if (data) restaurantData = data;
+  }
+
+  if (errorData) {
+    console.error("DEBUG SAVE SETTINGS ERROR:", errorData);
+    alert("ERROR GUARDANDO AJUSTES EN BD:\nVerifica que la tabla 'restaurants' exista y tenga políticas de INSERT/UPDATE correctas en Supabase.\nDetalle: " + (errorData.message || JSON.stringify(errorData)));
+    showNotification("Error", "No se pudo guardar en la nube", "error");
+    return;
+  }
+  
+  // Actualizar cache local
+  if (restaurantData) {
+     restaurantData = { ...restaurantData, ...updatePayload };
+  }
+
+  loadCustomSettings(); 
+  showNotification("Éxito", "Configuración guardada en Supabase correctamente");
 }
 
 // ======================== CAMBIO DE VISTAS ========================
@@ -308,28 +620,65 @@ function switchView(view) {
 }
 
 function switchAdminTab(tab) {
+  console.log("=== SWITCH TAB INICIADO ===", tab);
   currentAdminTab = tab;
+  
+  const tabDashboard = document.getElementById('tabDashboard');
   const tabPedidos = document.getElementById('tabPedidos');
   const tabProductos = document.getElementById('tabProductos');
+  const tabClientes = document.getElementById('tabClientes');
+  
+  const dashboardPanel = document.getElementById('dashboardPanel');
   const ordersPanel = document.getElementById('ordersPanel');
   const productsPanel = document.getElementById('productsPanel');
+  const clientesPanel = document.getElementById('clientesPanel');
 
-  if (tab === 'pedidos') {
-    tabPedidos.classList.add('text-primary', 'border-b-2', 'border-primary');
-    tabPedidos.classList.remove('text-zinc-300');
-    tabProductos.classList.remove('text-primary', 'border-b-2', 'border-primary');
-    tabProductos.classList.add('text-zinc-300');
-    ordersPanel.classList.remove('hidden');
-    productsPanel.classList.add('hidden');
+  console.log("Elementos encontrados:", { 
+    dashboardPanel: !!dashboardPanel, 
+    ordersPanel: !!ordersPanel, 
+    productsPanel: !!productsPanel,
+    clientesPanel: !!clientesPanel
+  });
+
+  // Reset tabs, checking if they exist to prevent crashes
+  [tabDashboard, tabPedidos, tabProductos, tabClientes].forEach(t => {
+    if (t) {
+      t.classList.remove('text-primary', 'border-b-2', 'border-primary');
+      t.classList.add('text-zinc-300');
+    }
+  });
+
+  // Reset panels
+  [dashboardPanel, ordersPanel, productsPanel, clientesPanel].forEach(p => {
+    if (p) {
+      p.classList.add('hidden');
+      console.log(`Escondiendo panel: ${p.id}`);
+    }
+  });
+
+  const activeTab = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+  
+  // Map Spanish tab names to English HTML IDs natively
+  let panelId = `${tab}Panel`;
+  if (tab === 'pedidos') panelId = 'ordersPanel';
+  if (tab === 'productos') panelId = 'productsPanel';
+  
+  const activePanel = document.getElementById(panelId);
+  console.log(`Buscando panel activo: ${panelId} -> Encontrado: ${!!activePanel}`);
+
+  if (activeTab && activePanel) {
+    activeTab.classList.add('text-primary', 'border-b-2', 'border-primary');
+    activeTab.classList.remove('text-zinc-300');
+    activePanel.classList.remove('hidden');
+    console.log(`Panel ${panelId} mostrado exitosamente`);
   } else {
-    tabProductos.classList.add('text-primary', 'border-b-2', 'border-primary');
-    tabProductos.classList.remove('text-zinc-300');
-    tabPedidos.classList.remove('text-primary', 'border-b-2', 'border-primary');
-    tabPedidos.classList.add('text-zinc-300');
-    productsPanel.classList.remove('hidden');
-    ordersPanel.classList.add('hidden');
+    console.error(`Fallo mostrando panel: activeTab=${!!activeTab}, activePanel=${!!activePanel}`);
   }
+
+  if (tab === 'dashboard') updateDashboardStats();
+  if (tab === 'clientes') renderAdminClientes();
 }
+
 
 // ======================== LÓGICA DE PRODUCTOS ========================
 function renderProducts() {
@@ -339,7 +688,7 @@ function renderProducts() {
   grid.innerHTML = filtered.map((p, i) => `
     <div class="bg-zinc-800 rounded-2xl overflow-hidden border border-zinc-700/50 shadow-md shadow-black/20 card-hover slide-in flex flex-col h-full" style="animation-delay: ${i * 50}ms">
       <div class="h-32 bg-gradient-to-br from-primary/5 to-zinc-900 flex items-center justify-center relative overflow-hidden flex-shrink-0">
-        ${p.image ? `<img src="${p.image}" class="w-full h-full object-cover">` : getCategoryIcon(p.category)}
+        ${(p.image_url || p.image) ? `<img src="${p.image_url || p.image}" class="w-full h-full object-cover">` : getCategoryIcon(p.category)}
       </div>
       <div class="p-3 sm:p-4 flex flex-col flex-1">
         <span class="text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider">${p.category}</span>
@@ -347,7 +696,7 @@ function renderProducts() {
         <p class="text-xs sm:text-sm text-zinc-400 mt-1.5 line-clamp-2 leading-relaxed flex-1">${p.description}</p>
         <div class="flex items-center justify-between mt-3 sm:mt-5">
           <span class="text-sm sm:text-xl font-bold text-primary">S/. ${p.price.toFixed(2)}</span>
-          <button onclick="handleAddToCart(${p.id})" class="w-10 h-10 sm:w-12 sm:h-12 bg-primary hover:bg-primary-dark text-white rounded-xl sm:rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg shadow-primary/20">
+          <button onclick="handleAddToCart('${p.id}')" class="w-10 h-10 sm:w-12 sm:h-12 bg-primary hover:bg-primary-dark text-white rounded-xl sm:rounded-2xl flex items-center justify-center transition-all hover:scale-105 shadow-lg shadow-primary/20">
             <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
           </button>
         </div>
@@ -380,7 +729,8 @@ function filterCategory(category) {
 
 // ======================== LÓGICA DE PERSONALIZACIÓN ========================
 function handleAddToCart(id) {
-  const p = products.find(x => x.id === id);
+  const p = products.find(x => x.id == id);
+  if(!p) return;
   currentCustomProductId = id;
   openCustomizeModal(id);
 }
@@ -404,22 +754,33 @@ function closeCustomizeModal() {
 
 function addToCartWithCustomization(e) {
   e.preventDefault();
-  const p = products.find(x => x.id === currentCustomProductId);
+  const p = products.find(x => x.id == currentCustomProductId);
+  
+  if (!p) {
+    showNotification("Error", "Producto no encontrado.", "error");
+    return;
+  }
+
   const fd = new FormData(e.target);
   const extras = {};
+  
   if (p.category !== 'bebidas') {
-    extras.sauces = fd.getAll('sauce').length > 0 ? fd.getAll('sauce') : ['Sin Salsa'];
+    // Si el usuario no selecciona ninguna, el getAll devuelve vacío.
+    const sauces = fd.getAll('sauce');
+    extras.sauces = sauces.length > 0 ? sauces : ['Sin Salsa'];
     if (['hamburguesas', 'salchipapas'].includes(p.category)) {
-      extras.potato = fd.get('potato');
-      extras.salad = fd.get('salad');
+      extras.potato = fd.get('potato') || 'Normal';
+      extras.salad = fd.get('salad') || 'Sin ensalada';
     }
   } else {
-    extras.temp = fd.get('temp');
+    extras.temp = fd.get('temp') || 'Helada';
   }
+  
   cart.push({ ...p, quantity: 1, extras, cartId: Date.now() });
   updateCartUI();
   closeCustomizeModal();
-  openCart(); // Abrir el carrito automáticamente para retroalimentación instantánea
+  openCart(); 
+  showNotification("Añadido", `${p.name} agregado al carrito`);
 }
 
 // ======================== LÓGICA DEL CARRITO ========================
@@ -625,40 +986,81 @@ function getLocation() {
   }
 }
 
-function submitOrder(e) {
+async function submitOrder(e) {
   e.preventDefault();
+  
+  if (cart.length === 0) {
+    showNotification("Error", "El carrito está vacío.", "error");
+    return;
+  }
+
+  showNotification("Procesando", "Enviando pedido...", "warning");
+
   const fd = new FormData(e.target);
   const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
   const isDelivery = fd.get('deliveryType') === 'delivery';
   const total = isDelivery ? subtotal + 2 : subtotal;
 
-  const order = {
-    id: 1000 + orders.length + 1,
-    customer: { name: fd.get('customerName'), phone: fd.get('customerPhone'), address: fd.get('customerAddress') || 'Recojo en local', lat: fd.get('lat'), lng: fd.get('lng') },
+  const orderData = {
+    restaurant_id: restaurantData ? restaurantData.id : null,
+    customer_name: fd.get('customerName') || 'Cliente Local',
+    customer_phone: fd.get('customerPhone') || '000000000',
+    customer_address: fd.get('customerAddress') || 'Recojo en local',
+    gps_coords: { lat: fd.get('lat') || null, lng: fd.get('lng') || null },
     items: [...cart],
     subtotal: subtotal,
-    deliveryFee: isDelivery ? 2 : 0,
+    delivery_fee: isDelivery ? 2 : 0,
     total: total,
-    paymentMethod: fd.get('paymentMethod'),
-    paymentDetails: fd.get('cashAmount') || fd.get('paymentProof')?.name || '',
-    type: fd.get('deliveryType'),
-    status: 'pending',
-    createdAt: new Date().toISOString()
+    payment_method: fd.get('paymentMethod'),
+    payment_details: fd.get('cashAmount') || fd.get('paymentProof')?.name || 'N/A',
+    order_type: fd.get('deliveryType') || 'pickup',
+    status: 'pending'
   };
 
-  orders.unshift(order);
-  saveData();
-  
-  // WhatsApp Message
-  const msg = encodeURIComponent(`Hola *${order.customer.name}*, gracias por tu pedido en *PideClick*!\n\nPedido #${order.id}\nTotal: S/. ${order.total.toFixed(2)}\n\nEstamos preparando tu orden.\n\nTe notificaremos cuando este listo.`);
-  window.open(`https://wa.me/51${order.customer.phone}?text=${msg}`, '_blank');
+  // Guardar en Supabase si el restaurante existe en la DB
+  if (restaurantData && restaurantData.id) {
+    try {
+      const { data, error } = await window.supabaseClient
+        .from('orders')
+        .insert([orderData])
+        .select();
+      
+      if (error) throw error;
+      
+      const newOrder = data[0];
+      
+      // WhatsApp Message Automático
+      const msg = encodeURIComponent(`Hola *${newOrder.customer_name}*, gracias por tu pedido en *PideClick*!\n\nPedido #${newOrder.id}\nTotal: S/. ${newOrder.total.toFixed(2)}\n\nEstamos preparando tu orden.`);
+      window.open(`https://wa.me/51${newOrder.customer_phone}?text=${msg}`, '_blank');
+      
+      showNotification("¡Éxito!", "Pedido creado y enviado a cocina.");
+    } catch (err) {
+      console.error("DEBUG ORDER ERROR DETAILED:", err);
+      // Extraemos absolutamente todo lo que Supabase devuelva de error para leerlo claro.
+      const errorMsg = `MSG: ${err.message}\nHINT: ${err.hint || 'N/A'}\nDETAILS: ${err.details || 'N/A'}\nCODE: ${err.code || 'N/A'}`;
+      alert("ERROR DETALLADO DE SUPABASE AL CREAR PEDIDO:\n\n" + errorMsg);
+      showNotification("Error", "No se pudo crear el pedido. Revisa el alert.", "error");
+      return; 
+    }
+  } else {
+    // Fallback local (si no hay restaurante de Supabase)
+    const order = { ...orderData, id: 1000 + orders.length + 1, createdAt: new Date().toISOString() };
+    orders.unshift(order);
+    saveData();
+    const msg = encodeURIComponent(`Hola *${order.customer_name}*, gracias por tu pedido!\nPedido #${order.id}\nTotal: S/. ${order.total.toFixed(2)}`);
+    window.open(`https://wa.me/51${order.customer_phone}?text=${msg}`, '_blank');
+  }
 
+  // Limpieza y reinicio visual
   cart = [];
   updateCartUI();
-  renderOrders();
-  updateOrderCounts();
-  closeCheckoutModal();
   
+  if (!restaurantData) {
+    renderOrders();
+    updateOrderCounts();
+  }
+  
+  closeCheckoutModal();
   document.getElementById('successModal').classList.remove('hidden');
   document.getElementById('successModal').classList.add('flex');
 }
@@ -672,43 +1074,77 @@ function closeSuccessModal() {
 function renderOrders() {
   const list = document.getElementById('ordersList');
   if (orders.length === 0) { list.innerHTML = `<div class="text-center py-10 text-zinc-300">No hay pedidos</div>`; return; }
-  list.innerHTML = orders.map(o => `
-    <div class="bg-zinc-800 rounded-2xl border border-zinc-800 shadow-md shadow-black/20 overflow-hidden">
-      <div class="p-4">
-        <div class="flex justify-between items-start mb-3">
-          <div>
-            <div class="flex items-center gap-2 mb-1">
-              <span class="text-xs text-white px-2 py-0.5 rounded-full ${o.type === 'delivery' ? 'bg-primary-dark' : 'bg-success'}">${o.type === 'delivery' ? 'Delivery' : 'Recojo'}</span>
-              <span class="text-[10px] text-zinc-400 font-medium">${formatDate(o.createdAt)}</span>
+  
+  try {
+    list.innerHTML = orders.map(o => {
+      // Compatibilidad con Supabase y local
+      const cName = o.customer_name || (o.customer && o.customer.name) || 'Cliente';
+      const cPhone = o.customer_phone || (o.customer && o.customer.phone) || '';
+      const cAddress = o.customer_address || (o.customer && o.customer.address) || '';
+      const orderType = o.order_type || o.type || 'pickup';
+      const payMethod = o.payment_method || o.paymentMethod || 'Efectivo';
+      const orderItems = (typeof o.items === 'string') ? JSON.parse(o.items) : (o.items || []);
+      
+      return `
+      <div class="bg-zinc-800 rounded-2xl border border-zinc-800 shadow-md shadow-black/20 overflow-hidden">
+        <div class="p-4">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs text-white px-2 py-0.5 rounded-full ${orderType === 'delivery' ? 'bg-primary-dark' : 'bg-success'}">${orderType === 'delivery' ? 'Delivery' : 'Recojo'}</span>
+                <span class="text-[10px] text-zinc-400 font-medium">${formatDate(o.created_at || o.createdAt)}</span>
+              </div>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="font-bold text-lg text-primary">#${String(o.id).substring(0, 8)}</span>
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium status-${o.status}">${getStatusText(o.status)}</span>
+              </div>
             </div>
-            <div class="flex items-center gap-2 mt-1">
-              <span class="font-bold text-lg text-primary">#${o.id}</span>
-              <span class="px-2 py-0.5 rounded-full text-xs font-medium status-${o.status}">${getStatusText(o.status)}</span>
+            <div class="text-right">
+              <p class="font-bold text-lg">S/. ${(o.total || 0).toFixed(2)}</p>
+              <p class="text-xs text-zinc-300">${payMethod}</p>
             </div>
           </div>
-          <div class="text-right">
-            <p class="font-bold text-lg">S/. ${o.total.toFixed(2)}</p>
-            <p class="text-xs text-zinc-300">${o.paymentMethod}</p>
+          <div class="text-sm mb-2"><p class="font-medium">${cName}</p><p class="text-zinc-300">${cAddress}</p></div>
+          <div class="flex flex-wrap gap-1 mb-3">${orderItems.map(i => `<span class="bg-zinc-950 text-xs px-2 py-1 rounded">${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}</span>`).join('')}</div>
+          <div class="flex gap-2 border-t border-zinc-700 pt-3 mt-2">
+            ${o.status === 'pending' ? `<button onclick="updateOrderStatus('${o.id}', 'preparing')" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-bold shadow shadow-primary/20">Preparar</button>` : ''}
+            ${o.status === 'preparing' ? `<button onclick="updateOrderStatus('${o.id}', 'ready')" class="flex-1 bg-success text-white py-2 rounded-lg text-sm shadow">Listo</button>` : ''}
+            ${o.status === 'ready' ? `<button onclick="openDispatchModal('${o.id}')" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm shadow shadow-primary/20">Despachar</button>` : ''}
+            ${o.status === 'ready' && cPhone ? `<a href="https://wa.me/51${cPhone}?text=${encodeURIComponent('Tu pedido #'+String(o.id).substring(0,6)+' esta listo!')}" target="_blank" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm text-center shadow">Avisar WA</a>` : ''}
           </div>
         </div>
-        <div class="text-sm mb-2"><p class="font-medium">${o.customer.name}</p><p class="text-zinc-300">${o.customer.address}</p></div>
-        <div class="flex flex-wrap gap-1 mb-3">${o.items.map(i => `<span class="bg-zinc-950 text-xs px-2 py-1 rounded">${i.quantity}x ${i.name}</span>`).join('')}</div>
-        <div class="flex gap-2 border-t pt-3 mt-2">
-          ${o.status === 'pending' ? `<button onclick="updateOrderStatus(${o.id}, 'preparing')" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-bold">Preparar</button>` : ''}
-          ${o.status === 'preparing' ? `<button onclick="updateOrderStatus(${o.id}, 'ready')" class="flex-1 bg-success text-white py-2 rounded-lg text-sm">Listo</button>` : ''}
-          ${o.status === 'ready' ? `<button onclick="openDispatchModal(${o.id})" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm">Despachar</button>` : ''}
-          ${o.status === 'ready' ? `<a href="https://wa.me/51${o.customer.phone}?text=${encodeURIComponent('Tu pedido #'+o.id+' esta listo!')}" target="_blank" class="flex-1 bg-green-500 text-white py-2 rounded-lg text-sm text-center">Avisar WA</a>` : ''}
-        </div>
-      </div>
-    </div>`).join('');
+      </div>`
+    }).join('');
+  } catch (e) {
+    console.error("Error renderizando pedidos:", e);
+    list.innerHTML = `<div class="p-4 text-red-500 bg-red-500/10 rounded-xl text-center">Error cargando formato de pedidos. Ver consola de desarrollo.</div>`;
+  }
 }
 
 function getStatusText(s) { return { pending: 'Pendiente', preparing: 'Preparando', ready: 'Listo', delivered: 'Entregado' }[s] || s; }
 
-function updateOrderStatus(id, status) {
-  const o = orders.find(x => x.id === id);
-  if (o) { o.status = status; saveData(); renderOrders(); updateOrderCounts(); }
-  if (status === 'delivered') closeDispatchModal();
+async function updateOrderStatus(id, status) {
+  try {
+    const { error } = await window.supabaseClient
+      .from('orders')
+      .update({ status: status })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    const o = orders.find(x => String(x.id) === String(id));
+    if (o) { 
+      o.status = status; 
+      renderOrders(); 
+      updateOrderCounts();
+      updateDashboardStats(); // Actualizar dashboard al cambiar estados
+    }
+    if (status === 'delivered') closeDispatchModal();
+    showNotification("Éxito", `Pedido marcado como ${getStatusText(status)}`);
+  } catch (err) {
+    console.error("Error updating order:", err);
+    showNotification("Error", "No se pudo actualizar el pedido en la nube", "error");
+  }
 }
 
 function updateOrderCounts() {
@@ -719,49 +1155,141 @@ function updateOrderCounts() {
 
 function openDispatchModal(id) {
   currentDispatchOrderId = id;
-  const o = orders.find(x => x.id === id);
-  const mapsLink = o.customer.lat ? `https://www.google.com/maps?q=${o.customer.lat},${o.customer.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.customer.address)}`;
-  const itemsText = o.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+  const o = orders.find(x => String(x.id) === String(id));
+  if (!o) return;
+
+  const cName = o.customer_name || (o.customer && o.customer.name) || 'Cliente';
+  const cPhone = o.customer_phone || (o.customer && o.customer.phone) || '';
+  const cAddress = o.customer_address || (o.customer && o.customer.address) || '';
+  const lat = (o.gps_coords && o.gps_coords.lat) || (o.customer && o.customer.lat);
+  const lng = (o.gps_coords && o.gps_coords.lng) || (o.customer && o.customer.lng);
+  
+  const mapsLink = lat ? `https://www.google.com/maps?q=${lat},${lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cAddress)}`;
+  
+  const orderItems = (typeof o.items === 'string') ? JSON.parse(o.items) : (o.items || []);
+  const itemsText = orderItems.map(i => `${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}`).join(', ');
   
   document.getElementById('dispatchContent').innerHTML = `
     <div class="bg-zinc-950 rounded-xl p-4 space-y-2 text-sm">
       <div class="flex justify-between items-start">
-        <p><strong>Cliente:</strong> ${o.customer.name}</p>
-        <span class="text-[10px] text-zinc-500">${formatDate(o.createdAt)}</span>
+        <p><strong>Cliente:</strong> ${cName}</p>
+        <span class="text-[10px] text-zinc-500">${formatDate(o.created_at || o.createdAt || new Date().toISOString())}</span>
       </div>
-      <p><strong>Telf:</strong> ${o.customer.phone}</p><p><strong>Dir:</strong> ${o.customer.address}</p>
+      <p><strong>Telf:</strong> ${cPhone}</p><p><strong>Dir:</strong> ${cAddress}</p>
       <a href="${mapsLink}" target="_blank" class="text-primary underline block">Ver en Maps</a><hr class="my-2">
-      <p><strong>Pedido:</strong> ${itemsText}</p><p class="text-lg font-bold text-right">Total: S/. ${o.total.toFixed(2)}</p>
+      <p><strong>Pedido:</strong> ${itemsText}</p><p class="text-lg font-bold text-right">Total: S/. ${(o.total || 0).toFixed(2)}</p>
     </div>`;
-  const waMsg = encodeURIComponent(`*Pedido #${o.id}*\nCliente: ${o.customer.name}\nDir: ${o.customer.address}\nMaps: ${mapsLink}\nTotal: S/. ${o.total.toFixed(2)}`);
+  const waMsg = encodeURIComponent(`*Pedido #${String(o.id).substring(0,8)}*\nCliente: ${cName}\nDir: ${cAddress}\nMaps: ${mapsLink}\nTotal: S/. ${(o.total||0).toFixed(2)}`);
   const deliveryNum = localStorage.getItem(storageKey('su_custom_delivery_whatsapp')) || "999999999";
   document.getElementById('whatsappDeliveryLink').href = `https://wa.me/51${deliveryNum}?text=${waMsg}`;
-  document.getElementById('printArea').innerHTML = `<div style="font-family: monospace; width: 100%;"><h2 style="text-align:center;">PIDECLICK</h2><p style="text-align:center; font-size:10px;">${formatDate(o.createdAt)}</p><hr><p>Pedido: #${o.id}</p><p>Cliente: ${o.customer.name}</p><p>Dir: ${o.customer.address}</p><p>Telf: ${o.customer.phone}</p><hr>${o.items.map(i => `<p>${i.quantity}x ${i.name} - S/.${(i.price*i.quantity).toFixed(2)}</p>`).join('')}<hr><p><strong>TOTAL: S/. ${o.total.toFixed(2)}</strong></p></div>`;
+  document.getElementById('printArea').innerHTML = `<div style="font-family: monospace; width: 100%;"><h2 style="text-align:center;">PIDECLICK</h2><p style="text-align:center; font-size:10px;">${formatDate(o.created_at || o.createdAt || new Date().toISOString())}</p><hr><p>Pedido: #${String(o.id).substring(0,8)}</p><p>Cliente: ${cName}</p><p>Dir: ${cAddress}</p><p>Telf: ${cPhone}</p><hr>${orderItems.map(i => `<p>${i.quantity}x ${i.name}${i.extras ? '<br><small style="font-size:10px; color:#555;">' + formatExtras(i.extras) + '</small>' : ''} - S/.${(i.price*i.quantity).toFixed(2)}</p>`).join('')}<hr><p><strong>TOTAL: S/. ${(o.total||0).toFixed(2)}</strong></p></div>`;
   document.getElementById('dispatchModal').classList.remove('hidden');
   document.getElementById('dispatchModal').classList.add('flex');
 }
 
 function closeDispatchModal() { document.getElementById('dispatchModal').classList.add('hidden'); document.getElementById('dispatchModal').classList.remove('flex'); }
 
+// ======================== CLIENTES ADMIN ========================
+function renderAdminClientes() {
+  const list = document.getElementById('adminClientesList');
+  if (!list) return;
+  
+  const customersMap = {};
+  
+  orders.forEach(o => {
+    const cPhone = o.customer_phone || (o.customer && o.customer.phone) || '';
+    if (!cPhone) return;
+    
+    const cName = o.customer_name || (o.customer && o.customer.name) || 'Cliente Anónimo';
+    const cAddress = o.customer_address || (o.customer && o.customer.address) || 'Sin dirección';
+    
+    if (!customersMap[cPhone]) {
+      customersMap[cPhone] = {
+        phone: cPhone,
+        name: cName,
+        address: cAddress,
+        orderCount: 0,
+        totalSpent: 0,
+        lastOrder: o.created_at || o.createdAt || new Date().toISOString()
+      };
+    }
+    
+    customersMap[cPhone].orderCount += 1;
+    customersMap[cPhone].totalSpent += (o.total || 0);
+    
+    if (new Date(o.created_at || o.createdAt || new Date()) > new Date(customersMap[cPhone].lastOrder)) {
+      customersMap[cPhone].lastOrder = o.created_at || o.createdAt;
+      customersMap[cPhone].name = cName;
+      customersMap[cPhone].address = cAddress;
+    }
+  });
+
+  const uniqueCustomers = Object.values(customersMap).sort((a, b) => b.totalSpent - a.totalSpent);
+  
+  if (uniqueCustomers.length === 0) {
+    list.innerHTML = `<div class="col-span-full text-center py-10 text-zinc-400">Aún no hay clientes registrados.</div>`;
+    return;
+  }
+  
+  list.innerHTML = uniqueCustomers.map(c => `
+    <div class="bg-zinc-800 rounded-2xl border border-zinc-700 p-5 shadow-md shadow-black/20 hover:border-primary/50 transition-colors">
+      <div class="flex justify-between items-start mb-3">
+        <div>
+          <h4 class="font-bold text-white text-lg">${c.name}</h4>
+          <p class="text-zinc-400 text-sm mt-1">${c.phone}</p>
+        </div>
+        <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-bold">
+          ${c.name.charAt(0).toUpperCase()}
+        </div>
+      </div>
+      <p class="text-zinc-500 text-xs mb-4 line-clamp-1" title="${c.address}">${c.address}</p>
+      
+      <div class="flex items-center justify-between pt-3 border-t border-zinc-700/50">
+        <div>
+          <p class="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Pedidos</p>
+          <p class="text-white font-medium text-lg">${c.orderCount}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Acumulado</p>
+          <p class="text-emerald-400 font-bold text-lg">S/. ${c.totalSpent.toFixed(2)}</p>
+        </div>
+      </div>
+      <a href="https://wa.me/51${c.phone.replace(/\\D/g,'')}?text=${encodeURIComponent('Hola ' + c.name + ', somos de PideClick. ¡Aprovecha la promo especial para ti!')}" target="_blank" class="mt-4 flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-900 border border-zinc-700 text-zinc-300 rounded-xl hover:text-white hover:border-success hover:bg-success/10 transition-all text-sm font-medium">
+        <svg class="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+        Promoción WhatsApp
+      </a>
+    </div>
+  `).join('');
+}
+
 // ======================== PRODUCTOS ADMIN ========================
 
 function renderAdminProducts() {
   const grid = document.getElementById('adminProductsGrid');
-  grid.innerHTML = products.map(p => `
-    <div class="bg-zinc-800 rounded-2xl border overflow-hidden ${!p.available ? 'opacity-50' : ''}">
-      <div class="h-32 bg-zinc-950 flex items-center justify-center relative">${p.image ? `<img src="${p.image}" class="w-full h-full object-cover">` : getCategoryIcon(p.category)}${!p.available ? `<span class="absolute top-2 right-2 bg-primary-dark text-white text-xs px-2 py-0.5 rounded">No disponible</span>` : ''}</div>
-      <div class="p-3">
-        <h4 class="font-bold text-white">${p.name}</h4>
-        <p class="text-primary font-bold">S/. ${p.price.toFixed(2)}</p>
-        <div class="flex gap-2 mt-2">
-          <button onclick="editProduct(${p.id})" class="flex-1 py-2 border border-primary text-primary rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors">Editar</button>
-          <button onclick="deleteProduct(${p.id})" class="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-          </button>
+  try {
+    grid.innerHTML = products.map(p => `
+      <div class="bg-zinc-800 rounded-2xl border ${!p.available ? 'border-red-500/50 opacity-75' : 'border-zinc-700'} overflow-hidden">
+        <div class="h-32 bg-zinc-950 flex items-center justify-center relative">
+          ${(p.image_url || p.image) ? `<img src="${p.image_url || p.image}" class="w-full h-full object-cover">` : getCategoryIcon(p.category)}
+          ${!p.available ? `<span class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">Agotado</span>` : ''}
         </div>
-      </div>
-    </div>`).join('');
+        <div class="p-3">
+          <h4 class="font-bold text-white text-sm line-clamp-1">${p.name || 'Sin Nombre'}</h4>
+          <p class="text-primary font-bold text-sm">S/. ${(p.price || 0).toFixed(2)}</p>
+          <div class="flex gap-2 mt-2">
+            <button onclick="editProduct('${p.id}')" class="flex-1 py-1.5 border border-primary text-primary rounded-lg text-xs font-bold hover:bg-primary/10 transition-colors">Editar</button>
+            <button onclick="deleteProduct('${p.id}')" class="px-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors border border-red-500/30">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch (error) {
+    console.error("DEBUG ERROR EN RENDER DE PRODUCTOS ADMIN:", error);
+    grid.innerHTML = `<div class="p-4 bg-red-500/10 border border-red-500 text-red-500 rounded-2xl col-span-full text-center">Error al mostrar productos. Verifica los datos en Supabase.</div>`;
+  }
 }
+
 
 function openProductModal(id = null) {
   const modal = document.getElementById('productModal');
@@ -769,10 +1297,20 @@ function openProductModal(id = null) {
   const preview = document.getElementById('productPreviewImg');
   form.reset(); preview.classList.add('hidden'); document.getElementById('productId').value = '';
   if (id) {
-    const p = products.find(x => x.id === id);
+    const p = products.find(x => x.id == id); // Usar == por compatibilidad de tipos (String vs Number)
     if (p) {
-      document.getElementById('productId').value = p.id; document.getElementById('productName').value = p.name; document.getElementById('productCategory').value = p.category; document.getElementById('productPrice').value = p.price; document.getElementById('productDescription').value = p.description; document.getElementById('productAvailable').checked = p.available;
-      if (p.image) { preview.src = p.image; preview.classList.remove('hidden'); }
+      document.getElementById('productId').value = p.id; 
+      document.getElementById('productName').value = p.name; 
+      document.getElementById('productCategory').value = p.category; 
+      document.getElementById('productPrice').value = p.price; 
+      document.getElementById('productDescription').value = p.description; 
+      document.getElementById('productAvailable').checked = p.available;
+      
+      const imgToShow = p.image_url || p.image;
+      if (imgToShow) { 
+        preview.src = imgToShow; 
+        preview.classList.remove('hidden'); 
+      }
     }
   }
   modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -788,55 +1326,93 @@ function previewProductImage(input) {
   }
 }
 
-function saveProduct(e) {
+async function saveProduct(e) {
   e.preventDefault();
   const id = document.getElementById('productId').value;
   const name = document.getElementById('productName').value;
   const category = document.getElementById('productCategory').value;
   const price = parseFloat(document.getElementById('productPrice').value);
   const description = document.getElementById('productDescription').value;
-  if (!name || isNaN(price)) { showNotification("Atención", "Por favor completa los campos correctamente", "warning"); return; }
   const available = document.getElementById('productAvailable').checked;
   const imageInput = document.getElementById('productImageInput');
+
+  if (!name || isNaN(price)) { 
+    showNotification("Atención", "Por favor completa los campos correctamente", "warning"); 
+    return; 
+  }
+
+  showNotification("Guardando", "Procesando producto...", "warning");
+
+  let imageUrl = null;
+  // Subida de imagen a la nube
   if (imageInput.files && imageInput.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(event) { finishSave(id, name, category, price, description, available, event.target.result); };
-    reader.readAsDataURL(imageInput.files[0]);
+    imageUrl = await uploadImageToSupabase(imageInput.files[0], 'products');
+    if (!imageUrl) return; // Se aborta si la subida falló (la notificación ya la lanza el helper)
   } else {
     const existing = products.find(p => p.id == id);
-    finishSave(id, name, category, price, description, available, existing ? existing.image : '');
-  }
-}
-
-function finishSave(id, name, category, price, description, available, image) {
-  const plan = window.SaaS.getPlanLimits();
-  
-  if (!id) { // Solo verificamos el límite al crear productos nuevos
-    if (products.length >= plan.maxProducts) {
-      showNotification("Límite Alcanzado", `Tu plan actual solo permite ${plan.maxProducts} productos.`, "warning");
-      return;
-    }
+    imageUrl = existing ? (existing.image_url || existing.image) : '';
   }
 
-  if (id) {
-    const idx = products.findIndex(p => p.id == id);
-    if (idx !== -1) {
-      products[idx] = { ...products[idx], name, category, price, description, available, image };
+  const productData = {
+    restaurant_id: restaurantData.id,
+    name,
+    category,
+    price,
+    description,
+    available,
+    image_url: imageUrl
+  };
+
+  if (id) productData.id = id;
+
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('products')
+      .upsert([productData])
+      .select();
+
+    if (error) throw error;
+
+    // Forzar actualización total desde la nube para evitar bugs de caché
+    const refreshedProducts = await fetchProductsFromSupabase(restaurantData.id);
+    if (refreshedProducts) {
+      products = refreshedProducts;
     }
-  } else {
-    const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-    products.push({ id: newId, name, category, price, description, available, image });
+
+    renderProducts(); 
+    renderAdminProducts();
+    updatePlanUI(); 
+    closeProductModal(); 
+    showNotification("Éxito", "Producto guardado y actualizado en el panel");
+  } catch (err) {
+    console.error("Error guardando producto:", err);
+    showNotification("Error", "No se pudo guardar el producto en la nube", "error");
   }
-  saveData(); 
-  renderProducts(); 
-  renderAdminProducts();
-  updatePlanUI(); // Actualizar botón de nuevo producto
-  closeProductModal(); 
-  showNotification("Éxito", "Producto guardado correctamente");
 }
 
 function editProduct(id) { openProductModal(id); }
-function deleteProduct(id) { if(confirm('Eliminar?')) { products = products.filter(p => p.id !== id); saveData(); renderProducts(); renderAdminProducts(); } }
+
+async function deleteProduct(id) {
+  if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+
+  // Manejo de UUID/Strings con comparador laxo
+  try {
+    const { error } = await window.supabaseClient
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    products = products.filter(p => p.id != id);
+    renderProducts();
+    renderAdminProducts();
+    showNotification("Éxito", "Producto eliminado");
+  } catch (err) {
+    console.error("Error eliminando producto:", err);
+    showNotification("Error", "No se pudo eliminar de la nube", "error");
+  }
+}
 
 function formatDate(isoString) {
   if (!isoString) return '';
@@ -863,8 +1439,8 @@ function formatDate(isoString) {
 }
 
 function isStoreOpen() {
-  const openTime = localStorage.getItem('su_custom_open_time') || "08:00";
-  const closeTime = localStorage.getItem('su_custom_close_time') || "23:00";
+  const openTime = restaurantData?.open_time || localStorage.getItem(storageKey('su_custom_open_time')) || "08:00";
+  const closeTime = restaurantData?.close_time || localStorage.getItem(storageKey('su_custom_close_time')) || "23:00";
   
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
@@ -875,10 +1451,15 @@ function isStoreOpen() {
   const openTotalMins = openHours * 60 + openMins;
   const closeTotalMins = closeHours * 60 + closeMins;
   
-  // Manejo básico: asume que el cierre es después de la apertura en el mismo día
-  // Si quisiéramos cierre de madrugada (ej: 02:00) necesitaríamos lógica extra
+  // Si la hora de cierre es menor o igual a la de apertura (ej. abre 18:00, cierra 02:00 AM)
+  if (closeTotalMins <= openTotalMins) {
+    return currentMinutes >= openTotalMins || currentMinutes < closeTotalMins;
+  }
+  
   return currentMinutes >= openTotalMins && currentMinutes < closeTotalMins;
 }
+
+
 
 function updateStoreStatusUI(open, close) {
   const badge = document.getElementById('storeStatusBadge');
@@ -929,26 +1510,69 @@ function closeLoginModal() {
   document.getElementById('loginModal').classList.remove('flex');
 }
 
-function loginAdmin(e) {
+async function loginAdmin(e) {
   e.preventDefault();
-  const user = document.getElementById('loginUser').value;
-  const pass = document.getElementById('loginPass').value;
+  // Limpiamos espacios en blanco al inicio y final
+  const email = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value.trim();
 
-  // Credenciales por defecto: admin / admin123
-  if (user === 'admin' && pass === 'admin123') {
+  if (!email || !password) {
+    showNotification("Error", "Por favor completa todos los campos", "error");
+    return;
+  }
+
+  showNotification("Iniciando Sesión", "Conectando con Supabase...", "warning");
+
+  try {
+    const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) throw error;
+
     isAdminAuthenticated = true;
-    sessionStorage.setItem(storageKey('su_admin_auth'), 'true');
     closeLoginModal();
+    
+    // Recargar datos y entrar al dashboard
+    if (restaurantData) {
+       const { data: dbOrders } = await window.supabaseClient
+        .from('orders')
+        .select('*')
+        .eq('restaurant_id', restaurantData.id)
+        .order('created_at', { ascending: false });
+      
+      if (dbOrders) orders = dbOrders;
+      setupRealtimeOrders(restaurantData.id);
+      updateDashboardStats();
+    }
+
     switchView('admin');
+    renderOrders();
+    updateOrderCounts();
     showNotification("Bienvenido", "Sesión iniciada correctamente");
-  } else {
-    showNotification("Error", "Usuario o contraseña incorrectos", "error");
+  } catch (err) {
+    console.error("DEBUG LOGIN ERROR:", err);
+    
+    let msg = err.message || "Error desconocido";
+    
+    // Traducciones amigables
+    if (msg.includes("Invalid login credentials")) {
+      msg = "Email o contraseña incorrectos. Verifica que no haya mayúsculas de más.";
+    } else if (msg.includes("Email not confirmed")) {
+      msg = "Debes confirmar tu correo en el panel de Supabase (Authentication > Users > Confirm).";
+    }
+
+    // Alerta técnica para depuración
+    alert("DETALLE TÉCNICO DEL ERROR:\n" + msg);
+    
+    showNotification("Error de Acceso", msg, "error");
   }
 }
 
-function logoutAdmin() {
+async function logoutAdmin() {
+  await window.supabaseClient.auth.signOut();
   isAdminAuthenticated = false;
-  sessionStorage.removeItem(storageKey('su_admin_auth'));
   switchView('cliente');
   showNotification("Sesión Cerrada", "Has salido del panel de administración");
 }
