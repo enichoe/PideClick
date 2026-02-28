@@ -1294,5 +1294,31 @@
   <script src="supabase-client.js"></script>
   <script src="subscription-manager.js"></script>
   <script src="script.js"></script>
+
+  <!-- PideClick SalesBot — solo visible en la landing page -->
+  <script src="chatbot.js" defer></script>
+  <script>
+    // Observar cambios de vista para mostrar/ocultar el chatbot
+    (function() {
+      function updateChatbotVisibility() {
+        const landing = document.getElementById('landingView');
+        const bubble = document.getElementById('pc-chat-bubble');
+        const win = document.getElementById('pc-chat-window');
+        if (!bubble) return;
+        const isLanding = landing && !landing.classList.contains('hidden');
+        bubble.style.display = isLanding ? 'flex' : 'none';
+        if (!isLanding && win) win.classList.remove('is-open');
+      }
+
+      // Observar el DOM para cambios de clase en landingView
+      const observer = new MutationObserver(updateChatbotVisibility);
+      document.addEventListener('DOMContentLoaded', () => {
+        const landing = document.getElementById('landingView');
+        if (landing) observer.observe(landing, { attributes: true, attributeFilter: ['class'] });
+        // Comprobar cada vez que hay un click (por si cambia de vista rápido)
+        document.addEventListener('click', () => setTimeout(updateChatbotVisibility, 150));
+      });
+    })();
+  </script>
 </body>
 </html>
