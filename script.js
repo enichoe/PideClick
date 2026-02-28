@@ -268,10 +268,17 @@ function setupRealtimeOrders(restaurantId) {
       table: 'orders',
       filter: `restaurant_id=eq.${restaurantId}`
     }, payload => {
-      orders.unshift(payload.new);
-      renderOrders();
-      updateOrderCounts();
-      showNotification("Nuevo Pedido", `Pedido #${payload.new.id} recibido`, "success");
+      // Evitar duplicados si el admin fue el mismo que lo creó probando
+      if (!orders.find(o => o.id === payload.new.id)) {
+        orders.unshift(payload.new);
+        showIncomingOrderModal(payload.new);
+        renderOrders();
+        updateOrderCounts();
+        updateDashboardStats();
+        if (currentAdminTab !== 'pedidos') {
+          switchAdminTab('pedidos');
+        }
+      }
     })
     .on('postgres_changes', { 
       event: 'UPDATE', 
@@ -1072,6 +1079,40 @@ async function submitOrder(e) {
 function closeSuccessModal() {
   document.getElementById('successModal').classList.add('hidden');
   document.getElementById('successModal').classList.remove('flex');
+}
+
+function showIncomingOrderModal(order) {
+  const modal = document.getElementById('incomingOrderModal');
+  const details = document.getElementById('incomingOrderDetails');
+  const ringtone = document.getElementById('orderRingtone');
+  
+  if (modal && details) {
+    const cName = order.customer_name || (order.customer && order.customer.name) || 'Cliente';
+    details.innerHTML = `El cliente <strong>${cName}</strong> acaba de realizar el pedido <strong>#${String(order.id).substring(0,6)}</strong> por un total de <strong>S/. ${(order.total || 0).toFixed(2)}</strong>.`;
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    if (ringtone) {
+      ringtone.currentTime = 0;
+      ringtone.play().catch(e => console.warn("Auto-play blocked", e));
+    }
+  }
+}
+
+function closeIncomingOrderModal() {
+  const modal = document.getElementById('incomingOrderModal');
+  const ringtone = document.getElementById('orderRingtone');
+  
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+  
+  if (ringtone) {
+    ringtone.pause();
+    ringtone.currentTime = 0;
+  }
 }
 
 // ======================== PEDIDOS ADMIN ========================
