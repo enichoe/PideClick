@@ -1029,9 +1029,11 @@ async function submitOrder(e) {
       
       const newOrder = data[0];
       
-      // WhatsApp Message Automático
-      const msg = encodeURIComponent(`Hola *${newOrder.customer_name}*, gracias por tu pedido en *PideClick*!\n\nPedido #${newOrder.id}\nTotal: S/. ${newOrder.total.toFixed(2)}\n\nEstamos preparando tu orden.`);
-      window.open(`https://wa.me/51${newOrder.customer_phone}?text=${msg}`, '_blank');
+      // WhatsApp Message Automático (Cliente -> Negocio)
+      const businessPhone = restaurantData.whatsapp_num || localStorage.getItem(storageKey('su_custom_whatsapp')) || "999999999";
+      const itemList = cart.map(i => `${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}`).join('\\n');
+      const msg = encodeURIComponent(`¡Hola! Deseo realizar un pedido:\\n\\n*Pedido #${String(newOrder.id).substring(0,8)}*\\n${itemList}\\n\\n*Subtotal:* S/. ${subtotal.toFixed(2)}\\n*Delivery:* S/. ${orderData.delivery_fee.toFixed(2)}\\n*Total a pagar:* S/. ${newOrder.total.toFixed(2)}\\n\\n*Mis Datos:*\\nNombre: ${newOrder.customer_name}\\nTeléfono: ${newOrder.customer_phone}\\nDirección: ${newOrder.customer_address}\\nMétodo de pago: ${newOrder.payment_method}\\n\\nPor favor, confírmenme el pedido y avísenme cuando esté listo.`);
+      window.open(`https://wa.me/51${businessPhone}?text=${msg}`, '_blank');
       
       showNotification("¡Éxito!", "Pedido creado y enviado a cocina.");
     } catch (err) {
@@ -1047,8 +1049,10 @@ async function submitOrder(e) {
     const order = { ...orderData, id: 1000 + orders.length + 1, createdAt: new Date().toISOString() };
     orders.unshift(order);
     saveData();
-    const msg = encodeURIComponent(`Hola *${order.customer_name}*, gracias por tu pedido!\nPedido #${order.id}\nTotal: S/. ${order.total.toFixed(2)}`);
-    window.open(`https://wa.me/51${order.customer_phone}?text=${msg}`, '_blank');
+    const businessPhone = localStorage.getItem(storageKey('su_custom_whatsapp')) || "999999999";
+    const itemList = cart.map(i => `${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}`).join('\\n');
+    const msg = encodeURIComponent(`¡Hola! Deseo realizar un pedido:\\n\\n*Pedido #${order.id}*\\n${itemList}\\n\\n*Total a pagar:* S/. ${order.total.toFixed(2)}\\n\\n*Mis Datos:*\\nNombre: ${order.customer_name}\\nTeléfono: ${order.customer_phone}\\nDirección: ${order.customer_address}\\nMétodo de pago: ${order.payment_method}\\n\\nPor favor, confírmenme el pedido y avísenme cuando esté listo.`);
+    window.open(`https://wa.me/51${businessPhone}?text=${msg}`, '_blank');
   }
 
   // Limpieza y reinicio visual
@@ -1107,10 +1111,11 @@ function renderOrders() {
           <div class="text-sm mb-2"><p class="font-medium">${cName}</p><p class="text-zinc-300">${cAddress}</p></div>
           <div class="flex flex-wrap gap-1 mb-3">${orderItems.map(i => `<span class="bg-zinc-950 text-xs px-2 py-1 rounded">${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}</span>`).join('')}</div>
           <div class="flex gap-2 border-t border-zinc-700 pt-3 mt-2">
-            ${o.status === 'pending' ? `<button onclick="updateOrderStatus('${o.id}', 'preparing')" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-bold shadow shadow-primary/20">Preparar</button>` : ''}
+            ${o.status === 'pending' ? `<button onclick="updateOrderStatus('${o.id}', 'preparing')" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-bold shadow shadow-primary/20">Preparar</button>
+                                       <a href="https://wa.me/51${cPhone}?text=${encodeURIComponent('¡Hola ' + cName + '! Hemos recibido tu pedido #' + String(o.id).substring(0,6) + ' en PideClick. En breve lo estaremos preparando para ti.')}" target="_blank" class="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm text-center shadow flex items-center justify-center gap-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg> Avisar</a>` : ''}
             ${o.status === 'preparing' ? `<button onclick="updateOrderStatus('${o.id}', 'ready')" class="flex-1 bg-success text-white py-2 rounded-lg text-sm shadow">Listo</button>` : ''}
-            ${o.status === 'ready' ? `<button onclick="openDispatchModal('${o.id}')" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm shadow shadow-primary/20">Despachar</button>` : ''}
-            ${o.status === 'ready' && cPhone ? `<a href="https://wa.me/51${cPhone}?text=${encodeURIComponent('Tu pedido #'+String(o.id).substring(0,6)+' esta listo!')}" target="_blank" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm text-center shadow">Avisar WA</a>` : ''}
+            ${o.status === 'ready' ? `<button onclick="openDispatchModal('${o.id}')" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm shadow shadow-primary/20">Despachar</button>
+                                      <a href="https://wa.me/51${cPhone}?text=${encodeURIComponent('Tu pedido #'+String(o.id).substring(0,6)+' esta listo!')}" target="_blank" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm text-center shadow flex items-center justify-center gap-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg> Avisar</a>` : ''}
           </div>
         </div>
       </div>`
