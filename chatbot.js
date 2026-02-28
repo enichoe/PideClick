@@ -1,15 +1,15 @@
 ﻿/**
- * PideClick SalesBot â€” Chatbot de ventas ultra persuasivo
- * Vendedor automÃ¡tico 24/7 para la landing page de PideClick
+ * PideClick SalesBot — Chatbot de ventas ultra persuasivo
+ * Vendedor automatico 24/7 para la landing page de PideClick
  */
 
 (function () {
   'use strict';
 
-  // â”€â”€ CONFIGURACIÃ“N â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // CONFIGURACION
   const CONFIG = {
     botName: 'Danny',
-    botAvatar: 'ðŸ¤–',
+    botAvatar: '🤖',
     whatsappNumber: '51972498691',
     greeting_delay: 800,
     typing_delay_base: 600,
@@ -17,339 +17,339 @@
     colors: { primary: '#F97316', bg: '#09090B', surface: '#18181B', border: '#27272A' }
   };
 
-  // â”€â”€ ÃRBOL DE CONVERSACIÃ“N â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ARBOL DE CONVERSACION
   const FLOWS = {
 
     // INICIO
     start: {
       messages: [
-        'Â¡Hola! ðŸ‘‹ Soy Danny, tu asesor digital de **PideClick**.',
-        'Â¿Tienes un restaurante o negocio gastronÃ³mico? ðŸ½ï¸'
+        '¡Hola! 👋 Soy Danny, tu asesor digital de **PideClick**.',
+        '¿Tienes un restaurante o negocio gastronomico? 🍽️'
       ],
       options: [
-        { label: 'ðŸ” SÃ­, tengo un restaurante', next: 'has_restaurant' },
-        { label: 'ðŸš€ Estoy por abrir uno', next: 'opening_soon' },
-        { label: 'ðŸ’¼ Quiero revender el servicio', next: 'reseller' },
-        { label: 'ðŸ¤” Solo estoy mirando', next: 'just_looking' }
+        { label: '🍔 Si, tengo un restaurante', next: 'has_restaurant' },
+        { label: '🚀 Estoy por abrir uno', next: 'opening_soon' },
+        { label: '💼 Quiero revender el servicio', next: 'reseller' },
+        { label: '🤔 Solo estoy mirando', next: 'just_looking' }
       ]
     },
 
     // FLUJO: TIENE RESTAURANTE
     has_restaurant: {
-      messages: ['Â¡Perfecto! ðŸ”¥ Vamos al punto.'],
+      messages: ['¡Perfecto! 🔥 Vamos al punto.'],
       options: [
-        { label: 'ðŸ“² Recibo pedidos por WhatsApp (es un caos)', next: 'pain_whatsapp_chaos' },
-        { label: 'ðŸ’¸ Apps como Rappi me cobran mucho', next: 'pain_high_commissions' },
-        { label: 'ðŸ“µ No tengo menÃº digital', next: 'pain_no_menu' },
-        { label: 'ðŸ“ˆ Quiero vender mÃ¡s', next: 'pain_more_sales' }
+        { label: '📲 Recibo pedidos por WhatsApp (es un caos)', next: 'pain_whatsapp_chaos' },
+        { label: '💸 Apps como Rappi me cobran mucho', next: 'pain_high_commissions' },
+        { label: '📵 No tengo menu digital', next: 'pain_no_menu' },
+        { label: '📈 Quiero vender mas', next: 'pain_more_sales' }
       ]
     },
 
     // DOLOR 1: Caos en WhatsApp
     pain_whatsapp_chaos: {
       messages: [
-        'Â¡Ese es el problema #1 de los restaurantes! ðŸ˜¤',
-        'Con PideClick tus clientes hacen el pedido ellos mismos desde su celular â€” tÃº recibes el orden perfectamente detallado por WhatsApp. **Sin errores. Sin malentendidos.**',
-        'Â¿CuÃ¡ntos pedidos diarios manejas aprox?'
+        '¡Ese es el problema #1 de los restaurantes! 😤',
+        'Con PideClick tus clientes hacen el pedido ellos mismos desde su celular — tu recibes la orden perfectamente detallada por WhatsApp. **Sin errores. Sin malentendidos.**',
+        '¿Cuantos pedidos diarios manejas aprox?'
       ],
       options: [
-        { label: 'ðŸ“¦ 1â€“10 pedidos/dÃ­a', next: 'show_essential' },
-        { label: 'ðŸ“¦ðŸ“¦ 10â€“30 pedidos/dÃ­a', next: 'show_pro' },
-        { label: 'ðŸ“¦ðŸ“¦ðŸ“¦ +30 pedidos/dÃ­a', next: 'show_pro_urgent' }
+        { label: '📦 1-10 pedidos/dia', next: 'show_essential' },
+        { label: '📦📦 10-30 pedidos/dia', next: 'show_pro' },
+        { label: '📦📦📦 +30 pedidos/dia', next: 'show_pro_urgent' }
       ]
     },
 
     // DOLOR 2: Comisiones altas
     pain_high_commissions: {
       messages: [
-        'Â¡Eso duele en el bolsillo! ðŸ’¸',
-        'Rappi y similares se quedan con el **25â€“35%** de cada venta. Si vendes S/. 5,000 al mes, les regalas hasta **S/. 1,750**.',
-        'Con PideClick pagas una cuota fija pequeÃ±a y te quedas con el **100%** de tus ventas. Â¿Quieres ver los nÃºmeros?'
+        '¡Eso duele en el bolsillo! 💸',
+        'Rappi y similares se quedan con el **25-35%** de cada venta. Si vendes S/. 5,000 al mes, les regalas hasta **S/. 1,750**.',
+        'Con PideClick pagas una cuota fija pequena y te quedas con el **100%** de tus ventas. ¿Quieres ver los numeros?'
       ],
       options: [
-        { label: 'ðŸ’° SÃ­, quiero ver cuÃ¡nto ahorro', next: 'savings_calc' },
-        { label: 'ðŸš€ Â¡Quiero empezar ya!', next: 'capture_lead' }
+        { label: '💰 Si, quiero ver cuanto ahorro', next: 'savings_calc' },
+        { label: '🚀 ¡Quiero empezar ya!', next: 'capture_lead' }
       ]
     },
 
-    // DOLOR 3: Sin menÃº digital
+    // DOLOR 3: Sin menu digital
     pain_no_menu: {
       messages: [
-        'Sin menÃº digital estÃ¡s dejando ventas sobre la mesa ðŸ“‰',
-        'PideClick te da un menÃº **profesional con fotos, categorÃ­as y precios** â€” listo en minutos. Tus clientes lo ven desde cualquier celular, sin instalar nada.',
-        'Â¿El mejor dato? **El Plan Esencial es GRATIS.** ðŸ¤©'
+        'Sin menu digital estas dejando ventas sobre la mesa 📉',
+        'PideClick te da un menu **profesional con fotos, categorias y precios** — listo en minutos. Tus clientes lo ven desde cualquier celular, sin instalar nada.',
+        '¿El mejor dato? **El Plan Esencial es GRATIS.** 🤩'
       ],
       options: [
-        { label: 'ðŸ†“ Â¿QuÃ© incluye el plan gratis?', next: 'show_essential' },
-        { label: 'âš¡ Ver plan completo', next: 'show_pro' },
-        { label: 'ðŸŽ¯ Quiero probarlo ahora', next: 'capture_lead' }
+        { label: '🆓 ¿Que incluye el plan gratis?', next: 'show_essential' },
+        { label: '⚡ Ver plan completo', next: 'show_pro' },
+        { label: '🎯 Quiero probarlo ahora', next: 'capture_lead' }
       ]
     },
 
-    // DOLOR 4: MÃ¡s ventas
+    // DOLOR 4: Mas ventas
     pain_more_sales: {
       messages: [
-        'Me gusta esa mentalidad ðŸŽ¯',
-        'Los restaurantes que implementan PideClick tÃ­picamente ven un **aumento del 30â€“40%** en pedidos en el primer mes.',
-        'Â¿Por quÃ©? Porque el carta digital hace que los clientes compren mÃ¡s fÃ¡cil, mÃ¡s rÃ¡pido y vuelvan mÃ¡s seguido.'
+        'Me gusta esa mentalidad 🎯',
+        'Los restaurantes que implementan PideClick tipicamente ven un **aumento del 30-40%** en pedidos en el primer mes.',
+        '¿Por que? Porque la carta digital hace que los clientes compren mas facil, mas rapido y vuelvan mas seguido.'
       ],
       options: [
-        { label: 'ðŸ“Š Â¿CÃ³mo funciona exactamente?', next: 'how_it_works' },
-        { label: 'ðŸ’¬ Hablar con un asesor', next: 'whatsapp_cta' },
-        { label: 'ðŸ†“ Probar gratis', next: 'capture_lead' }
+        { label: '📊 ¿Como funciona exactamente?', next: 'how_it_works' },
+        { label: '💬 Hablar con un asesor', next: 'whatsapp_cta' },
+        { label: '🆓 Probar gratis', next: 'capture_lead' }
       ]
     },
 
-    // CÃLCULO DE AHORRO
+    // CALCULO DE AHORRO
     savings_calc: {
       messages: [
-        'ðŸ’¡ **Ejemplo real:**',
-        'ðŸ“Œ Ventas mensuales: **S/. 5,000**\nðŸ”º ComisiÃ³n Rappi (30%): **â€“ S/. 1,500**\nâœ… Con PideClick PRO: **â€“ S/. 30**\n\n**Ahorro mensual: S/. 1,470** ðŸ¤‘',
+        '💡 **Ejemplo real:**',
+        '📌 Ventas mensuales: **S/. 5,000**\n🔺 Comision Rappi (30%): **– S/. 1,500**\n✅ Con PideClick PRO: **– S/. 30**\n\n**Ahorro mensual: S/. 1,470** 🤑',
         'Ese dinero es tuyo para reinvertir, pagar personal o ahorrarlo.'
       ],
       options: [
-        { label: 'ðŸš€ Â¡Quiero activar PideClick!', next: 'capture_lead' },
-        { label: 'ðŸ’¬ Tengo preguntas', next: 'objections' }
+        { label: '🚀 ¡Quiero activar PideClick!', next: 'capture_lead' },
+        { label: '💬 Tengo preguntas', next: 'objections' }
       ]
     },
 
-    // CÃ“MO FUNCIONA
+    // COMO FUNCIONA
     how_it_works: {
       messages: [
-        'Â¡Es sÃºper simple en 3 pasos! âš¡',
-        '1ï¸âƒ£ **Crea tu URL**: elige el nombre de tu negocio\n2ï¸âƒ£ **Sube tu menÃº**: fotos, precios, categorÃ­as\n3ï¸âƒ£ **Comparte el link**: por redes, WhatsApp o QR',
-        'Tus clientes hacen el pedido y tÃº lo recibes directo en tu WhatsApp. **Sin apps, sin complicaciones.**'
+        '¡Es super simple en 3 pasos! ⚡',
+        '1️⃣ **Crea tu URL**: elige el nombre de tu negocio\n2️⃣ **Sube tu menu**: fotos, precios, categorias\n3️⃣ **Comparte el link**: por redes, WhatsApp o QR',
+        'Tus clientes hacen el pedido y tu lo recibes directo en tu WhatsApp. **Sin apps, sin complicaciones.**'
       ],
       options: [
-        { label: 'ðŸ†“ Probar gratis ahora', next: 'capture_lead' },
-        { label: 'ðŸ‘€ Ver una demo', next: 'demo_offer' },
-        { label: 'ðŸ’¬ Hablar con Nico por WhatsApp', next: 'whatsapp_cta' }
+        { label: '🆓 Probar gratis ahora', next: 'capture_lead' },
+        { label: '👀 Ver una demo', next: 'demo_offer' },
+        { label: '💬 Hablar con Danny por WhatsApp', next: 'whatsapp_cta' }
       ]
     },
 
     // FLUJO: VA A ABRIR RESTAURANTE
     opening_soon: {
       messages: [
-        'Â¡Excelente momento para arrancar con el pie derecho! ðŸš€',
-        'Los restaurantes que digitalizan su menÃº **desde el dÃ­a 1** consiguen mÃ¡s clientes, mejor imagen y menos dolores de cabeza desde el inicio.',
-        'Â¿CuÃ¡ndo aproximadamente piensas abrir?'
+        '¡Excelente momento para arrancar con el pie derecho! 🚀',
+        'Los restaurantes que digitalizan su menu **desde el dia 1** consiguen mas clientes, mejor imagen y menos dolores de cabeza desde el inicio.',
+        '¿Cuando aproximadamente piensas abrir?'
       ],
       options: [
-        { label: 'ðŸ—“ï¸ En los prÃ³ximos 30 dÃ­as', next: 'capture_lead' },
-        { label: 'ðŸ“… En 2â€“3 meses', next: 'opening_future' },
-        { label: 'ðŸ¤” TodavÃ­a evaluando', next: 'just_looking' }
+        { label: '🗓️ En los proximos 30 dias', next: 'capture_lead' },
+        { label: '📅 En 2-3 meses', next: 'opening_future' },
+        { label: '🤔 Todavia evaluando', next: 'just_looking' }
       ]
     },
 
     opening_future: {
       messages: [
-        'Â¡Perfecto! Puedes crear tu menÃº ahora de forma gratuita y tenerlo listo antes de abrir ðŸŽ¯',
-        'AsÃ­ el dÃ­a que abras ya tienes todo operativo. Â¿Te parece si te ayudo a empezar?'
+        '¡Perfecto! Puedes crear tu menu ahora de forma gratuita y tenerlo listo antes de abrir 🎯',
+        'Asi el dia que abras ya tienes todo operativo. ¿Te parece si te ayudo a empezar?'
       ],
       options: [
-        { label: 'âœ… SÃ­, empecemos', next: 'capture_lead' },
-        { label: 'â“ Tengo dudas primero', next: 'objections' }
+        { label: '✅ Si, empecemos', next: 'capture_lead' },
+        { label: '❓ Tengo dudas primero', next: 'objections' }
       ]
     },
 
     // FLUJO: REVENDEDOR
     reseller: {
       messages: [
-        'Â¡Excelente visiÃ³n! ðŸ’¼',
+        '¡Excelente vision! 💼',
         'PideClick tiene un modelo donde puedes presentar la plataforma a restaurantes de tu zona y generar ingresos recurrentes.',
-        'Â¿Tienes contactos en el sector gastronÃ³mico?'
+        '¿Tienes contactos en el sector gastronomico?'
       ],
       options: [
-        { label: 'âœ… SÃ­, tengo varios contactos', next: 'reseller_strong' },
-        { label: 'ðŸŒ± Estoy empezando', next: 'reseller_starting' }
+        { label: '✅ Si, tengo varios contactos', next: 'reseller_strong' },
+        { label: '🌱 Estoy empezando', next: 'reseller_starting' }
       ]
     },
 
     reseller_strong: {
       messages: [
-        'Â¡Eso es potente! ðŸ”¥ Con una cartera de restaurantes puedes generar ingresos pasivos mensuales significativos.',
-        'Hablemos directamente para contarte cÃ³mo funciona el programa de aliados de PideClick ðŸ‘‡'
+        '¡Eso es potente! 🔥 Con una cartera de restaurantes puedes generar ingresos pasivos mensuales significativos.',
+        'Hablemos directamente para contarte como funciona el programa de aliados de PideClick 👇'
       ],
       options: [
-        { label: 'ðŸ’¬ Hablar por WhatsApp ahora', next: 'whatsapp_cta' },
-        { label: 'ðŸ“‹ Capturar mis datos', next: 'capture_lead' }
+        { label: '💬 Hablar por WhatsApp ahora', next: 'whatsapp_cta' },
+        { label: '📋 Capturar mis datos', next: 'capture_lead' }
       ]
     },
 
     reseller_starting: {
       messages: [
-        'No hay problema ðŸ’ª PideClick te da todo lo que necesitas para presentar el servicio profesionalmente.',
-        'Te contactamos para darte mÃ¡s detalles del programa ðŸ“²'
+        'No hay problema 💪 PideClick te da todo lo que necesitas para presentar el servicio profesionalmente.',
+        'Te contactamos para darte mas detalles del programa 📲'
       ],
       options: [
-        { label: 'ðŸ“² SÃ­, contÃ¡ctenme', next: 'capture_lead' },
-        { label: 'ðŸ’¬ Prefiero hablar ya', next: 'whatsapp_cta' }
+        { label: '📲 Si, contactenme', next: 'capture_lead' },
+        { label: '💬 Prefiero hablar ya', next: 'whatsapp_cta' }
       ]
     },
 
     // FLUJO: SOLO MIRANDO
     just_looking: {
       messages: [
-        'Â¡Sin presiÃ³n! ðŸ˜Š',
+        '¡Sin presion! 😊',
         'Mientras exploras, te cuento lo esencial: **PideClick es gratis** para empezar.',
-        'Tienes un menÃº digital completo, carrito de compras y pedidos por WhatsApp â€” en menos de 5 minutos. Sin tarjetas, sin compromisos.'
+        'Tienes un menu digital completo, carrito de compras y pedidos por WhatsApp — en menos de 5 minutos. Sin tarjetas, sin compromisos.'
       ],
       options: [
-        { label: 'ðŸ¤© Oye, eso suena bien', next: 'show_essential' },
-        { label: 'ðŸ†“ Â¿QuÃ© tan gratis es?', next: 'show_essential' },
-        { label: 'ðŸ’¬ Quiero saber mÃ¡s', next: 'how_it_works' }
+        { label: '🤩 Oye, eso suena bien', next: 'show_essential' },
+        { label: '🆓 ¿Que tan gratis es?', next: 'show_essential' },
+        { label: '💬 Quiero saber mas', next: 'how_it_works' }
       ]
     },
 
-    // â”€â”€ PLANES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // PLANES
 
     show_essential: {
       messages: [
-        'ðŸ“¦ **Plan Esencial â€” S/. 0/mes (Gratis)**\n\nâœ… Hasta 10 productos\nâœ… MenÃº digital optimizado\nâœ… Pedidos por WhatsApp\nâœ… Link personalizado\nâŒ Sin branding propio\nâŒ Sin banners\nâŒ Sin estadÃ­sticas',
-        'Â¿Se ajusta a lo que necesitas, o quieres ver el plan completo?'
+        '📦 **Plan Esencial — S/. 0/mes (Gratis)**\n\n✅ Hasta 10 productos\n✅ Menu digital optimizado\n✅ Pedidos por WhatsApp\n✅ Link personalizado\n❌ Sin branding propio\n❌ Sin banners\n❌ Sin estadisticas',
+        '¿Se ajusta a lo que necesitas, o quieres ver el plan completo?'
       ],
       options: [
-        { label: 'ðŸŽ¯ Con eso me basta, Â¡empiezo!', next: 'capture_lead' },
-        { label: 'âš¡ Quiero el plan completo', next: 'show_pro' },
-        { label: 'â“ Â¿QuÃ© diferencia al PRO?', next: 'show_pro' }
+        { label: '🎯 Con eso me basta, ¡empiezo!', next: 'capture_lead' },
+        { label: '⚡ Quiero el plan completo', next: 'show_pro' },
+        { label: '❓ ¿Que diferencia al PRO?', next: 'show_pro' }
       ]
     },
 
     show_pro: {
       messages: [
-        'ðŸš€ **Plan PRO â€” S/. 30/mes**\n\nâœ… Productos **ilimitados**\nâœ… Branding con tu logo y colores\nâœ… Banners promocionales\nâœ… EstadÃ­sticas de ventas\nâœ… Soporte VIP\nâœ… Todo del plan Esencial',
-        '**Menos que un almuerzo al dÃ­a** para tener una tienda digital profesional ðŸ”¥'
+        '🚀 **Plan PRO — S/. 30/mes**\n\n✅ Productos **ilimitados**\n✅ Branding con tu logo y colores\n✅ Banners promocionales\n✅ Estadisticas de ventas\n✅ Soporte VIP\n✅ Todo del plan Esencial',
+        '**Menos que un almuerzo al dia** para tener una tienda digital profesional 🔥'
       ],
       options: [
-        { label: 'ðŸ”¥ Quiero el PRO', next: 'capture_lead' },
-        { label: 'ðŸ†“ Empiezo con el gratis', next: 'capture_lead' },
-        { label: 'ðŸ’¬ Tengo una duda', next: 'objections' }
+        { label: '🔥 Quiero el PRO', next: 'capture_lead' },
+        { label: '🆓 Empiezo con el gratis', next: 'capture_lead' },
+        { label: '💬 Tengo una duda', next: 'objections' }
       ]
     },
 
     show_pro_urgent: {
       messages: [
-        'Â¡Con ese volumen de pedidos el Plan PRO se paga solo en dÃ­as! ðŸ“ˆ',
-        'ðŸš€ **Plan PRO â€” S/. 30/mes:**\nâœ… Productos ilimitados\nâœ… Branding propio\nâœ… EstadÃ­sticas en tiempo real\nâœ… Soporte prioritario',
-        'Para +30 pedidos/dÃ­a, el PRO es prÃ¡cticamente **obligatorio** para mantener el orden ðŸ’ª'
+        '¡Con ese volumen de pedidos el Plan PRO se paga solo en dias! 📈',
+        '🚀 **Plan PRO — S/. 30/mes:**\n✅ Productos ilimitados\n✅ Branding propio\n✅ Estadisticas en tiempo real\n✅ Soporte prioritario',
+        'Para +30 pedidos/dia, el PRO es practicamente **obligatorio** para mantener el orden 💪'
       ],
       options: [
-        { label: 'ðŸ”¥ Activar PRO ahora', next: 'capture_lead' },
-        { label: 'ðŸ’¬ Hablar con asesor', next: 'whatsapp_cta' }
+        { label: '🔥 Activar PRO ahora', next: 'capture_lead' },
+        { label: '💬 Hablar con asesor', next: 'whatsapp_cta' }
       ]
     },
 
-    // â”€â”€ OBJECIONES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // OBJECIONES
 
     objections: {
-      messages: ['Â¡Con gusto! Â¿CuÃ¡l es tu duda principal? ðŸ¤”'],
+      messages: ['¡Con gusto! ¿Cual es tu duda principal? 🤔'],
       options: [
-        { label: 'ðŸ’° Â¿Es realmente gratis?', next: 'obj_free' },
-        { label: 'â±ï¸ Â¿CuÃ¡nto demora configurarlo?', next: 'obj_setup_time' },
-        { label: 'ðŸ“± Â¿Mis clientes necesitan app?', next: 'obj_no_app' },
-        { label: 'ðŸ”’ Â¿Y si quiero cancelar?', next: 'obj_cancel' }
+        { label: '💰 ¿Es realmente gratis?', next: 'obj_free' },
+        { label: '⏱️ ¿Cuanto demora configurarlo?', next: 'obj_setup_time' },
+        { label: '📱 ¿Mis clientes necesitan app?', next: 'obj_no_app' },
+        { label: '🔒 ¿Y si quiero cancelar?', next: 'obj_cancel' }
       ]
     },
 
     obj_free: {
       messages: [
-        '**100% gratis, sin trampa.** ðŸŽ‰',
-        'No pedimos tarjeta de crÃ©dito. El plan Esencial es tuyo sin fecha de vencimiento. Si quieres funciones avanzadas, upgrades cuando tÃº decidas â€” o nunca, si no es necesario.',
-        'Literalmente no tienes nada que perder ðŸ¤·'
+        '**100% gratis, sin trampa.** 🎉',
+        'No pedimos tarjeta de credito. El plan Esencial es tuyo sin fecha de vencimiento. Si quieres funciones avanzadas, haces upgrade cuando tu decidas — o nunca, si no es necesario.',
+        'Literalmente no tienes nada que perder 🤷'
       ],
       options: [
-        { label: 'âœ… Me convencÃ­, Â¡empiezo!', next: 'capture_lead' },
-        { label: 'â“ Otra pregunta', next: 'objections' }
+        { label: '✅ Me convenci, ¡empiezo!', next: 'capture_lead' },
+        { label: '❓ Otra pregunta', next: 'objections' }
       ]
     },
 
     obj_setup_time: {
       messages: [
-        'âš¡ **Menos de 5 minutos** para tener tu menÃº online.',
-        '1. Entras al link con el nombre de tu negocio\n2. Subes tus productos con foto y precio\n3. Compartes el link â€” Â¡listo!',
-        'Sin instalaciones. Sin tÃ©cnicos. Sin complicaciones.'
+        '⚡ **Menos de 5 minutos** para tener tu menu online.',
+        '1. Entras al link con el nombre de tu negocio\n2. Subes tus productos con foto y precio\n3. Compartes el link — ¡listo!',
+        'Sin instalaciones. Sin tecnicos. Sin complicaciones.'
       ],
       options: [
-        { label: 'ðŸ˜® Â¡Eso es rÃ¡pido! Empiezo', next: 'capture_lead' },
-        { label: 'â“ Otra pregunta', next: 'objections' }
+        { label: '😮 ¡Eso es rapido! Empiezo', next: 'capture_lead' },
+        { label: '❓ Otra pregunta', next: 'objections' }
       ]
     },
 
     obj_no_app: {
       messages: [
-        'Â¡No necesitan instalar nada! ðŸ“²',
-        'PideClick es una **web app**. Tus clientes acceden desde cualquier navegador â€” Chrome, Safari, lo que sea â€” con solo abrir el link o escanear el QR.',
-        'Igual que entrar a Instagram. Sin descargas, sin cuenta, sin fricciÃ³n.'
+        '¡No necesitan instalar nada! 📲',
+        'PideClick es una **web app**. Tus clientes acceden desde cualquier navegador — Chrome, Safari, lo que sea — con solo abrir el link o escanear el QR.',
+        'Igual que entrar a Instagram. Sin descargas, sin cuenta, sin friccion.'
       ],
       options: [
-        { label: 'ðŸ‘Œ Perfecto, eso es lo que necesito', next: 'capture_lead' },
-        { label: 'â“ Otra pregunta', next: 'objections' }
+        { label: '👌 Perfecto, eso es lo que necesito', next: 'capture_lead' },
+        { label: '❓ Otra pregunta', next: 'objections' }
       ]
     },
 
     obj_cancel: {
       messages: [
-        'Sin compromisos, sin letras pequeÃ±as ðŸ¤',
-        'Puedes cancelar cuando quieras. No hay permanencia, no hay multas. Si el PRO no te convence (aunque no lo creemos ðŸ˜„), simplemente no lo renuevas.',
+        'Sin compromisos, sin letras pequenas 🤝',
+        'Puedes cancelar cuando quieras. No hay permanencia, no hay multas. Si el PRO no te convence (aunque no lo creemos 😄), simplemente no lo renuevas.',
         'Tu negocio, tus reglas.'
       ],
       options: [
-        { label: 'âœ… Genial, quiero probarlo', next: 'capture_lead' },
-        { label: 'â“ Otra pregunta', next: 'objections' }
+        { label: '✅ Genial, quiero probarlo', next: 'capture_lead' },
+        { label: '❓ Otra pregunta', next: 'objections' }
       ]
     },
 
-    // â”€â”€ CTAs ESPECIALES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // CTAs ESPECIALES
 
     demo_offer: {
       messages: [
-        'Â¡Claro! Puedo mostrarte cÃ³mo luce PideClick con datos reales ðŸ‘€',
-        'Dame tus datos y te agendo una demo rÃ¡pida (15 min) donde verÃ¡s exactamente cÃ³mo funcionarÃ­a para tu negocio.'
+        '¡Claro! Puedo mostrarte como luce PideClick con datos reales 👀',
+        'Dame tus datos y te agendo una demo rapida (15 min) donde veras exactamente como funcionaria para tu negocio.'
       ],
       options: [
-        { label: 'ðŸ“… Quiero la demo', next: 'capture_lead' },
-        { label: 'ðŸ’¬ Mejor por WhatsApp', next: 'whatsapp_cta' }
+        { label: '📅 Quiero la demo', next: 'capture_lead' },
+        { label: '💬 Mejor por WhatsApp', next: 'whatsapp_cta' }
       ]
     },
 
     whatsapp_cta: {
       messages: [
-        'Â¡Perfecto! Mi colega del equipo PideClick te atenderÃ¡ ahora ðŸ’¬',
-        'Te redirijo a WhatsApp para que puedas hablar directamente ðŸ‘‡'
+        '¡Perfecto! Mi colega del equipo PideClick te atendera ahora 💬',
+        'Te redirijo a WhatsApp para que puedas hablar directamente 👇'
       ],
       options: [
-        { label: 'ðŸ’¬ Abrir WhatsApp ahora', action: 'open_whatsapp' },
-        { label: 'ðŸ“ Dejar mis datos y me contactan', next: 'capture_lead' }
+        { label: '💬 Abrir WhatsApp ahora', action: 'open_whatsapp' },
+        { label: '📝 Dejar mis datos y me contactan', next: 'capture_lead' }
       ]
     },
 
-    // â”€â”€ CAPTURA DE LEAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // CAPTURA DE LEAD
 
     capture_lead: {
       messages: [
-        'Â¡Me parece genial! ðŸŽ‰',
-        'Dame un par de datos para enviarte tu acceso y el links de tu menÃº:'
+        '¡Me parece genial! 🎉',
+        'Dame un par de datos para enviarte tu acceso y el link de tu menu:'
       ],
       input_form: true
     },
 
-    // â”€â”€ LEAD REGISTRADO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // LEAD REGISTRADO
 
     lead_captured: {
       messages: [
-        'Â¡Listo, {nombre}! ðŸš€',
-        'En breve el equipo de PideClick se comunicarÃ¡ contigo por WhatsApp para ayudarte a configurar tu menÃº digital.',
-        '**Mientras tanto, ya puedes explorar tu panel** ðŸ‘‡'
+        '¡Listo, {nombre}! 🚀',
+        'En breve el equipo de PideClick se comunicara contigo por WhatsApp para ayudarte a configurar tu menu digital.',
+        '**Mientras tanto, ya puedes explorar tu panel** 👇'
       ],
       options: [
-        { label: 'ðŸŽ¯ Ver mi menÃº ahora', action: 'go_to_store' },
-        { label: 'ðŸ’¬ Hablar por WhatsApp', action: 'open_whatsapp' }
+        { label: '🎯 Ver mi menu ahora', action: 'go_to_store' },
+        { label: '💬 Hablar por WhatsApp', action: 'open_whatsapp' }
       ]
     }
 
   };
 
-  // â”€â”€ ESTADO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ESTADO
   let state = {
     currentFlow: 'start',
     leadData: {},
@@ -359,13 +359,12 @@
     hasGreeted: false
   };
 
-  // â”€â”€ ESTILOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ESTILOS
   function injectStyles() {
     if (document.getElementById('pideclick-chatbot-css')) return;
     const style = document.createElement('style');
     style.id = 'pideclick-chatbot-css';
     style.textContent = `
-      /* â”€â”€ CHATBOT WIDGET â”€â”€ */
       #pc-chat-bubble {
         position: fixed;
         bottom: 24px;
@@ -443,7 +442,6 @@
       }
       #pc-chat-teaser strong { color: #F97316; }
 
-      /* â”€â”€ CHAT WINDOW â”€â”€ */
       #pc-chat-window {
         position: fixed;
         bottom: 100px;
@@ -471,7 +469,6 @@
         pointer-events: all;
       }
 
-      /* Header */
       #pc-chat-header {
         padding: 16px 20px;
         background: linear-gradient(135deg, #18181B, #1c1c1f);
@@ -524,7 +521,6 @@
       }
       #pc-chat-close:hover { color: #fff; background: rgba(255,255,255,0.05); }
 
-      /* Messages area */
       #pc-chat-messages {
         flex: 1;
         overflow-y: auto;
@@ -538,7 +534,6 @@
       #pc-chat-messages::-webkit-scrollbar-track { background: transparent; }
       #pc-chat-messages::-webkit-scrollbar-thumb { background: #27272A; border-radius: 4px; }
 
-      /* Mensaje del bot */
       .pc-msg-bot {
         display: flex;
         align-items: flex-end;
@@ -569,7 +564,6 @@
       .pc-msg-bot-bubble strong { color: #F97316; }
       .pc-msg-bot-bubble em { color: #a1a1aa; font-style: normal; }
 
-      /* Typing indicator */
       .pc-typing {
         display: flex;
         align-items: flex-end;
@@ -597,7 +591,6 @@
         40% { transform: translateY(-6px); opacity: 1; }
       }
 
-      /* Quick replies */
       #pc-chat-options {
         padding: 12px 16px;
         border-top: 1px solid #18181B;
@@ -633,7 +626,6 @@
       }
       .pc-option-btn:active { transform: translateX(1px); }
 
-      /* Formulario de lead */
       #pc-lead-form {
         padding: 12px 16px;
         display: flex;
@@ -674,13 +666,11 @@
       .pc-submit-btn:hover { opacity: 0.92; transform: translateY(-1px); }
       .pc-submit-btn:active { transform: translateY(0); }
 
-      /* Animaciones */
       @keyframes pc-slide-up {
         from { transform: translateY(10px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
       }
 
-      /* Responsive */
       @media (max-width: 430px) {
         #pc-chat-window {
           bottom: 0; right: 0;
@@ -695,28 +685,28 @@
     document.head.appendChild(style);
   }
 
-  // â”€â”€ DOM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // DOM
   function buildWidget() {
     if (document.getElementById('pc-chat-bubble')) return;
 
     const html = `
       <div id="pc-chat-bubble">
         <div id="pc-chat-teaser" onclick="PideChatbot.open()">
-          <strong>Â¡Hola! ðŸ‘‹</strong> Â¿Tienes un restaurante?<br>
-          Te ayudo a digitalizar tu negocio gratis ðŸš€
+          <strong>¡Hola! 👋</strong> ¿Tienes un restaurante?<br>
+          Te ayudo a digitalizar tu negocio gratis 🚀
         </div>
         <button id="pc-chat-btn" onclick="PideChatbot.toggle()" aria-label="Abrir chatbot de PideClick">
-          <span id="pc-chat-btn-icon">ðŸ’¬</span>
+          <span id="pc-chat-btn-icon">💬</span>
           <span id="pc-chat-pulse"></span>
         </button>
       </div>
 
       <div id="pc-chat-window" role="dialog" aria-label="Chat de PideClick">
         <div id="pc-chat-header">
-          <div id="pc-chat-header-avatar">ðŸ¤–</div>
+          <div id="pc-chat-header-avatar">🤖</div>
           <div id="pc-chat-header-info">
-            <div id="pc-chat-header-name">Nico Â· PideClick</div>
-            <div id="pc-chat-header-status">En lÃ­nea ahora</div>
+            <div id="pc-chat-header-name">Danny · PideClick</div>
+            <div id="pc-chat-header-status">En linea ahora</div>
           </div>
           <button id="pc-chat-close" onclick="PideChatbot.close()" aria-label="Cerrar chat">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -727,10 +717,10 @@
 
         <div id="pc-chat-options" class="hidden"></div>
         <form id="pc-lead-form" class="hidden" onsubmit="PideChatbot.submitLead(event)">
-          <input class="pc-input" id="pc-lead-name" placeholder="Tu nombre ðŸ‘¤" required autocomplete="name">
-          <input class="pc-input" id="pc-lead-biz" placeholder="Nombre de tu negocio ðŸ½ï¸" required>
-          <input class="pc-input" id="pc-lead-wa" placeholder="WhatsApp (ej: 987654321) ðŸ“²" type="tel" required pattern="[0-9]{9,12}">
-          <button type="submit" class="pc-submit-btn">Â¡Empezar ahora â†’ Gratis! ðŸš€</button>
+          <input class="pc-input" id="pc-lead-name" placeholder="Tu nombre 👤" required autocomplete="name">
+          <input class="pc-input" id="pc-lead-biz" placeholder="Nombre de tu negocio 🍽️" required>
+          <input class="pc-input" id="pc-lead-wa" placeholder="WhatsApp (ej: 987654321) 📲" type="tel" required pattern="[0-9]{9,12}">
+          <button type="submit" class="pc-submit-btn">¡Empezar ahora → Gratis! 🚀</button>
         </form>
       </div>
     `;
@@ -741,7 +731,7 @@
     document.body.appendChild(container.lastElementChild);
   }
 
-  // â”€â”€ HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // HELPERS
   function $(id) { return document.getElementById(id); }
 
   function parseMarkdown(text) {
@@ -763,14 +753,14 @@
     );
   }
 
-  // â”€â”€ RENDERING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // RENDERING
   function showTyping() {
     const msgs = $('pc-chat-messages');
     const el = document.createElement('div');
     el.className = 'pc-typing';
     el.id = 'pc-typing-indicator';
     el.innerHTML = `
-      <div class="pc-msg-bot-av">ðŸ¤–</div>
+      <div class="pc-msg-bot-av">🤖</div>
       <div class="pc-typing-dots">
         <div class="pc-typing-dot"></div>
         <div class="pc-typing-dot"></div>
@@ -791,7 +781,7 @@
     const el = document.createElement('div');
     el.className = 'pc-msg-bot';
     el.innerHTML = `
-      <div class="pc-msg-bot-av">ðŸ¤–</div>
+      <div class="pc-msg-bot-av">🤖</div>
       <div class="pc-msg-bot-bubble">${parseMarkdown(text)}</div>
     `;
     msgs.appendChild(el);
@@ -828,15 +818,16 @@
 
   function showLeadForm() {
     $('pc-lead-form').classList.remove('hidden');
-    setTimeout(() => $('pc-lead-name')?.focus(), 100);
+    setTimeout(() => $('pc-lead-name') && $('pc-lead-name').focus(), 100);
   }
 
   function hideLeadForm() {
     $('pc-lead-form').classList.add('hidden');
   }
 
-  // â”€â”€ FLUJO DE CONVERSACIÃ“N â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  async function runFlow(flowKey, replacements = {}) {
+  // FLUJO DE CONVERSACION
+  async function runFlow(flowKey, replacements) {
+    replacements = replacements || {};
     const flow = FLOWS[flowKey];
     if (!flow) return;
 
@@ -845,13 +836,14 @@
     hideLeadForm();
     state.isTyping = true;
 
-    for (const msg of flow.messages) {
+    for (var i = 0; i < flow.messages.length; i++) {
+      var msg = flow.messages[i];
       showTyping();
       await delay(typingDelay(msg));
       hideTyping();
-      let text = msg;
-      Object.entries(replacements).forEach(([k, v]) => {
-        text = text.replace(`{${k}}`, v);
+      var text = msg;
+      Object.keys(replacements).forEach(function(k) {
+        text = text.replace('{' + k + '}', replacements[k]);
       });
       addBotMessage(text);
       await delay(200);
@@ -867,7 +859,7 @@
   }
 
   function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(function(resolve) { setTimeout(resolve, ms); });
   }
 
   function handleOption(opt) {
@@ -875,82 +867,78 @@
     hideOptions();
 
     if (opt.action === 'open_whatsapp') {
-      const msg = encodeURIComponent('Hola, me interesa PideClick para mi restaurante. Â¿Puedo obtener mÃ¡s informaciÃ³n?');
-      window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${msg}`, '_blank');
+      var msg = encodeURIComponent('Hola, me interesa PideClick para mi restaurante. ¿Puedo obtener mas informacion?');
+      window.open('https://wa.me/' + CONFIG.whatsappNumber + '?text=' + msg, '_blank');
       runFlow('whatsapp_cta');
     } else if (opt.action === 'go_to_store') {
-      const b = new URLSearchParams(window.location.search).get('b');
-      if (b) window.location.href = `index.html?b=${b}`;
+      var b = new URLSearchParams(window.location.search).get('b');
+      if (b) window.location.href = 'index.html?b=' + b;
     } else if (opt.next) {
       runFlow(opt.next);
     }
   }
 
-  // â”€â”€ API PÃšBLICA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // API PUBLICA
   window.PideChatbot = {
-    open() {
+    open: function() {
       state.isOpen = true;
       $('pc-chat-window').classList.add('is-open');
       $('pc-chat-btn').classList.add('is-open');
-      $('pc-chat-btn-icon').textContent = 'âœ•';
-      const teaser = $('pc-chat-teaser');
+      $('pc-chat-btn-icon').textContent = 'x';
+      var teaser = $('pc-chat-teaser');
       if (teaser) teaser.style.display = 'none';
 
       if (!state.hasGreeted) {
         state.hasGreeted = true;
-        setTimeout(() => runFlow('start'), CONFIG.greeting_delay);
+        setTimeout(function() { runFlow('start'); }, CONFIG.greeting_delay);
       }
     },
 
-    close() {
+    close: function() {
       state.isOpen = false;
       $('pc-chat-window').classList.remove('is-open');
       $('pc-chat-btn').classList.remove('is-open');
-      $('pc-chat-btn-icon').textContent = 'ðŸ’¬';
+      $('pc-chat-btn-icon').textContent = '💬';
     },
 
-    toggle() {
+    toggle: function() {
       state.isOpen ? this.close() : this.open();
     },
 
-    submitLead(e) {
+    submitLead: function(e) {
       e.preventDefault();
-      const nombre = $('pc-lead-name').value.trim();
-      const negocio = $('pc-lead-biz').value.trim();
-      const whatsapp = $('pc-lead-wa').value.trim();
+      var nombre = $('pc-lead-name').value.trim();
+      var negocio = $('pc-lead-biz').value.trim();
+      var whatsapp = $('pc-lead-wa').value.trim();
 
       if (!nombre || !negocio || !whatsapp) return;
 
-      state.leadData = { nombre, negocio, whatsapp };
+      state.leadData = { nombre: nombre, negocio: negocio, whatsapp: whatsapp };
 
-      // Guardar en localStorage
       try {
-        const leads = JSON.parse(localStorage.getItem('pc_chatbot_leads') || '[]');
-        leads.push({ ...state.leadData, timestamp: new Date().toISOString() });
+        var leads = JSON.parse(localStorage.getItem('pc_chatbot_leads') || '[]');
+        leads.push({ nombre: nombre, negocio: negocio, whatsapp: whatsapp, timestamp: new Date().toISOString() });
         localStorage.setItem('pc_chatbot_leads', JSON.stringify(leads));
-      } catch (_) {}
+      } catch(err) {}
 
-      // Mostrar mensaje del usuario
-      addUserMessage(`${nombre} Â· ${negocio} Â· ${whatsapp}`);
+      addUserMessage(nombre + ' · ' + negocio + ' · ' + whatsapp);
       hideLeadForm();
 
-      // Mandar notificaciÃ³n por WhatsApp al equipo
-      const msg = encodeURIComponent(
-        `Nuevo lead PideClick ðŸ”¥\n\nNombre: ${nombre}\nNegocio: ${negocio}\nWhatsApp: +51${whatsapp}\n\n_(Enviado automÃ¡ticamente desde el chatbot)_`
+      var notifMsg = encodeURIComponent(
+        'Nuevo lead PideClick! 🔥\n\nNombre: ' + nombre + '\nNegocio: ' + negocio + '\nWhatsApp: +51' + whatsapp + '\n\n(Enviado automaticamente desde el chatbot)'
       );
-      // Abrir silenciosamente (no forzamos, solo en mÃ³vil podrÃ­a no funcionar)
-      const notifLink = `https://wa.me/${CONFIG.whatsappNumber}?text=${msg}`;
+      var notifLink = 'https://wa.me/' + CONFIG.whatsappNumber + '?text=' + notifMsg;
 
-      runFlow('lead_captured', { nombre }).then(() => {
-        // DespuÃ©s del flujo, ofrecer ir a WA
-        setTimeout(() => {
-          const openWaBtn = document.createElement('button');
+      var self = this;
+      runFlow('lead_captured', { nombre: nombre }).then(function() {
+        setTimeout(function() {
+          var openWaBtn = document.createElement('button');
           openWaBtn.className = 'pc-option-btn';
           openWaBtn.style.borderColor = 'rgba(16,185,129,0.4)';
           openWaBtn.style.color = '#10B981';
-          openWaBtn.textContent = 'ðŸ’¬ Enviar alerta al equipo por WhatsApp';
-          openWaBtn.onclick = () => window.open(notifLink, '_blank');
-          const opts = $('pc-chat-options');
+          openWaBtn.textContent = '💬 Enviar alerta al equipo por WhatsApp';
+          openWaBtn.onclick = function() { window.open(notifLink, '_blank'); };
+          var opts = $('pc-chat-options');
           opts.classList.remove('hidden');
           opts.appendChild(openWaBtn);
         }, 500);
@@ -958,19 +946,17 @@
     }
   };
 
-  // â”€â”€ INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // INIT
   function init() {
     injectStyles();
     buildWidget();
 
-    // Auto-show teaser despuÃ©s de 4 seg si el usuario no ha interactuado
-    setTimeout(() => {
+    setTimeout(function() {
       if (!state.isOpen && !state.hasGreeted) {
-        const teaser = $('pc-chat-teaser');
+        var teaser = $('pc-chat-teaser');
         if (teaser) {
           teaser.style.display = 'block';
-          // Auto-hide teaser despuÃ©s de 8 seg
-          setTimeout(() => {
+          setTimeout(function() {
             if (!state.isOpen && teaser) teaser.style.display = 'none';
           }, 8000);
         }
@@ -985,4 +971,3 @@
   }
 
 })();
-
