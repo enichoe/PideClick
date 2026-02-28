@@ -626,68 +626,7 @@ function switchView(view) {
   }
 }
 
-function switchAdminTab(tab) {
-  console.log("=== SWITCH TAB INICIADO ===", tab);
-  currentAdminTab = tab;
-  
-  const tabDashboard = document.getElementById('tabDashboard');
-  const tabPedidos = document.getElementById('tabPedidos');
-  const tabProductos = document.getElementById('tabProductos');
-  const tabClientes = document.getElementById('tabClientes');
-  const tabConfiguracion = document.getElementById('tabConfiguracion');
-  
-  const dashboardPanel = document.getElementById('dashboardPanel');
-  const ordersPanel = document.getElementById('ordersPanel');
-  const productsPanel = document.getElementById('productsPanel');
-  const clientesPanel = document.getElementById('clientesPanel');
-  const configuracionPanel = document.getElementById('configuracionPanel');
-
-  console.log("Elementos encontrados:", { 
-    dashboardPanel: !!dashboardPanel, 
-    ordersPanel: !!ordersPanel, 
-    productsPanel: !!productsPanel,
-    clientesPanel: !!clientesPanel,
-    configuracionPanel: !!configuracionPanel
-  });
-
-  // Reset tabs, checking if they exist to prevent crashes
-  [tabDashboard, tabPedidos, tabProductos, tabClientes, tabConfiguracion].forEach(t => {
-    if (t) {
-      t.classList.remove('text-primary', 'border-b-2', 'border-primary');
-      t.classList.add('text-zinc-300');
-    }
-  });
-
-  // Reset panels
-  [dashboardPanel, ordersPanel, productsPanel, clientesPanel, configuracionPanel].forEach(p => {
-    if (p) {
-      p.classList.add('hidden');
-      console.log(`Escondiendo panel: ${p.id}`);
-    }
-  });
-
-  const activeTab = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
-  
-  // Map Spanish tab names to English HTML IDs natively
-  let panelId = `${tab}Panel`;
-  if (tab === 'pedidos') panelId = 'ordersPanel';
-  if (tab === 'productos') panelId = 'productsPanel';
-  
-  const activePanel = document.getElementById(panelId);
-  console.log(`Buscando panel activo: ${panelId} -> Encontrado: ${!!activePanel}`);
-
-  if (activeTab && activePanel) {
-    activeTab.classList.add('text-primary', 'border-b-2', 'border-primary');
-    activeTab.classList.remove('text-zinc-300');
-    activePanel.classList.remove('hidden');
-    console.log(`Panel ${panelId} mostrado exitosamente`);
-  } else {
-    console.error(`Fallo mostrando panel: activeTab=${!!activeTab}, activePanel=${!!activePanel}`);
-  }
-
-  if (tab === 'dashboard') updateDashboardStats();
-  if (tab === 'clientes') renderAdminClientes();
-}
+// switchAdminTab — función canónica está más abajo en el archivo (línea de TABS Y NAVEGACIÓN)
 
 
 // ======================== LÓGICA DE PRODUCTOS ========================
@@ -1241,9 +1180,19 @@ function closeDispatchModal() { document.getElementById('dispatchModal').classLi
 // ======================== TABS Y NAVEGACIÓN ========================
 function switchAdminTab(tab) {
   currentAdminTab = tab;
+
+  // Mapear nombres de tabs a IDs reales de paneles en el HTML
+  const panelMap = {
+    pedidos: 'ordersPanel',
+    productos: 'productsPanel',
+    dashboard: 'dashboardPanel',
+    clientes: 'clientesPanel',
+    configuracion: 'configuracionPanel'
+  };
+
   // Ocultar todos los paneles
-  ['dashboardPanel', 'pedidosPanel', 'productosPanel', 'clientesPanel', 'configuracionPanel'].forEach(p => {
-    const el = document.getElementById(p);
+  Object.values(panelMap).forEach(panelId => {
+    const el = document.getElementById(panelId);
     if (el) { el.classList.add('hidden'); el.classList.remove('fade-in'); }
   });
   
@@ -1255,20 +1204,22 @@ function switchAdminTab(tab) {
     btn.classList.add('text-zinc-300');
   });
 
-  // Mostrar panel seleccionado
-  const activePanel = document.getElementById(`${tab}Panel`);
+  // Mostrar panel seleccionado (usando el mapa correcto)
+  const activePanelId = panelMap[tab];
+  const activePanel = activePanelId ? document.getElementById(activePanelId) : null;
   if (activePanel) {
     activePanel.classList.remove('hidden');
-    // small delay to allow display flex to apply before opacity transition
     setTimeout(() => activePanel.classList.add('fade-in'), 10);
   }
   
+  // Activar botón del tab
   const activeBtn = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
   if (activeBtn) {
     activeBtn.classList.remove('text-zinc-300');
     activeBtn.classList.add('text-primary', 'border-b-2', 'border-primary');
   }
   
+  // Renderizar contenido del panel seleccionado
   if (tab === 'pedidos') renderOrders();
   if (tab === 'dashboard') updateDashboardStats();
   if (tab === 'productos') renderAdminProducts();
