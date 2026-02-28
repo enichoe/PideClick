@@ -183,7 +183,7 @@ async function initApp() {
       
       if (isAdminAuthenticated) {
         switchView('admin');
-        switchAdminTab('dashboard'); 
+        switchAdminTab('pedidos'); 
       } else {
         switchView('cliente');
       }
@@ -1234,6 +1234,43 @@ function openDispatchModal(id) {
 }
 
 function closeDispatchModal() { document.getElementById('dispatchModal').classList.add('hidden'); document.getElementById('dispatchModal').classList.remove('flex'); }
+
+// ======================== TABS Y NAVEGACIÓN ========================
+function switchAdminTab(tab) {
+  currentAdminTab = tab;
+  // Ocultar todos los paneles
+  ['dashboardPanel', 'pedidosPanel', 'productosPanel', 'clientesPanel', 'configuracionPanel'].forEach(p => {
+    const el = document.getElementById(p);
+    if (el) { el.classList.add('hidden'); el.classList.remove('fade-in'); }
+  });
+  
+  // Reiniciar estilos de botones
+  ['tabDashboard', 'tabPedidos', 'tabProductos', 'tabClientes', 'tabConfiguracion'].forEach(t => {
+    const btn = document.getElementById(t);
+    if (!btn) return;
+    btn.classList.remove('text-primary', 'border-b-2', 'border-primary');
+    btn.classList.add('text-zinc-300');
+  });
+
+  // Mostrar panel seleccionado
+  const activePanel = document.getElementById(`${tab}Panel`);
+  if (activePanel) {
+    activePanel.classList.remove('hidden');
+    // small delay to allow display flex to apply before opacity transition
+    setTimeout(() => activePanel.classList.add('fade-in'), 10);
+  }
+  
+  const activeBtn = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+  if (activeBtn) {
+    activeBtn.classList.remove('text-zinc-300');
+    activeBtn.classList.add('text-primary', 'border-b-2', 'border-primary');
+  }
+  
+  if (tab === 'pedidos') renderOrders();
+  if (tab === 'dashboard') updateDashboardStats();
+  if (tab === 'productos') renderAdminProducts();
+  if (tab === 'clientes') renderAdminClientes();
+}
 
 // ======================== CLIENTES ADMIN ========================
 function renderAdminClientes() {
