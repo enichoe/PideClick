@@ -1030,7 +1030,7 @@ async function submitOrder(e) {
       const newOrder = data[0];
       
       // WhatsApp Message Automático (Cliente -> Negocio)
-      const businessPhone = restaurantData.whatsapp_num || localStorage.getItem(storageKey('su_custom_whatsapp')) || "999999999";
+      const businessPhone = restaurantData?.whatsapp_num || localStorage.getItem(storageKey('su_custom_whatsapp')) || "999999999";
       const itemList = cart.map(i => `${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}`).join('\\n');
       const msg = encodeURIComponent(`¡Hola! Deseo realizar un pedido:\\n\\n*Pedido #${String(newOrder.id).substring(0,8)}*\\n${itemList}\\n\\n*Subtotal:* S/. ${subtotal.toFixed(2)}\\n*Delivery:* S/. ${orderData.delivery_fee.toFixed(2)}\\n*Total a pagar:* S/. ${newOrder.total.toFixed(2)}\\n\\n*Mis Datos:*\\nNombre: ${newOrder.customer_name}\\nTeléfono: ${newOrder.customer_phone}\\nDirección: ${newOrder.customer_address}\\nMétodo de pago: ${newOrder.payment_method}\\n\\nPor favor, confírmenme el pedido y avísenme cuando esté listo.`);
       window.open(`https://wa.me/51${businessPhone}?text=${msg}`, '_blank');
@@ -1184,8 +1184,8 @@ function openDispatchModal(id) {
       <a href="${mapsLink}" target="_blank" class="text-primary underline block">Ver en Maps</a><hr class="my-2">
       <p><strong>Pedido:</strong> ${itemsText}</p><p class="text-lg font-bold text-right">Total: S/. ${(o.total || 0).toFixed(2)}</p>
     </div>`;
-  const waMsg = encodeURIComponent(`*Pedido #${String(o.id).substring(0,8)}*\nCliente: ${cName}\nDir: ${cAddress}\nMaps: ${mapsLink}\nTotal: S/. ${(o.total||0).toFixed(2)}`);
-  const deliveryNum = localStorage.getItem(storageKey('su_custom_delivery_whatsapp')) || "999999999";
+  const waMsg = encodeURIComponent(`*Pedido #${String(o.id).substring(0,8)}*\\nCliente: ${cName}\\nDir: ${cAddress}\\nMaps: ${mapsLink}\\nTotal: S/. ${(o.total||0).toFixed(2)}`);
+  const deliveryNum = restaurantData?.delivery_whatsapp_num || localStorage.getItem(storageKey('su_custom_delivery_whatsapp')) || "999999999";
   document.getElementById('whatsappDeliveryLink').href = `https://wa.me/51${deliveryNum}?text=${waMsg}`;
   document.getElementById('printArea').innerHTML = `<div style="font-family: monospace; width: 100%;"><h2 style="text-align:center;">PIDECLICK</h2><p style="text-align:center; font-size:10px;">${formatDate(o.created_at || o.createdAt || new Date().toISOString())}</p><hr><p>Pedido: #${String(o.id).substring(0,8)}</p><p>Cliente: ${cName}</p><p>Dir: ${cAddress}</p><p>Telf: ${cPhone}</p><hr>${orderItems.map(i => `<p>${i.quantity}x ${i.name}${i.extras ? '<br><small style="font-size:10px; color:#555;">' + formatExtras(i.extras) + '</small>' : ''} - S/.${(i.price*i.quantity).toFixed(2)}</p>`).join('')}<hr><p><strong>TOTAL: S/. ${(o.total||0).toFixed(2)}</strong></p></div>`;
   document.getElementById('dispatchModal').classList.remove('hidden');
