@@ -8,7 +8,7 @@
 
   // CONFIGURACION
   const CONFIG = {
-    botName: 'Danny',
+    botName: 'Danny 🩷',
     botAvatar: '🤖',
     whatsappNumber: '51972498691',
     greeting_delay: 800,
@@ -23,7 +23,7 @@
     // INICIO
     start: {
       messages: [
-        '¡Hola! 👋 Soy Danny, tu asesor digital de **PideClick**.',
+        '¡Hola! 👋 Soy Danny 🩷, tu asesora digital de **PideClick**.',
         '¿Tienes un restaurante o negocio gastronomico? 🍽️'
       ],
       options: [
