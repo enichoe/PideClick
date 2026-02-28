@@ -123,7 +123,7 @@
       options: [
         { label: '🆓 Probar gratis ahora', next: 'capture_lead' },
         { label: '👀 Ver una demo', next: 'demo_offer' },
-        { label: '💬 Hablar con Danny por WhatsApp', next: 'whatsapp_cta' }
+        { label: '💬 Hablar con Dani por WhatsApp', next: 'whatsapp_cta' }
       ]
     },
 
@@ -542,7 +542,8 @@
         max-width: 85%;
       }
       .pc-msg-bot-av {
-        width: 28px; height: 28px;
+        width: 28px;
+        height: 28px;
         background: linear-gradient(135deg, #F97316, #ea6c0c);
         border-radius: 50%;
         display: flex;
@@ -579,7 +580,8 @@
         align-items: center;
       }
       .pc-typing-dot {
-        width: 6px; height: 6px;
+        width: 6px;
+        height: 6px;
         background: #52525b;
         border-radius: 50%;
         animation: pc-dot-bounce 1.2s infinite;
@@ -673,7 +675,8 @@
 
       @media (max-width: 430px) {
         #pc-chat-window {
-          bottom: 0; right: 0;
+          bottom: 0;
+          right: 0;
           width: 100vw;
           max-width: 100vw;
           border-radius: 24px 24px 0 0;
@@ -705,7 +708,7 @@
         <div id="pc-chat-header">
           <div id="pc-chat-header-avatar">🤖</div>
           <div id="pc-chat-header-info">
-            <div id="pc-chat-header-name">Danny · PideClick</div>
+            <div id="pc-chat-header-name">Dani · PideClick</div>
             <div id="pc-chat-header-status">En linea ahora</div>
           </div>
           <button id="pc-chat-close" onclick="PideChatbot.close()" aria-label="Cerrar chat">
