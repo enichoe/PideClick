@@ -634,21 +634,24 @@ function switchAdminTab(tab) {
   const tabPedidos = document.getElementById('tabPedidos');
   const tabProductos = document.getElementById('tabProductos');
   const tabClientes = document.getElementById('tabClientes');
+  const tabConfiguracion = document.getElementById('tabConfiguracion');
   
   const dashboardPanel = document.getElementById('dashboardPanel');
   const ordersPanel = document.getElementById('ordersPanel');
   const productsPanel = document.getElementById('productsPanel');
   const clientesPanel = document.getElementById('clientesPanel');
+  const configuracionPanel = document.getElementById('configuracionPanel');
 
   console.log("Elementos encontrados:", { 
     dashboardPanel: !!dashboardPanel, 
     ordersPanel: !!ordersPanel, 
     productsPanel: !!productsPanel,
-    clientesPanel: !!clientesPanel
+    clientesPanel: !!clientesPanel,
+    configuracionPanel: !!configuracionPanel
   });
 
   // Reset tabs, checking if they exist to prevent crashes
-  [tabDashboard, tabPedidos, tabProductos, tabClientes].forEach(t => {
+  [tabDashboard, tabPedidos, tabProductos, tabClientes, tabConfiguracion].forEach(t => {
     if (t) {
       t.classList.remove('text-primary', 'border-b-2', 'border-primary');
       t.classList.add('text-zinc-300');
@@ -656,7 +659,7 @@ function switchAdminTab(tab) {
   });
 
   // Reset panels
-  [dashboardPanel, ordersPanel, productsPanel, clientesPanel].forEach(p => {
+  [dashboardPanel, ordersPanel, productsPanel, clientesPanel, configuracionPanel].forEach(p => {
     if (p) {
       p.classList.add('hidden');
       console.log(`Escondiendo panel: ${p.id}`);
