@@ -1,6 +1,9 @@
 ﻿/**
- * PideClick SalesBot — Chatbot de ventas ultra persuasivo
+ * PideClick SalesBot — Chatbot de ventas ultra persuasivo (Versión Móvil Mejorada)
  * Vendedor automatico 24/7 para la landing page de PideClick
+ * - Pantalla completa en móviles.
+ * - Ajuste para teclado virtual.
+ * - Fuentes optimizadas para legibilidad.
  */
 
 (function () {
@@ -17,7 +20,7 @@
     colors: { primary: '#F97316', bg: '#09090B', surface: '#18181B', border: '#27272A' }
   };
 
-  // ARBOL DE CONVERSACION
+  // ARBOL DE CONVERSACION (Sin cambios)
   const FLOWS = {
 
     // INICIO
@@ -299,7 +302,7 @@
       ]
     },
 
-    // CTAs ESPECIALES
+    // CTAS ESPECIALES
 
     demo_offer: {
       messages: [
@@ -359,7 +362,7 @@
     hasGreeted: false
   };
 
-  // ESTILOS
+  // ESTILOS (OPTIMIZADOS PARA MOVIL)
   function injectStyles() {
     if (document.getElementById('pideclick-chatbot-css')) return;
     const style = document.createElement('style');
@@ -374,7 +377,7 @@
         flex-direction: column;
         align-items: flex-end;
         gap: 12px;
-        font-family: 'DM Sans', sans-serif;
+        font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
       }
 
       #pc-chat-btn {
@@ -529,6 +532,8 @@
         flex-direction: column;
         gap: 10px;
         scroll-behavior: smooth;
+        /* Mejora para scroll en iOS */
+        -webkit-overflow-scrolling: touch; 
       }
       #pc-chat-messages::-webkit-scrollbar { width: 4px; }
       #pc-chat-messages::-webkit-scrollbar-track { background: transparent; }
@@ -602,6 +607,7 @@
         flex-shrink: 0;
         max-height: 200px;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
       #pc-chat-options::-webkit-scrollbar { width: 4px; }
       #pc-chat-options::-webkit-scrollbar-thumb { background: #27272A; border-radius: 4px; }
@@ -673,16 +679,60 @@
         to { transform: translateY(0); opacity: 1; }
       }
 
-      @media (max-width: 430px) {
-        #pc-chat-window {
-          bottom: 0;
-          right: 0;
-          width: 100vw;
-          max-width: 100vw;
-          border-radius: 24px 24px 0 0;
-          height: 70vh;
+      /* --- MEJORAS MOVIL (MOBILE FIRST) --- */
+      @media (max-width: 480px) {
+        /* Ocultar el botón flotante cuando el chat está abierto para ganar espacio visual */
+        #pc-chat-btn.is-open {
+            display: none;
         }
-        #pc-chat-bubble { bottom: 16px; right: 16px; }
+
+        /* Convertir la ventana en pantalla completa dinámica */
+        #pc-chat-window {
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh; /* Dynamic Viewport Height: ajusta cuando se abre el teclado en móviles */
+            max-width: 100vw;
+            max-height: 100vh;
+            border-radius: 0;
+            transform: translateY(100%); /* Animación de deslizamiento desde abajo */
+            opacity: 1;
+            z-index: 100000; /* Z-index muy alto para estar sobre todo */
+        }
+        
+        #pc-chat-window.is-open {
+            transform: translateY(0);
+        }
+
+        /* Ajuste de tipografía para evitar zoom automático en inputs */
+        .pc-input, .pc-submit-btn, .pc-option-btn {
+            font-size: 16px;
+        }
+
+        /* Ajuste de burbujas en móvil */
+        .pc-msg-bot-bubble {
+            font-size: 14.5px;
+        }
+
+        /* Área segura para iPhone con notch/home bar al final del formulario */
+        #pc-lead-form, #pc-chat-options {
+            padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        }
+        
+        /* Header compacto en móvil */
+        #pc-chat-header {
+            padding: 12px 16px;
+            padding-top: calc(12px + env(safe-area-inset-top, 0px));
+        }
+
+        /* Ajustar teaser en móvil */
+        #pc-chat-teaser {
+            max-width: 200px;
+            font-size: 12px;
+            right: 0;
+            bottom: 76px; /* Subirlo para que no choque con el botón */
+        }
       }
     `;
     document.head.appendChild(style);
@@ -821,7 +871,11 @@
 
   function showLeadForm() {
     $('pc-lead-form').classList.remove('hidden');
-    setTimeout(() => $('pc-lead-name') && $('pc-lead-name').focus(), 100);
+    // Pequeño timeout para asegurar que el teclado no bloquee el scroll en móvil
+    setTimeout(() => {
+        $('pc-lead-name') && $('pc-lead-name').focus();
+        scrollBottom();
+    }, 100);
   }
 
   function hideLeadForm() {
