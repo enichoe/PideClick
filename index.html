@@ -645,7 +645,7 @@
         <div class="relative rounded-3xl overflow-hidden h-48 sm:h-64 shadow-lg">
            <!-- ID: mainBanner - Este SI se actualiza desde el Admin -->
            <img id="mainBanner" src="https://via.placeholder.com/1200x400/2D2A26/E85D4C?text=Tu+Banner+Aqui" alt="Banner Promocional" class="w-full h-full object-cover">
-           <div class="absolute inset-0 bg-gradient-to-r from-background/90 to-transparent flex items-center p-8">
+           <div class="absolute inset-0 flex items-center p-8 pointer-events-none">
              <div class="max-w-md">
                <!--
                <span class="inline-block px-3 py-1 bg-primary text-white text-xs font-bold rounded-full mb-2 uppercase tracking-wider">Delicioso</span>
@@ -687,12 +687,7 @@
       <!-- CATEGORIES -->
       <section class="px-4 sm:px-6 max-w-7xl mx-auto">
         <div class="flex flex-wrap gap-2 pb-4" id="categoriesContainer">
-          <button onclick="filterCategory('todos')" class="category-btn active px-5 py-2.5 bg-zinc-900 rounded-xl text-sm font-medium whitespace-nowrap border border-zinc-700 shadow-md shadow-black/20" data-category="todos">Todos</button>
-          <button onclick="filterCategory('hamburguesas')" class="category-btn px-5 py-2.5 bg-zinc-900 rounded-xl text-sm font-medium whitespace-nowrap border border-zinc-700 shadow-md shadow-black/20 text-zinc-300 hover:text-white" data-category="hamburguesas">Hamburguesas</button>
-          <button onclick="filterCategory('alitas')" class="category-btn px-5 py-2.5 bg-zinc-900 rounded-xl text-sm font-medium whitespace-nowrap border border-zinc-700 shadow-md shadow-black/20 text-zinc-300 hover:text-white" data-category="alitas">Alitas</button>
-          <button onclick="filterCategory('salchipapas')" class="category-btn px-5 py-2.5 bg-zinc-900 rounded-xl text-sm font-medium whitespace-nowrap border border-zinc-700 shadow-md shadow-black/20 text-zinc-300 hover:text-white" data-category="salchipapas">Salchipapas</button>
-          <button onclick="filterCategory('pizzas')" class="category-btn px-5 py-2.5 bg-zinc-900 rounded-xl text-sm font-medium whitespace-nowrap border border-zinc-700 shadow-md shadow-black/20 text-zinc-300 hover:text-white" data-category="pizzas">Pizzas</button>
-          <button onclick="filterCategory('bebidas')" class="category-btn px-5 py-2.5 bg-zinc-900 rounded-xl text-sm font-medium whitespace-nowrap border border-zinc-700 shadow-md shadow-black/20 text-zinc-300 hover:text-white" data-category="bebidas">Bebidas</button>
+          <!-- Se puebla dinámicamente desde script.js -->
         </div>
       </section>
 
@@ -1120,7 +1115,13 @@
               <p class="text-sm text-zinc-300">Subir foto del producto</p>
             </div>
             <div><label class="block text-sm font-medium text-white mb-1">Nombre</label><input type="text" name="name" required id="productName" class="w-full px-4 py-3 bg-zinc-800 rounded-xl border border-zinc-800 text-white focus:border-primary outline-none" placeholder="Nombre"></div>
-            <div><label class="block text-sm font-medium text-white mb-1">Categoría</label><select name="category" required id="productCategory" class="w-full px-4 py-3 bg-zinc-800 rounded-xl border border-zinc-800 text-white focus:border-primary outline-none"><option value="hamburguesas">Hamburguesas</option><option value="alitas">Alitas</option><option value="salchipapas">Salchipapas</option><option value="pizzas">Pizzas</option><option value="bebidas">Bebidas</option></select></div>
+            <div>
+              <label class="block text-sm font-medium text-white mb-1">Categoría</label>
+              <input type="text" name="category" required id="productCategory" list="categoriesList" class="w-full px-4 py-3 bg-zinc-800 rounded-xl border border-zinc-800 text-white focus:border-primary outline-none" placeholder="Escribe o elige una categoría">
+              <datalist id="categoriesList">
+                <!-- Se llena dinámicamente -->
+              </datalist>
+            </div>
             <div><label class="block text-sm font-medium text-white mb-1">Precio (S/.)</label><input type="number" step="0.01" min="0" name="price" required id="productPrice" class="w-full px-4 py-3 bg-zinc-800 rounded-xl border border-zinc-800 text-white focus:border-primary outline-none" placeholder="0.00"></div>
             <div><label class="block text-sm font-medium text-white mb-1">Descripción</label><textarea name="description" rows="2" id="productDescription" class="w-full px-4 py-3 bg-zinc-800 rounded-xl border border-zinc-800 text-white focus:border-primary outline-none resize-none" placeholder="Descripción corta"></textarea></div>
             

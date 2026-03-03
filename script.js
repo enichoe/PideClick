@@ -633,7 +633,12 @@ function switchView(view) {
 // ======================== LÓGICA DE PRODUCTOS ========================
 function renderProducts() {
   const grid = document.getElementById('productsGrid');
+  if (!grid) return;
+  
   const filtered = currentCategory === 'todos' ? products.filter(p => p.available) : products.filter(p => p.category === currentCategory && p.available);
+
+  // Cada vez que renderizamos productos, nos aseguramos que los filtros existan (si es la primera vez o cambiaron)
+  renderCategoryFilters();
 
   grid.innerHTML = filtered.map((p, i) => `
     <div class="bg-zinc-800 rounded-2xl overflow-hidden border border-zinc-700/50 shadow-md shadow-black/20 card-hover slide-in flex flex-col h-full" style="animation-delay: ${i * 50}ms">
@@ -655,7 +660,33 @@ function renderProducts() {
   `).join('');
 }
 
+function renderCategoryFilters() {
+  const container = document.getElementById('categoriesContainer');
+  if (!container) return;
+
+  // Obtener categorías únicas de los productos disponibles
+  const availableCategories = [...new Set(products.filter(p => p.available).map(p => p.category))].filter(Boolean).sort();
+  
+  let html = `<button onclick="filterCategory('todos')" class="category-btn ${currentCategory === 'todos' ? 'active' : 'text-zinc-300'} px-5 py-2.5 bg-zinc-900 rounded-xl text-sm font-medium whitespace-nowrap border border-zinc-700 shadow-md shadow-black/20" data-category="todos">Todos</button>`;
+  
+  availableCategories.forEach(cat => {
+    const isActive = currentCategory === cat;
+    html += `
+      <button onclick="filterCategory('${cat}')" 
+              class="category-btn ${isActive ? 'active' : 'text-zinc-300'} px-5 py-2.5 bg-zinc-900 rounded-xl text-sm font-medium whitespace-nowrap border border-zinc-700 shadow-md shadow-black/20 hover:text-white" 
+              data-category="${cat}">
+        ${cat.charAt(0).toUpperCase() + cat.slice(1)}
+      </button>`;
+  });
+
+  // Solo actualizar si el contenido ha cambiado para evitar parpadeos
+  if (container.innerHTML !== html) {
+    container.innerHTML = html;
+  }
+}
+
 function getCategoryIcon(category) {
+  const cat = (category || '').toLowerCase();
   const icons = {
     hamburguesas: `<svg class="w-20 h-20 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7h16M4 12h16M4 17h16M6 7V5a2 2 0 012-2h8a2 2 0 012 2v2M6 17v2a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>`,
     alitas: `<svg class="w-20 h-20 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3c-1.5 0-3 .5-4 1.5C6 6 5 9 5 12s1 6 3 7.5c1 1 2.5 1.5 4 1.5s3-.5 4-1.5c2-1.5 3-4.5 3-7.5s-1-6-3-7.5c-1-1-2.5-1.5-4-1.5z"/></svg>`,
@@ -663,17 +694,24 @@ function getCategoryIcon(category) {
     pizzas: `<svg class="w-20 h-20 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2L2 19h20L12 2z"/><circle cx="12" cy="12" r="2"/></svg>`,
     bebidas: `<svg class="w-20 h-20 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3h6l1 18H8L9 3zM12 7v4"/></svg>`
   };
-  return icons[category] || icons.hamburguesas;
+  // Icono genérico para categorías nuevas (un plato/cubiertos)
+  const defaultIcon = `<svg class="w-20 h-20 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m12 4a2 2 0 100-4m0 4a2 2 0 110-4m-6 4a2 2 0 100-4m0 4a2 2 0 110-4"/></svg>`;
+  return icons[cat] || defaultIcon;
 }
 
 function filterCategory(category) {
   currentCategory = category;
-  document.querySelectorAll('.category-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.category === category);
-    btn.classList.toggle('text-zinc-300', btn.dataset.category !== category);
-  });
-  const titles = { todos: 'Nuestro Menu', hamburguesas: 'Hamburguesas', alitas: 'Alitas', salchipapas: 'Salchipapas', pizzas: 'Pizzas', bebidas: 'Bebidas' };
-  document.getElementById('sectionTitle').textContent = titles[category];
+  
+  // Re-renderizar filtros para actualizar clases activas
+  renderCategoryFilters();
+
+  const titleEl = document.getElementById('sectionTitle');
+  if (category === 'todos') {
+    titleEl.textContent = 'Nuestro Menu';
+  } else {
+    titleEl.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+  }
+  
   renderProducts();
 }
 
@@ -1500,6 +1538,13 @@ function openProductModal(id = null) {
   const modal = document.getElementById('productModal');
   const form = document.getElementById('productForm');
   const preview = document.getElementById('productPreviewImg');
+  
+  // Poblar datalist de categorías
+  const datalist = document.getElementById('categoriesList');
+  if (datalist) {
+    const cats = [...new Set(products.map(p => p.category))].filter(Boolean).sort();
+    datalist.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+  }
   form.reset(); preview.classList.add('hidden'); document.getElementById('productId').value = '';
   if (id) {
     const p = products.find(x => x.id == id);
