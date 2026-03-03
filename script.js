@@ -307,7 +307,7 @@ function showLandingPage() {
 }
 
 // ======================== SUPABASE STORAGE HELPER ========================
-async function uploadImageToSupabase(file, folder = 'products') {
+async function uploadImageToSupabase(file, folder = 'products', bucket = 'pideclick') {
   if (!file) return null;
   
   const fileExt = file.name.split('.').pop();
@@ -316,20 +316,20 @@ async function uploadImageToSupabase(file, folder = 'products') {
 
   try {
     const { data, error } = await window.supabaseClient.storage
-      .from('pideclick')
+      .from(bucket)
       .upload(filePath, file);
 
     if (error) throw error;
 
     // Obtener URL pública
     const { data: { publicUrl } } = window.supabaseClient.storage
-      .from('pideclick')
+      .from(bucket)
       .getPublicUrl(filePath);
 
     return publicUrl;
   } catch (err) {
     console.error("DEBUG STORAGE ERROR:", err);
-    alert(`Error de Storage (Subida de Imagen):\nCausa probable: El bucket 'pideclick' no existe, o no tiene políticas de RLS (INSERT) habilitadas.\n\nDetalle técnico: ${err.message}`);
+    alert(`Error de Storage (Subida de Imagen):\nCausa probable: El bucket '${bucket}' no existe, o no tiene políticas de RLS (INSERT) habilitadas.\n\nDetalle técnico: ${err.message}`);
     showNotification("Error", "No se pudo subir la imagen al servidor.", "error");
     return null;
   }
@@ -679,19 +679,148 @@ function filterCategory(category) {
 // ======================== LÓGICA DE PERSONALIZACIÓN ========================
 function handleAddToCart(id) {
   const p = products.find(x => x.id == id);
-  if(!p) return;
-  currentCustomProductId = id;
-  openCustomizeModal(id);
-}
+  if (!p) return;
+  currentProduct = p;
 
-function openCustomizeModal(id) {
-  const p = products.find(x => x.id === id);
-  document.getElementById('customizeTitle').textContent = `Personalizar ${p.name}`;
-  document.getElementById('saucesSection').classList.toggle('hidden', p.category === 'bebidas');
-  document.getElementById('papaSection').classList.toggle('hidden', !['hamburguesas', 'salchipapas'].includes(p.category));
-  document.getElementById('saladSection').classList.toggle('hidden', !['hamburguesas', 'salchipapas'].includes(p.category));
-  document.getElementById('tempSection').classList.toggle('hidden', p.category !== 'bebidas');
+  const modal = document.getElementById('customizeModal');
+  const customOptionsDiv = document.getElementById('customOptions');
+  const co = p.customization_options || {};
+
+  // Reset form and title
   document.getElementById('customizeForm').reset();
+  document.getElementById('customizeTitle').textContent = `Personalizar ${p.name}`;
+
+  // Render Salsas Dinámicas
+  let saucesHtml = '';
+  const sauces = co.sauces || [];
+  if (sauces.length > 0) {
+    saucesHtml = `
+      <div id="saucesSection">
+        <label class="block text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+          Elige tus cremas (Máx. 2)
+        </label>
+        <div class="grid grid-cols-2 gap-2">
+          ${sauces.map(s => `
+            <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+              <input type="checkbox" name="sauce" value="${s}" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary" onchange="limitCheckboxes(this, 2)">
+              <span class="text-sm font-medium text-white">${s}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>`;
+  } else if (p.category !== 'bebidas') { // Fallback for categories other than drinks
+    saucesHtml = `
+      <div id="saucesSection">
+        <label class="block text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+          Elige tus cremas (Máx. 2)
+        </label>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+            <input type="checkbox" name="sauce" value="Ketchup" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary" onchange="limitCheckboxes(this, 2)">
+            <span class="text-sm font-medium text-white">Ketchup</span>
+          </label>
+          <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+            <input type="checkbox" name="sauce" value="Mayonesa" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary" onchange="limitCheckboxes(this, 2)">
+            <span class="text-sm font-medium text-white">Mayonesa</span>
+          </label>
+          <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+            <input type="checkbox" name="sauce" value="Mostaza" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary" onchange="limitCheckboxes(this, 2)">
+            <span class="text-sm font-medium text-white">Mostaza</span>
+          </label>
+          <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+            <input type="checkbox" name="sauce" value="Aji" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary" onchange="limitCheckboxes(this, 2)">
+            <span class="text-sm font-medium text-white">Ají</span>
+          </label>
+        </div>
+      </div>`;
+  }
+
+  // Render Extras Dinámicos
+  let extrasHtml = '';
+  const extras = co.extras || [];
+  if (extras.length > 0) {
+    extrasHtml = `
+      <div id="extrasSection">
+        <label class="block text-sm font-bold text-white mb-3">Acompañamientos / Extras</label>
+        <div class="grid grid-cols-2 gap-2">
+          ${extras.map(e => `
+            <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+              <input type="checkbox" name="extra" value="${e}" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+              <span class="text-sm font-medium text-white">${e}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>`;
+  } else if (['hamburguesas', 'salchipapas'].includes(p.category)) { // Fallback for specific categories
+    extrasHtml = `
+      <div id="papaSection">
+        <label class="block text-sm font-bold text-white mb-3">Papas</label>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="cursor-pointer">
+            <input type="radio" name="potato" value="Normal" checked class="peer sr-only">
+            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Normal</div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="potato" value="Extra" class="peer sr-only">
+            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Extra</div>
+          </label>
+        </div>
+      </div>
+      <div id="saladSection">
+        <label class="block text-sm font-bold text-white mb-3">Ensalada</label>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="cursor-pointer">
+            <input type="radio" name="salad" value="Con ensalada" checked class="peer sr-only">
+            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Con ensalada</div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="salad" value="Sin ensalada" class="peer sr-only">
+            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Sin ensalada</div>
+          </label>
+        </div>
+      </div>`;
+  }
+
+  // Notas
+  let notesHtml = '';
+  if (co.allowNotes !== false) {
+    notesHtml = `
+      <div>
+        <label class="block text-sm font-bold text-white mb-3">Instrucciones Especiales</label>
+        <textarea name="notes" rows="2" class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white text-sm focus:border-primary outline-none transition-all resize-none" placeholder="Ej: Sin cebolla, carne bien cocida, etc."></textarea>
+      </div>`;
+  }
+
+  // Caso Bebidas (Legacy fallback or specific)
+  let tempHtml = '';
+  if (p.category === 'bebidas') {
+    tempHtml = `
+      <div id="tempSection">
+        <label class="block text-sm font-bold text-white mb-3">Temperatura</label>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="cursor-pointer">
+            <input type="radio" name="temp" value="Helada" checked class="peer sr-only">
+            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Helada</div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="temp" value="Al Tiempo" class="peer sr-only">
+            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Al Tiempo</div>
+          </label>
+        </div>
+      </div>`;
+  }
+
+  customOptionsDiv.innerHTML = `
+    <div class="space-y-6">
+      ${saucesHtml}
+      ${extrasHtml}
+      ${notesHtml}
+      ${tempHtml}
+    </div>
+  `;
+
   document.getElementById('customizeModal').classList.remove('hidden');
   document.getElementById('customizeModal').classList.add('flex');
 }
@@ -701,10 +830,17 @@ function closeCustomizeModal() {
   document.getElementById('customizeModal').classList.remove('flex');
 }
 
+function limitCheckboxes(checkbox, max) {
+  const checkboxes = document.querySelectorAll(`input[name="${checkbox.name}"]:checked`);
+  if (checkboxes.length > max) {
+    checkbox.checked = false;
+    showNotification("Límite", `Solo puedes elegir hasta ${max} opciones.`, "warning");
+  }
+}
+
 function addToCartWithCustomization(e) {
   e.preventDefault();
-  const p = products.find(x => x.id == currentCustomProductId);
-  
+  const p = currentProduct;
   if (!p) {
     showNotification("Error", "Producto no encontrado.", "error");
     return;
@@ -712,21 +848,21 @@ function addToCartWithCustomization(e) {
 
   const fd = new FormData(e.target);
   const extras = {};
-  
-  if (p.category !== 'bebidas') {
-    // Si el usuario no selecciona ninguna, el getAll devuelve vacío.
-    const sauces = fd.getAll('sauce');
-    extras.sauces = sauces.length > 0 ? sauces : ['Sin Salsa'];
-    if (['hamburguesas', 'salchipapas'].includes(p.category)) {
-      extras.potato = fd.get('potato') || 'Normal';
-      extras.salad = fd.get('salad') || 'Sin ensalada';
-    }
-    const notes = fd.get('notes');
-    if (notes) extras.notes = notes;
-  } else {
-    extras.temp = fd.get('temp') || 'Helada';
-  }
-  
+
+  // Recopilar salsas (checkboxes name="sauce")
+  const selectedSauces = Array.from(fd.getAll('sauce'));
+  if (selectedSauces.length > 0) extras.sauces = selectedSauces;
+
+  // Recopilar extras (checkboxes name="extra")
+  const selectedExtras = Array.from(fd.getAll('extra'));
+  if (selectedExtras.length > 0) extras.extrasList = selectedExtras;
+
+  // Recopilar otros campos
+  if (fd.get('potato')) extras.potato = fd.get('potato');
+  if (fd.get('salad')) extras.salad = fd.get('salad');
+  if (fd.get('temp')) extras.temp = fd.get('temp');
+  if (fd.get('notes')) extras.notes = fd.get('notes');
+
   cart.push({ ...p, quantity: 1, extras, cartId: Date.now() });
   updateCartUI();
   closeCustomizeModal();
@@ -780,7 +916,8 @@ function updateCartUI() {
 function formatExtras(extras) {
   if (!extras) return '';
   const parts = [];
-  if (extras.sauces) parts.push(extras.sauces.join(', '));
+  if (extras.sauces && extras.sauces.length > 0) parts.push(extras.sauces.join(', '));
+  if (extras.extrasList && extras.extrasList.length > 0) parts.push(extras.extrasList.join(', '));
   if (extras.potato) parts.push(`Papas: ${extras.potato}`);
   if (extras.salad) parts.push(extras.salad);
   if (extras.temp) parts.push(`Temp: ${extras.temp}`);
@@ -956,7 +1093,7 @@ async function submitOrder(e) {
   let paymentImageUrl = null;
   const paymentProofFile = fd.get('paymentProof');
   if (paymentProofFile && paymentProofFile.name) {
-    paymentImageUrl = await uploadImageToSupabase(paymentProofFile, 'order_proofs');
+    paymentImageUrl = await uploadImageToSupabase(paymentProofFile, 'orders', 'order_proofs');
   }
 
   const orderData = {
@@ -1360,21 +1497,34 @@ function openProductModal(id = null) {
   const preview = document.getElementById('productPreviewImg');
   form.reset(); preview.classList.add('hidden'); document.getElementById('productId').value = '';
   if (id) {
-    const p = products.find(x => x.id == id); // Usar == por compatibilidad de tipos (String vs Number)
+    const p = products.find(x => x.id == id);
     if (p) {
-      document.getElementById('productId').value = p.id; 
-      document.getElementById('productName').value = p.name; 
-      document.getElementById('productCategory').value = p.category; 
-      document.getElementById('productPrice').value = p.price; 
-      document.getElementById('productDescription').value = p.description; 
-      document.getElementById('productAvailable').checked = p.available;
+      document.getElementById('productFormTitle').innerText = 'Editar Producto';
+      document.getElementById('productId').value = p.id;
+      document.getElementById('productName').value = p.name;
+      document.getElementById('productCategory').value = p.category;
+      document.getElementById('productPrice').value = p.price;
+      document.getElementById('productDescription').value = p.description || '';
+      document.getElementById('productAvailable').checked = p.available !== false;
       
+      const co = p.customization_options || {};
+      document.getElementById('customSauces').value = (co.sauces || []).join(', ');
+      document.getElementById('customExtras').value = (co.extras || []).join(', ');
+      document.getElementById('allowCustomerNotes').checked = co.allowNotes !== false;
+
       const imgToShow = p.image_url || p.image;
       if (imgToShow) { 
         preview.src = imgToShow; 
         preview.classList.remove('hidden'); 
       }
     }
+  } else {
+    document.getElementById('productFormTitle').innerText = 'Nuevo Producto';
+    document.getElementById('productForm').reset();
+    document.getElementById('productId').value = '';
+    document.getElementById('customSauces').value = '';
+    document.getElementById('customExtras').value = '';
+    document.getElementById('allowCustomerNotes').checked = true;
   }
   modal.classList.remove('hidden'); modal.classList.add('flex');
 }
@@ -1416,6 +1566,12 @@ async function saveProduct(e) {
     imageUrl = existing ? (existing.image_url || existing.image) : '';
   }
 
+  const customization = {
+    sauces: document.getElementById('customSauces').value.split(',').map(s => s.trim()).filter(s => s !== ""),
+    extras: document.getElementById('customExtras').value.split(',').map(e => e.trim()).filter(e => e !== ""),
+    allowNotes: document.getElementById('allowCustomerNotes').checked
+  };
+
   const productData = {
     restaurant_id: restaurantData.id,
     name,
@@ -1423,7 +1579,8 @@ async function saveProduct(e) {
     price,
     description,
     available,
-    image_url: imageUrl
+    image_url: imageUrl,
+    customization_options: customization
   };
 
   if (id) productData.id = id;
