@@ -1039,34 +1039,82 @@
               </div>
             </div>
 
+            <!-- Cremas -->
+            <div id="saucesSection">
+              <label class="block text-sm font-bold text-white mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                Elige tus cremas
+              </label>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+                  <input type="checkbox" name="sauce" value="Mayonesa" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+                  <span class="text-sm font-medium text-white">Mayonesa</span>
+                </label>
+                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+                  <input type="checkbox" name="sauce" value="Ketchup" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+                  <span class="text-sm font-medium text-white">Ketchup</span>
+                </label>
+                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+                  <input type="checkbox" name="sauce" value="Mostaza" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+                  <span class="text-sm font-medium text-white">Mostaza</span>
+                </label>
+                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+                  <input type="checkbox" name="sauce" value="Aji" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+                  <span class="text-sm font-medium text-white">Ají</span>
+                </label>
+                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+                  <input type="checkbox" name="sauce" value="Tártara" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+                  <span class="text-sm font-medium text-white">Tártara</span>
+                </label>
+                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+                  <input type="checkbox" name="sauce" value="Golf" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+                  <span class="text-sm font-medium text-white">Golf</span>
+                </label>
+                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+                  <input type="checkbox" name="sauce" value="Chimichurri" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+                  <span class="text-sm font-medium text-white">Chimichurri</span>
+                </label>
+                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+                  <input type="checkbox" name="sauce" value="Aceituna" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+                  <span class="text-sm font-medium text-white">Aceituna</span>
+                </label>
+              </div>
+            </div>
+
             <!-- Papas -->
             <div id="papaSection">
               <label class="block text-sm font-bold text-white mb-3">Tipo de Papas</label>
               <div class="grid grid-cols-2 gap-2">
                 <label class="cursor-pointer">
                   <input type="radio" name="potato" value="Normales" checked class="peer sr-only">
-                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Fritas Normales</div>
+                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Fritas Tumbay</div>
                 </label>
                 <label class="cursor-pointer">
                   <input type="radio" name="potato" value="Al Hilo" class="peer sr-only">
-                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Al Hilo</div>
+                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Papas Al Hilo</div>
                 </label>
               </div>
             </div>
 
             <!-- Ensalada -->
             <div id="saladSection">
-              <label class="block text-sm font-bold text-white mb-3">Ensalada</label>
+              <label class="block text-sm font-bold text-white mb-3">¿Deseas Ensalada?</label>
               <div class="grid grid-cols-2 gap-2">
                 <label class="cursor-pointer">
                   <input type="radio" name="salad" value="Con Ensalada" checked class="peer sr-only">
-                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Con Ensalada</div>
+                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Sí, por favor</div>
                 </label>
                 <label class="cursor-pointer">
                   <input type="radio" name="salad" value="Sin Ensalada" class="peer sr-only">
-                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Sin Ensalada</div>
+                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Sin ensalada</div>
                 </label>
               </div>
+            </div>
+
+            <!-- Notas Adicionales -->
+            <div>
+              <label class="block text-sm font-bold text-white mb-3">Instrucciones Especiales</label>
+              <textarea name="notes" rows="2" class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white text-sm focus:border-primary outline-none transition-all resize-none" placeholder="Ej: Sin cebolla, carne bien cocida, etc."></textarea>
             </div>
 
             <!-- Temperatura (Para Bebidas) -->
@@ -1078,8 +1126,8 @@
                   <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Helada</div>
                 </label>
                 <label class="cursor-pointer">
-                  <input type="radio" name="temp" value="Sin Helar" class="peer sr-only">
-                  <div class="p-3 bg-zinc-800/50 border border-zinc-800 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Sin Helar</div>
+                  <input type="radio" name="temp" value="Al Tiempo" class="peer sr-only">
+                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Al Tiempo</div>
                 </label>
               </div>
             </div>

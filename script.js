@@ -721,6 +721,8 @@ function addToCartWithCustomization(e) {
       extras.potato = fd.get('potato') || 'Normal';
       extras.salad = fd.get('salad') || 'Sin ensalada';
     }
+    const notes = fd.get('notes');
+    if (notes) extras.notes = notes;
   } else {
     extras.temp = fd.get('temp') || 'Helada';
   }
@@ -777,12 +779,13 @@ function updateCartUI() {
 
 function formatExtras(extras) {
   if (!extras) return '';
-  let str = '';
-  if (extras.sauces) str += extras.sauces.join(', ');
-  if (extras.potato) str += ` | ${extras.potato}`;
-  if (extras.salad) str += ` | ${extras.salad}`;
-  if (extras.temp) str += extras.temp;
-  return str;
+  const parts = [];
+  if (extras.sauces) parts.push(extras.sauces.join(', '));
+  if (extras.potato) parts.push(`Papas: ${extras.potato}`);
+  if (extras.salad) parts.push(extras.salad);
+  if (extras.temp) parts.push(`Temp: ${extras.temp}`);
+  if (extras.notes) parts.push(`*Nota:* ${extras.notes}`);
+  return parts.join(' | ');
 }
 
 function removeCartItem(cartId) {
@@ -950,6 +953,12 @@ async function submitOrder(e) {
   const isDelivery = fd.get('deliveryType') === 'delivery';
   const total = isDelivery ? subtotal + 2 : subtotal;
 
+  let paymentImageUrl = null;
+  const paymentProofFile = fd.get('paymentProof');
+  if (paymentProofFile && paymentProofFile.name) {
+    paymentImageUrl = await uploadImageToSupabase(paymentProofFile, 'order_proofs');
+  }
+
   const orderData = {
     restaurant_id: restaurantData ? restaurantData.id : null,
     customer_name: fd.get('customerName') || 'Cliente Local',
@@ -962,6 +971,7 @@ async function submitOrder(e) {
     total: total,
     payment_method: fd.get('paymentMethod'),
     payment_details: fd.get('cashAmount') || fd.get('paymentProof')?.name || 'N/A',
+    payment_image_url: paymentImageUrl,
     order_type: fd.get('deliveryType') || 'pickup',
     status: 'pending'
   };
@@ -1086,13 +1096,20 @@ function renderOrders() {
                 <span class="px-2 py-0.5 rounded-full text-xs font-medium status-${o.status}">${getStatusText(o.status)}</span>
               </div>
             </div>
-            <div class="text-right">
+            <div class="flex flex-col items-end">
               <p class="font-bold text-lg">S/. ${(o.total || 0).toFixed(2)}</p>
-              <p class="text-xs text-zinc-300">${payMethod}</p>
+              <div class="flex items-center gap-2">
+                <p class="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">${payMethod}</p>
+                ${o.payment_image_url ? `
+                  <button onclick="window.open('${o.payment_image_url}', '_blank')" class="p-1.5 bg-zinc-950 rounded-lg border border-zinc-700 hover:border-primary transition-all group" title="Ver Comprobante">
+                    <svg class="w-4 h-4 text-zinc-400 group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  </button>
+                ` : ''}
+              </div>
             </div>
           </div>
-          <div class="text-sm mb-2"><p class="font-medium">${cName}</p><p class="text-zinc-300">${cAddress}</p></div>
-          <div class="flex flex-wrap gap-1 mb-3">${orderItems.map(i => `<span class="bg-zinc-950 text-xs px-2 py-1 rounded">${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}</span>`).join('')}</div>
+          <div class="text-sm mb-2"><p class="font-medium">${cName}</p><p class="text-zinc-300 text-xs">${cAddress}</p></div>
+          <div class="flex flex-wrap gap-1 mb-3">${orderItems.map(i => `<span class="bg-zinc-950 text-xs px-2 py-1 rounded border border-zinc-700/50">${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}</span>`).join('')}</div>
           <div class="flex gap-2 border-t border-zinc-700 pt-3 mt-2">
             ${o.status === 'pending' ? `<button onclick="updateOrderStatus('${o.id}', 'preparing')" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-bold shadow shadow-primary/20">Preparar</button>
                                        <a href="https://wa.me/51${cPhone}?text=${encodeURIComponent('¡Hola ' + cName + '! Hemos recibido tu pedido #' + String(o.id).substring(0,6) + ' en PideClick. En breve lo estaremos preparando para ti.')}" target="_blank" class="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm text-center shadow flex items-center justify-center gap-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg> Avisar</a>` : ''}
@@ -1165,7 +1182,16 @@ function openDispatchModal(id) {
       </div>
       <p><strong>Telf:</strong> ${cPhone}</p><p><strong>Dir:</strong> ${cAddress}</p>
       <a href="${mapsLink}" target="_blank" class="text-primary underline block">Ver en Maps</a><hr class="my-2">
-      <p><strong>Pedido:</strong> ${itemsText}</p><p class="text-lg font-bold text-right">Total: S/. ${(o.total || 0).toFixed(2)}</p>
+      <p><strong>Pedido:</strong> ${itemsText}</p>
+      <div class="flex justify-between items-end">
+        ${o.payment_image_url ? `
+          <div class="mt-2">
+            <p class="text-[10px] text-zinc-500 uppercase font-bold mb-1">Comprobante:</p>
+            <img src="${o.payment_image_url}" class="h-32 rounded-lg border border-zinc-700 shadow-sm cursor-zoom-in" onclick="window.open('${o.payment_image_url}', '_blank')">
+          </div>
+        ` : '<div></div>'}
+        <p class="text-lg font-bold">Total: S/. ${(o.total || 0).toFixed(2)}</p>
+      </div>
     </div>`;
   const waMsg = encodeURIComponent(`*Pedido #${String(o.id).substring(0,8)}*\\nCliente: ${cName}\\nDir: ${cAddress}\\nMaps: ${mapsLink}\\nTotal: S/. ${(o.total||0).toFixed(2)}`);
   const deliveryNum = restaurantData?.delivery_whatsapp_num || localStorage.getItem(storageKey('su_custom_delivery_whatsapp')) || "999999999";
