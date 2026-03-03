@@ -1497,6 +1497,7 @@ function renderAdminProducts() {
 
 
 function openProductModal(id = null) {
+  console.log("DEBUG: openProductModal called with id:", id);
   const modal = document.getElementById('productModal');
   const form = document.getElementById('productForm');
   const preview = document.getElementById('productPreviewImg');
@@ -1546,6 +1547,7 @@ function previewProductImage(input) {
 
 async function saveProduct(e) {
   e.preventDefault();
+  console.log("DEBUG: saveProduct triggered");
   const id = document.getElementById('productId').value;
   const name = document.getElementById('productName').value;
   const category = document.getElementById('productCategory').value;
@@ -1618,6 +1620,7 @@ async function saveProduct(e) {
 function editProduct(id) { openProductModal(id); }
 
 async function deleteProduct(id) {
+  console.log("DEBUG: deleteProduct triggered for id:", id);
   if (!confirm('¿Estás seguro de eliminar este producto?')) return;
 
   // Manejo de UUID/Strings con comparador laxo
