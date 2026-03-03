@@ -458,6 +458,7 @@ function loadCustomSettings() {
     localStorage.setItem(storageKey('su_custom_instagram'), instagram);
     localStorage.setItem(storageKey('su_custom_whatsapp'), whatsappNum);
     localStorage.setItem(storageKey('su_custom_delivery_whatsapp'), deliveryWhatsappNum);
+    localStorage.setItem(storageKey('su_custom_payment_whatsapp'), restaurantData.payment_whatsapp_num || "");
     localStorage.setItem(storageKey('su_custom_facebook'), facebook);
     localStorage.setItem(storageKey('su_custom_location'), location);
     localStorage.setItem(storageKey('su_custom_open_time'), openTime);
@@ -501,6 +502,7 @@ function loadCustomSettings() {
   if (adminInstagram) adminInstagram.value = instagram;
   if (adminWhatsapp) adminWhatsapp.value = whatsappNum;
   if (adminDeliveryWhatsapp) adminDeliveryWhatsapp.value = deliveryWhatsappNum;
+  if (adminPaymentWhatsapp) adminPaymentWhatsapp.value = restaurantData?.payment_whatsapp_num || "";
   if (adminFacebook) adminFacebook.value = facebook;
   if (adminLocation) adminLocation.value = location;
   if (adminOpenTime) adminOpenTime.value = openTime;
@@ -513,6 +515,7 @@ async function saveCustomSettings() {
   const instagramEl = document.getElementById('adminInstagram');
   const whatsappEl = document.getElementById('adminWhatsapp');
   const deliveryWhatsappEl = document.getElementById('adminDeliveryWhatsapp');
+  const paymentWhatsappEl = document.getElementById('adminPaymentWhatsapp');
   const facebookEl = document.getElementById('adminFacebook');
   const locationEl = document.getElementById('adminLocation');
   const openTimeEl = document.getElementById('adminOpenTime');
@@ -523,6 +526,7 @@ async function saveCustomSettings() {
   const instagram = instagramEl.value.trim() || restaurantData?.instagram_url || "#";
   let whatsapp = whatsappEl.value.trim() || restaurantData?.whatsapp_num || "";
   let deliveryWhatsapp = deliveryWhatsappEl.value.trim() || restaurantData?.delivery_whatsapp_num || "";
+  let paymentWhatsapp = paymentWhatsappEl ? paymentWhatsappEl.value.trim() : (restaurantData?.payment_whatsapp_num || "");
   const facebook = facebookEl.value.trim() || restaurantData?.facebook_url || "#";
   const location = locationEl.value.trim() || restaurantData?.location_url || "#";
   const openTime = openTimeEl.value.trim() || restaurantData?.open_time || "08:00";
@@ -531,6 +535,7 @@ async function saveCustomSettings() {
   // Limpiar los números de WhatsApp
   whatsapp = whatsapp.replace(/\D/g, '');
   deliveryWhatsapp = deliveryWhatsapp.replace(/\D/g, '');
+  paymentWhatsapp = paymentWhatsapp.replace(/\D/g, '');
   
   const bSlug = new URLSearchParams(window.location.search).get('b') || 'default';
 
@@ -542,6 +547,7 @@ async function saveCustomSettings() {
         instagram_url: instagram,
         whatsapp_num: whatsapp,
         delivery_whatsapp_num: deliveryWhatsapp,
+        payment_whatsapp_num: paymentWhatsapp,
         facebook_url: facebook,
         location_url: location,
         open_time: openTime,
@@ -1105,10 +1111,11 @@ function togglePaymentFields() {
         <div id="changeResult" class="mt-2 text-sm font-medium text-success hidden"></div>
       </div>`;
   } else if (method === 'yape' || method === 'plin') {
+    const payNum = restaurantData?.payment_whatsapp_num || "987654321";
     container.innerHTML = `
       <div class="bg-zinc-800 p-4 rounded-xl mt-4">
         <p class="text-sm text-white mb-2">Realiza el pago y sube la captura:</p>
-        <p class="text-lg font-bold text-purple-600 mb-2">Numero: 987 654 321</p>
+        <p class="text-lg font-bold text-success mb-2">Numero: ${payNum}</p>
         <input type="file" accept="image/*" name="paymentProof" required class="w-full text-sm">
       </div>`;
   } else {
