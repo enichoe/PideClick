@@ -699,39 +699,39 @@ function handleAddToCart(id) {
       <div id="saucesSection">
         <label class="block text-sm font-bold text-white mb-3 flex items-center gap-2">
           <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-          Elige tus cremas (Máx. 2)
+          Elige tus cremas
         </label>
         <div class="grid grid-cols-2 gap-2">
           ${sauces.map(s => `
             <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-              <input type="checkbox" name="sauce" value="${s}" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary" onchange="limitCheckboxes(this, 2)">
+              <input type="checkbox" name="sauce" value="${s}" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
               <span class="text-sm font-medium text-white">${s}</span>
             </label>
           `).join('')}
         </div>
       </div>`;
-  } else if (p.category !== 'bebidas') { // Fallback for categories other than drinks
+  } else if (p.category !== 'bebidas') { 
     saucesHtml = `
       <div id="saucesSection">
         <label class="block text-sm font-bold text-white mb-3 flex items-center gap-2">
           <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-          Elige tus cremas (Máx. 2)
+          Elige tus cremas
         </label>
         <div class="grid grid-cols-2 gap-2">
           <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-            <input type="checkbox" name="sauce" value="Ketchup" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary" onchange="limitCheckboxes(this, 2)">
+            <input type="checkbox" name="sauce" value="Ketchup" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
             <span class="text-sm font-medium text-white">Ketchup</span>
           </label>
           <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-            <input type="checkbox" name="sauce" value="Mayonesa" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary" onchange="limitCheckboxes(this, 2)">
+            <input type="checkbox" name="sauce" value="Mayonesa" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
             <span class="text-sm font-medium text-white">Mayonesa</span>
           </label>
           <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-            <input type="checkbox" name="sauce" value="Mostaza" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary" onchange="limitCheckboxes(this, 2)">
+            <input type="checkbox" name="sauce" value="Mostaza" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
             <span class="text-sm font-medium text-white">Mostaza</span>
           </label>
           <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-            <input type="checkbox" name="sauce" value="Aji" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary" onchange="limitCheckboxes(this, 2)">
+            <input type="checkbox" name="sauce" value="Aji" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
             <span class="text-sm font-medium text-white">Ají</span>
           </label>
         </div>
@@ -758,14 +758,18 @@ function handleAddToCart(id) {
     extrasHtml = `
       <div id="papaSection">
         <label class="block text-sm font-bold text-white mb-3">Papas</label>
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-3 gap-2">
           <label class="cursor-pointer">
-            <input type="radio" name="potato" value="Normal" checked class="peer sr-only">
-            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Normal</div>
+            <input type="radio" name="potato" value="Normales" checked class="peer sr-only">
+            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Normales</div>
           </label>
           <label class="cursor-pointer">
-            <input type="radio" name="potato" value="Extra" class="peer sr-only">
-            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Extra</div>
+            <input type="radio" name="potato" value="Al Hilo" class="peer sr-only">
+            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Al Hilo</div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="potato" value="Sin papas" class="peer sr-only">
+            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Sin papas</div>
           </label>
         </div>
       </div>
