@@ -307,6 +307,14 @@ function showLandingPage() {
   document.getElementById('cartIndicator').classList.add('hidden');
   const footerAdm = document.getElementById('footerAdminContainer');
   if (footerAdm) footerAdm.classList.add('hidden');
+  
+  // Toggle footer parts
+  const saasLinks = document.getElementById('saasFooterLinks');
+  const storeLinks = document.getElementById('storeFooterLinks');
+  if (saasLinks) saasLinks.classList.remove('hidden');
+  if (saasLinks) saasLinks.classList.add('flex');
+  if (storeLinks) storeLinks.classList.add('hidden');
+  if (storeLinks) storeLinks.classList.remove('flex');
 }
 
 // ======================== SUPABASE STORAGE HELPER ========================
@@ -607,6 +615,18 @@ function switchView(view) {
     adminNav.classList.toggle('hidden', view !== 'admin');
     adminNav.classList.toggle('flex', view === 'admin');
   }
+
+  // Toggle footer parts
+  const saasLinks = document.getElementById('saasFooterLinks');
+  const storeLinks = document.getElementById('storeFooterLinks');
+  if (saasLinks) saasLinks.classList.add('hidden');
+  if (saasLinks) saasLinks.classList.remove('flex');
+  if (storeLinks) storeLinks.classList.remove('hidden');
+  if (storeLinks) storeLinks.classList.add('flex');
+  
+  const footerAdm = document.getElementById('footerAdminContainer');
+  if (footerAdm) footerAdm.classList.remove('hidden');
+  if (footerAdm) footerAdm.classList.add('flex');
 
   // Ocultar landing si entramos a un negocio
   const b = new URLSearchParams(window.location.search).get('b');
