@@ -137,7 +137,9 @@ async function initApp() {
       showLandingPage();
     } else {
       window.SaaS.registerTenant(b);
-      document.getElementById('mainNav').classList.remove('hidden');
+      const nav = document.getElementById('mainNav');
+      if (nav) nav.classList.remove('hidden');
+      
       const footerAdm = document.getElementById('footerAdminContainer');
       if (footerAdm) footerAdm.classList.remove('hidden');
 
@@ -591,9 +593,13 @@ function switchView(view) {
   }
 
   currentView = view;
-  document.getElementById('clienteView').classList.toggle('hidden', view !== 'cliente');
-  document.getElementById('adminView').classList.toggle('hidden', view !== 'admin');
-  document.getElementById('cartIndicator').classList.toggle('hidden', view !== 'cliente');
+  const cView = document.getElementById('clienteView');
+  const aView = document.getElementById('adminView');
+  const cInd = document.getElementById('cartIndicator');
+  
+  if (cView) cView.classList.toggle('hidden', view !== 'cliente');
+  if (aView) aView.classList.toggle('hidden', view !== 'admin');
+  if (cInd) cInd.classList.toggle('hidden', view !== 'cliente');
   
   // Mostrar u ocultar acciones de admin en la cabecera
   const adminNav = document.getElementById('adminNavActions');
@@ -1756,9 +1762,9 @@ function getBusinessLocation() {
       pos => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-        const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-        document.getElementById('adminLocation').value = mapsUrl;
-        showNotification("Éxito", "Ubicación capturada correctamente");
+      const el = document.getElementById('adminLocation');
+      if (el) el.value = mapsUrl;
+      showNotification("Éxito", "Ubicación capturada correctamente");
       },
       err => {
         showNotification("Error", "No se pudo obtener la ubicación. Asegúrate de dar permisos.", "error");
@@ -1771,13 +1777,19 @@ function getBusinessLocation() {
 
 // ======================== SISTEMA DE LOGIN ADMIN ========================
 function openLoginModal() {
-  document.getElementById('loginModal').classList.remove('hidden');
-  document.getElementById('loginModal').classList.add('flex');
+  const modal = document.getElementById('loginModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
 }
 
 function closeLoginModal() {
-  document.getElementById('loginModal').classList.add('hidden');
-  document.getElementById('loginModal').classList.remove('flex');
+  const modal = document.getElementById('loginModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
 }
 
 async function loginAdmin(e) {
