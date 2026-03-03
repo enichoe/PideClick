@@ -31,6 +31,7 @@ let currentCategory = 'todos';
 let currentAdminTab = 'pedidos';
 let currentView = 'cliente';
 let currentCustomProductId = null;
+let currentProduct = null;
 let currentDispatchOrderId = null;
 
 let isAdminAuthenticated = sessionStorage.getItem(storageKey('su_admin_auth')) === 'true';
@@ -866,7 +867,7 @@ function addToCartWithCustomization(e) {
   cart.push({ ...p, quantity: 1, extras, cartId: Date.now() });
   updateCartUI();
   closeCustomizeModal();
-  openCart(); 
+  toggleCart(); 
   showNotification("Añadido", `${p.name} agregado al carrito`);
 }
 

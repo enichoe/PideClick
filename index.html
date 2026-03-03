@@ -997,143 +997,26 @@
   <div id="cartOverlay" class="fixed inset-0 bg-primary-dark/50 z-40 hidden opacity-0 transition-opacity duration-300" onclick="toggleCart()"></div>
 
   <!-- Resto de Modales (Checkout, Dispatch, Product, Success) -->
-  <!-- NOTA: Copia y pega los modales restantes del código anterior aquí, no han cambiado estructuralmente -->
-  <!-- Por motivos de espacio en la respuesta, asumo que tienes los modales anteriores guardados. -->
-  
-  <!-- MODAL: PERSONALIZACIÓN -->
   <div id="customizeModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
     <div class="absolute inset-0 bg-primary-dark/60 backdrop-blur-sm" onclick="closeCustomizeModal()"></div>
-    <div class="relative bg-zinc-900 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto slide-in">
+    <div class="relative bg-zinc-900 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto slide-in border border-zinc-800/50">
       <div class="p-6">
         <h3 id="customizeTitle" class="text-2xl font-bold text-white mb-6 font-display">Personalizar</h3>
         <form id="customizeForm" onsubmit="addToCartWithCustomization(event)">
-          <div class="space-y-6">
-            <!-- Cremas -->
-            <div id="saucesSection">
-              <label class="block text-sm font-bold text-white mb-3">Elige tus cremas</label>
-              <div class="grid grid-cols-2 gap-2">
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Mayonesa" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Mayonesa</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Ketchup" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Ketchup</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Mostaza" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Mostaza</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Aji" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Ají</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Tártara" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Tártara</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Golf" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Golf</span>
-                </label>
-              </div>
-            </div>
+          <input type="hidden" id="customProductId">
+          
+          <!-- CONTENEDOR DE OPCIONES DINÁMICAS -->
+          <div id="customOptions" class="space-y-6">
+            <!-- Se llena dinámicamente desde script.js -->
+          </div>
 
-            <!-- Cremas -->
-            <div id="saucesSection">
-              <label class="block text-sm font-bold text-white mb-3 flex items-center gap-2">
-                <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-                Elige tus cremas
-              </label>
-              <div class="grid grid-cols-2 gap-2">
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Mayonesa" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Mayonesa</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Ketchup" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Ketchup</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Mostaza" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Mostaza</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Aji" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Ají</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Tártara" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Tártara</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Golf" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Golf</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Chimichurri" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Chimichurri</span>
-                </label>
-                <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                  <input type="checkbox" name="sauce" value="Aceituna" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                  <span class="text-sm font-medium text-white">Aceituna</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Papas -->
-            <div id="papaSection">
-              <label class="block text-sm font-bold text-white mb-3">Tipo de Papas</label>
-              <div class="grid grid-cols-2 gap-2">
-                <label class="cursor-pointer">
-                  <input type="radio" name="potato" value="Normales" checked class="peer sr-only">
-                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Fritas Tumbay</div>
-                </label>
-                <label class="cursor-pointer">
-                  <input type="radio" name="potato" value="Al Hilo" class="peer sr-only">
-                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Papas Al Hilo</div>
-                </label>
-              </div>
-            </div>
-
-            <!-- Ensalada -->
-            <div id="saladSection">
-              <label class="block text-sm font-bold text-white mb-3">¿Deseas Ensalada?</label>
-              <div class="grid grid-cols-2 gap-2">
-                <label class="cursor-pointer">
-                  <input type="radio" name="salad" value="Con Ensalada" checked class="peer sr-only">
-                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Sí, por favor</div>
-                </label>
-                <label class="cursor-pointer">
-                  <input type="radio" name="salad" value="Sin Ensalada" class="peer sr-only">
-                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Sin ensalada</div>
-                </label>
-              </div>
-            </div>
-
-            <!-- Notas Adicionales -->
-            <div>
-              <label class="block text-sm font-bold text-white mb-3">Instrucciones Especiales</label>
-              <textarea name="notes" rows="2" class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white text-sm focus:border-primary outline-none transition-all resize-none" placeholder="Ej: Sin cebolla, carne bien cocida, etc."></textarea>
-            </div>
-
-            <!-- Temperatura (Para Bebidas) -->
-            <div id="tempSection" class="hidden">
-              <label class="block text-sm font-bold text-white mb-3">Temperatura</label>
-              <div class="grid grid-cols-2 gap-2">
-                <label class="cursor-pointer">
-                  <input type="radio" name="temp" value="Helada" checked class="peer sr-only">
-                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Helada</div>
-                </label>
-                <label class="cursor-pointer">
-                  <input type="radio" name="temp" value="Al Tiempo" class="peer sr-only">
-                  <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Al Tiempo</div>
-                </label>
-              </div>
-            </div>
-
-            <button type="submit" class="w-full btn-primary py-4 rounded-xl text-white font-medium text-lg mt-4">Agregar al Pedido</button>
-            <button type="button" onclick="closeCustomizeModal()" class="w-full py-3 text-zinc-300 font-medium">Cancelar</button>
+          <div class="pt-8">
+            <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-primary/20 transition-all active:scale-95">
+              Agregar al Carrito
+            </button>
+            <button type="button" onclick="closeCustomizeModal()" class="w-full py-4 text-zinc-400 font-medium hover:text-white transition-colors">
+              Cancelar
+            </button>
           </div>
         </form>
       </div>
