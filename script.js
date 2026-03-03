@@ -1115,12 +1115,36 @@ function togglePaymentFields() {
     container.innerHTML = `
       <div class="bg-zinc-800 p-4 rounded-xl mt-4">
         <p class="text-sm text-white mb-2">Realiza el pago y sube la captura:</p>
-        <p class="text-lg font-bold text-success mb-2">Numero: ${payNum}</p>
+        <div class="flex items-center justify-between bg-zinc-950 p-3 rounded-xl border border-zinc-700 mb-3">
+          <p class="text-xl font-bold text-success">Numero: <span id="paymentNumToCopy">${payNum}</span></p>
+          <button type="button" onclick="copyPaymentNumber('${payNum}', this)" class="p-2 bg-success/10 text-success rounded-lg hover:bg-success/20 transition-all flex items-center gap-1 text-xs font-bold">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            Copiar
+          </button>
+        </div>
         <input type="file" accept="image/*" name="paymentProof" required class="w-full text-sm">
       </div>`;
   } else {
     container.innerHTML = `<div class="bg-zinc-800 p-4 rounded-xl mt-4 text-sm text-white">El POS se pasara al momento de la entrega.</div>`;
   }
+}
+
+function copyPaymentNumber(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = `
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      ¡Copiado!
+    `;
+    btn.classList.replace('bg-success/10', 'bg-success');
+    btn.classList.replace('text-success', 'text-white');
+    
+    setTimeout(() => {
+      btn.innerHTML = originalContent;
+      btn.classList.replace('bg-success', 'bg-success/10');
+      btn.classList.replace('text-white', 'text-success');
+    }, 2000);
+  });
 }
 
 function calculateChange(cash) {
