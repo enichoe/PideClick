@@ -1497,7 +1497,6 @@ function renderAdminProducts() {
 
 
 function openProductModal(id = null) {
-  console.log("DEBUG: openProductModal called with id:", id);
   const modal = document.getElementById('productModal');
   const form = document.getElementById('productForm');
   const preview = document.getElementById('productPreviewImg');
@@ -1505,7 +1504,7 @@ function openProductModal(id = null) {
   if (id) {
     const p = products.find(x => x.id == id);
     if (p) {
-      document.getElementById('productFormTitle').innerText = 'Editar Producto';
+      document.getElementById('productModalTitle').innerText = 'Editar Producto';
       document.getElementById('productId').value = p.id;
       document.getElementById('productName').value = p.name;
       document.getElementById('productCategory').value = p.category;
@@ -1525,7 +1524,7 @@ function openProductModal(id = null) {
       }
     }
   } else {
-    document.getElementById('productFormTitle').innerText = 'Nuevo Producto';
+    document.getElementById('productModalTitle').innerText = 'Nuevo Producto';
     document.getElementById('productForm').reset();
     document.getElementById('productId').value = '';
     document.getElementById('customSauces').value = '';
@@ -1547,7 +1546,6 @@ function previewProductImage(input) {
 
 async function saveProduct(e) {
   e.preventDefault();
-  console.log("DEBUG: saveProduct triggered");
   const id = document.getElementById('productId').value;
   const name = document.getElementById('productName').value;
   const category = document.getElementById('productCategory').value;
@@ -1620,7 +1618,6 @@ async function saveProduct(e) {
 function editProduct(id) { openProductModal(id); }
 
 async function deleteProduct(id) {
-  console.log("DEBUG: deleteProduct triggered for id:", id);
   if (!confirm('¿Estás seguro de eliminar este producto?')) return;
 
   // Manejo de UUID/Strings con comparador laxo
