@@ -246,8 +246,10 @@
     async function changePlan(internalId, newPlan) {
       if (confirm(`¿Seguro que quieres cambiar el plan a ${newPlan.toUpperCase()}?`)) {
         try {
-          // Mostrar feedback visual inmediato si es posible
-          showNotification && showNotification("Actualizando", "Cambiando plan...", "warning");
+          // Mostrar feedback visual inmediato si existe la función
+          if (typeof showNotification !== 'undefined') {
+            showNotification("Actualizando", "Cambiando plan...", "warning");
+          }
           
           await window.SaaS.updateTenantPlan(internalId, newPlan);
           
