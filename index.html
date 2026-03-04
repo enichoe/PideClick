@@ -877,22 +877,45 @@
           </div>
 
           <div id="advancedStats" class="grid grid-cols-1 lg:grid-cols-3 gap-6 hidden">
-             <div class="lg:col-span-2 bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl">
-               <h4 class="text-lg font-bold text-white mb-4 font-display">Ventas Diarias (Últimos 7 días)</h4>
-               <div id="dailySalesChart" class="h-48 flex items-end justify-between gap-2 px-2">
-                  <!-- Generado dinámicamente -->
+             <!-- Columna Principal: Gráfico de Ventas -->
+             <div class="lg:col-span-2 bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl flex flex-col">
+               <div class="flex items-center justify-between mb-6">
+                 <div>
+                   <h4 class="text-lg font-bold text-white font-display">Ventas Diarias</h4>
+                   <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Últimos 7 días</p>
+                 </div>
+                 <div id="weeklyGrowthBadge" class="bg-zinc-800/50 px-3 py-1.5 rounded-xl border border-zinc-700/50 text-xs font-bold">
+                   <!-- Crecimiento dinámico -->
+                 </div>
                </div>
-               <div class="flex justify-between mt-4 text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-                 <span>Lun</span><span>Mar</span><span>Mie</span><span>Jue</span><span>Vie</span><span>Sab</span><span>Dom</span>
+               
+               <div id="dailySalesChart" class="h-48 flex items-end justify-between gap-3 px-2 mb-2">
+                  <!-- Barras dinámicas -->
                </div>
              </div>
-             <div class="bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl">
-               <h4 class="text-lg font-bold text-white mb-4 font-display">Ranking de Productos</h4>
-               <div id="topProductsList" class="space-y-2">
-                 <!-- Generado dinámicamente -->
+
+             <!-- Columna Lateral: Insights Rápidos -->
+             <div class="flex flex-col gap-6">
+               <!-- Ranking -->
+               <div class="bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl flex-1">
+                 <h4 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                   <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                   Top Productos
+                 </h4>
+                 <div id="topProductsList" class="space-y-3">
+                   <!-- Ranking dinámico -->
+                 </div>
                </div>
-             </div>
-          </div>
+
+               <!-- Ventas por Categoría -->
+               <div class="bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl flex-1">
+                 <h4 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                   <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                   Ventas por Categoría
+                 </h4>
+                 <div id="categoryAnalytics" class="space-y-4">
+                   <!-- Barras de categoría -->
+                 </div>
                </div>
              </div>
           </div>

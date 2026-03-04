@@ -311,10 +311,17 @@ async function updateDashboardStats() {
 
       // 1. Top Productos
       const productSales = {};
+      const categorySales = {};
+      
       completedOrders.forEach(o => {
         const items = (typeof o.items === 'string') ? JSON.parse(o.items) : (o.items || []);
         items.forEach(item => {
+          // Ranking de productos
           productSales[item.name] = (productSales[item.name] || 0) + (item.quantity || 1);
+          
+          // Ventas por categoría
+          const cat = item.category || 'Sin Categoría';
+          categorySales[cat] = (categorySales[cat] || 0) + (item.price * item.quantity);
         });
       });
 
@@ -332,41 +339,88 @@ async function updateDashboardStats() {
         `).join('') : '<p class="text-zinc-500 text-xs italic">Sin ventas aún.</p>';
       }
 
-      // 2. Ventas Diarias (Últimos 7 días)
-      const dailySales = {};
+      // 2. Ventas Diarias (Últimos 7 días) y Crecimiento
+      const currentWeekSales = {};
+      const previousWeekSales = {};
       const last7Days = [];
+      const prev7Days = [];
+      
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
+        d.setHours(0,0,0,0);
         d.setDate(d.getDate() - i);
         const dateStr = d.toISOString().split('T')[0];
-        dailySales[dateStr] = 0;
+        currentWeekSales[dateStr] = 0;
         last7Days.push(dateStr);
+        
+        const dp = new Date(d);
+        dp.setDate(dp.getDate() - 7);
+        const dateStrPrev = dp.toISOString().split('T')[0];
+        previousWeekSales[dateStrPrev] = 0;
       }
+
+      let totalCurrent = 0;
+      let totalPrev = 0;
 
       completedOrders.forEach(o => {
         const dateStr = new Date(o.created_at || o.createdAt).toISOString().split('T')[0];
-        if (dailySales[dateStr] !== undefined) {
-          dailySales[dateStr] += o.total || 0;
+        if (currentWeekSales[dateStr] !== undefined) {
+          currentWeekSales[dateStr] += o.total || 0;
+          totalCurrent += o.total || 0;
+        } else if (previousWeekSales[dateStr] !== undefined) {
+          previousWeekSales[dateStr] += o.total || 0;
+          totalPrev += o.total || 0;
         }
       });
 
+      // Cálculo de % de crecimiento
+      const growth = totalPrev > 0 ? ((totalCurrent - totalPrev) / totalPrev * 100) : 0;
+      
       const chartContainer = document.getElementById('dailySalesChart');
       if (chartContainer) {
-        const maxSale = Math.max(...Object.values(dailySales), 1);
+        const maxSale = Math.max(...Object.values(currentWeekSales), 1);
         chartContainer.innerHTML = last7Days.map(date => {
-          const amount = dailySales[date];
+          const amount = currentWeekSales[date];
           const height = (amount / maxSale) * 100;
           const dayName = new Date(date).toLocaleDateString('es', { weekday: 'short' });
           return `
-            <div class="flex flex-col items-center gap-2 flex-1 group h-full justify-end">
-              <div class="relative w-full bg-zinc-800 rounded-t-lg overflow-hidden flex flex-col justify-end min-h-[4px]" style="height: ${height}%">
-                 <div class="bg-primary group-hover:bg-orange-600 transition-all duration-500 w-full h-full"></div>
-                 <div class="absolute inset-x-0 bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-center font-bold text-white bg-zinc-950 p-1 rounded">S/.${amount.toFixed(0)}</div>
+            <div class="flex flex-col items-center gap-2 flex-1 group h-full justify-end" title="S/. ${amount.toFixed(2)}">
+              <div class="relative w-full bg-zinc-800/50 rounded-t-lg overflow-hidden flex flex-col justify-end min-h-[4px]" style="height: 100%">
+                 <div class="bg-primary/20 absolute inset-x-0 bottom-0 w-full" style="height: 100%"></div>
+                 <div class="bg-primary group-hover:bg-primary-dark transition-all duration-500 w-full" style="height: ${height}%"></div>
               </div>
               <span class="text-[10px] text-zinc-500 font-bold uppercase">${dayName}</span>
             </div>
           `;
         }).join('');
+      }
+
+      // 3. Ventas por Categoría (Nuevo)
+      const catContainer = document.getElementById('categoryAnalytics');
+      if (catContainer) {
+        const sortedCats = Object.entries(categorySales).sort((a,b) => b[1] - a[1]);
+        catContainer.innerHTML = sortedCats.length ? sortedCats.map(([cat, val]) => `
+          <div class="space-y-1">
+            <div class="flex justify-between text-[11px] font-bold uppercase">
+              <span class="text-zinc-400">${cat}</span>
+              <span class="text-white">S/. ${val.toFixed(2)}</span>
+            </div>
+            <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+              <div class="h-full bg-primary" style="width: ${(val / (totalCurrent || 1) * 100).toFixed(0)}%"></div>
+            </div>
+          </div>
+        `).join('') : '<p class="text-zinc-500 text-xs italic">Cargando categorías...</p>';
+      }
+      
+      // Mostrar crecimiento en el UI (opcional si existe el elemento)
+      const growthEl = document.getElementById('weeklyGrowthBadge');
+      if (growthEl) {
+        growthEl.innerHTML = `
+          <span class="${growth >= 0 ? 'text-emerald-500' : 'text-red-500'} flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="${growth >= 0 ? 'M5 10l7-7m0 0l7 7m-7-7v18' : 'M19 14l-7 7m0 0l-7-7m7 7V3'}" stroke-width="3"/></svg>
+            ${Math.abs(growth).toFixed(1)}% vs semana anterior
+          </span>
+        `;
       }
     }
   }
@@ -428,17 +482,60 @@ function showLandingPage() {
 }
 
 // ======================== SUPABASE STORAGE HELPER ========================
+// ======================== SUPABASE STORAGE HELPER ========================
+async function compressImage(file, maxWidth = 1024, quality = 0.7) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => {
+          const compressedFile = new File([blob], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          });
+          resolve(compressedFile);
+        }, 'image/jpeg', quality);
+      };
+    };
+  });
+}
+
 async function uploadImageToSupabase(file, folder = 'products', bucket = 'pideclick') {
   if (!file) return null;
   
-  const fileExt = file.name.split('.').pop();
+  // Optimización automática (excepto para archivos muy pequeños o no imágenes)
+  let fileToUpload = file;
+  if (file.type.startsWith('image/') && file.size > 200 * 1024) { // > 200KB
+    console.log(`Comprimiendo imagen original: ${(file.size / 1024).toFixed(2)}KB`);
+    fileToUpload = await compressImage(file);
+    console.log(`Imagen optimizada: ${(fileToUpload.size / 1024).toFixed(2)}KB`);
+  }
+
+  const fileExt = fileToUpload.name.split('.').pop();
   const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
   const filePath = `${folder}/${fileName}`;
 
   try {
     const { data, error } = await window.supabaseClient.storage
       .from(bucket)
-      .upload(filePath, file);
+      .upload(filePath, fileToUpload);
 
     if (error) throw error;
 
@@ -1076,6 +1173,11 @@ function limitCheckboxes(checkbox, max) {
 
 function addToCartWithCustomization(e) {
   e.preventDefault();
+  
+  if (!isStoreOpen()) {
+    showNotification("Local Cerrado", "Estamos fuera de horario. Puedes ver el menú pero no procesar pedidos.", "warning");
+  }
+
   const p = currentProduct;
   if (!p) {
     showNotification("Error", "Producto no encontrado.", "error");
@@ -1968,12 +2070,21 @@ function isStoreOpen() {
   const openTotalMins = openHours * 60 + openMins;
   const closeTotalMins = closeHours * 60 + closeMins;
   
-  // Si la hora de cierre es menor o igual a la de apertura (ej. abre 18:00, cierra 02:00 AM)
+  let isOpen = false;
   if (closeTotalMins <= openTotalMins) {
-    return currentMinutes >= openTotalMins || currentMinutes < closeTotalMins;
+    isOpen = currentMinutes >= openTotalMins || currentMinutes < closeTotalMins;
+  } else {
+    isOpen = currentMinutes >= openTotalMins && currentMinutes < closeTotalMins;
   }
-  
-  return currentMinutes >= openTotalMins && currentMinutes < closeTotalMins;
+
+  // Actualizar indicadores globales de estado
+  const statusBadge = document.getElementById('storeStatusBadge');
+  if (statusBadge) {
+    statusBadge.innerText = isOpen ? 'Abierto Ahora' : 'Cerrado';
+    statusBadge.className = `px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-1 ${isOpen ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30' : 'bg-red-500/20 text-red-500 border border-red-500/30'}`;
+  }
+
+  return isOpen;
 }
 
 
