@@ -32,7 +32,7 @@ DO $$ BEGIN
     
     DROP POLICY IF EXISTS "Super Admin Full Access" ON tenants;
     CREATE POLICY "Super Admin Full Access" ON tenants FOR ALL TO authenticated 
-    USING (auth.jwt() ->> 'email' = 'tu-email-admin@ejemplo.com');
+    USING (auth.jwt() ->> 'email' = 'programador.web.ernesto@gmail.com');
 END $$;
 
 -- POLÍTICAS SUBSCRIPTIONS
@@ -42,7 +42,7 @@ DO $$ BEGIN
     
     DROP POLICY IF EXISTS "Super Admin Subscriptions Access" ON subscriptions;
     CREATE POLICY "Super Admin Subscriptions Access" ON subscriptions FOR ALL TO authenticated 
-    USING (auth.jwt() ->> 'email' = 'tu-email-admin@ejemplo.com');
+    USING (auth.jwt() ->> 'email' = 'programador.web.ernesto@gmail.com');
 END $$;
 
 -- FUNCIÓN UPDATED_AT
