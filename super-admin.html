@@ -169,6 +169,10 @@
       if (!tbody) return;
       tbody.innerHTML = '';
 
+      // Actualizar contador real de lo que llegó
+      const totalEl = document.getElementById('totalTenants');
+      if (totalEl) totalEl.textContent = tenantsList.length;
+
       if (tenantsList.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" class="px-8 py-12 text-center text-zinc-500 italic">No hay negocios registrados aún.</td></tr>';
         return;
@@ -176,13 +180,14 @@
 
       tenantsList.forEach(t => {
         try {
-          if (!t.slug) return; // Saltar si no tiene slug por alguna razón
+          const displaySlug = t.slug || 'sin-slug';
+          const displayName = t.name || displaySlug;
 
           // Obtener la suscripción más reciente de forma segura
           const subs = t.subscriptions || [];
           const sortedSubs = [...subs].sort((a, b) => {
-            const dateA = a.updated_at ? new Date(a.updated_at) : new Date(0);
-            const dateB = b.updated_at ? new Date(b.updated_at) : new Date(0);
+            const dateA = (a.updated_at || a.created_at) ? new Date(a.updated_at || a.created_at) : new Date(0);
+            const dateB = (b.updated_at || b.created_at) ? new Date(b.updated_at || b.created_at) : new Date(0);
             return dateB - dateA;
           });
           
@@ -195,10 +200,11 @@
           tr.innerHTML = `
             <td class="px-8 py-6">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center font-bold text-lg text-primary uppercase">${t.slug.charAt(0)}</div>
+                <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center font-bold text-lg text-primary uppercase">${displaySlug.charAt(0)}</div>
                 <div>
-                  <p class="font-bold text-white uppercase">${t.slug}</p>
-                  <a href="index.html?b=${t.slug}" target="_blank" class="text-xs text-primary hover:underline">Ver Tienda →</a>
+                  <p class="font-bold text-white uppercase">${displaySlug}</p>
+                  <p class="text-[10px] text-zinc-500 truncate max-w-[150px]">${displayName}</p>
+                  <a href="index.html?b=${displaySlug}" target="_blank" class="text-xs text-primary hover:underline">Ver Tienda →</a>
                 </div>
               </div>
             </td>
@@ -211,7 +217,7 @@
               </span>
             </td>
             <td class="px-8 py-6 text-sm text-zinc-400">
-              ${sub.updated_at ? new Date(sub.updated_at).toLocaleDateString() : 'Directo / Nuevo'}
+              ${sub.updated_at ? new Date(sub.updated_at).toLocaleDateString() : 'Activo'}
             </td>
             <td class="px-8 py-6 text-right">
               <div class="flex gap-2 justify-end">
@@ -224,6 +230,10 @@
           tbody.appendChild(tr);
         } catch (err) {
           console.error("Error renderizando fila de tenant:", err, t);
+          // Fila de error para no "perder" el registro
+          const trErr = document.createElement('tr');
+          trErr.innerHTML = `<td colspan="4" class="px-8 py-4 text-xs text-red-500/50 italic">Error cargando datos de un negocio (ID: ${t.id})</td>`;
+          tbody.appendChild(trErr);
         }
       });
     }
