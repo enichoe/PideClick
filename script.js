@@ -83,6 +83,21 @@ async function updatePlanUI() {
      }
   }
 
+  // Feature Gating: Clientes
+  const canSeeCustomers = await window.SaaS.hasFeature('customerManagement');
+  const tabClientes = document.getElementById('tabClientes');
+  if (tabClientes) {
+    if (!canSeeCustomers) {
+      tabClientes.classList.add('opacity-40', 'cursor-not-allowed');
+      tabClientes.title = "Disponible desde Plan Punche";
+      tabClientes.onclick = () => showUpgradeModal('Gestión de Clientes');
+    } else {
+      tabClientes.classList.remove('opacity-40', 'cursor-not-allowed');
+      tabClientes.title = "";
+      tabClientes.onclick = () => switchAdminTab('clientes');
+    }
+  }
+
   // Footer Branding (Solo pro puede removerlo)
   const isPoderoso = sub.planId === 'poderoso';
   const footerBadge = document.getElementById('pideClickFooterBadge');

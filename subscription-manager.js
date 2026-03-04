@@ -11,6 +11,7 @@ const PLANS = {
     features: {
       customBranding: false,
       advancedAnalytics: false,
+      customerManagement: false,
       whatsappFollowup: true,
       removablePideClickBadge: false
     }
@@ -22,6 +23,7 @@ const PLANS = {
     features: {
       customBranding: false,
       advancedAnalytics: false,
+      customerManagement: true,
       whatsappFollowup: true,
       removablePideClickBadge: false
     }
@@ -33,6 +35,7 @@ const PLANS = {
     features: {
       customBranding: true,
       advancedAnalytics: true,
+      customerManagement: true,
       whatsappFollowup: true,
       removablePideClickBadge: true
     }

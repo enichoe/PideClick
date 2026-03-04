@@ -212,7 +212,11 @@
     async function changePlan(internalId, newPlan) {
       if (confirm(`¿Seguro que quieres cambiar el plan a ${newPlan.toUpperCase()}?`)) {
         await window.SaaS.updateTenantPlan(internalId, newPlan);
-        renderDashboard();
+        // Pequeño delay para que Supabase propague el cambio y no traiga data vieja
+        setTimeout(async () => {
+          await renderDashboard();
+          alert("Plan actualizado correctamente");
+        }, 500);
       }
     }
   </script>
