@@ -1,7 +1,7 @@
-console.log("DEBUG: subscription-manager.js loading...");
+﻿console.log("DEBUG: subscription-manager.js loading...");
 /**
  * SUBSCRIPTION MANAGER
- * Gestiona los planes y límites de cada negocio (tenant).
+ * Gestiona los planes y lÃ­mites de cada negocio (tenant).
  */
 
 const PLANS = {
@@ -49,7 +49,7 @@ let cachedSubscription = null;
 let activeTenantId = null;
 
 async function getTenantSubscription() {
-  // Intentar obtener activeTenantId si no se ha registrado explícitamente
+  // Intentar obtener activeTenantId si no se ha registrado explÃ­citamente
   if (!activeTenantId) {
     const params = new URLSearchParams(window.location.search);
     activeTenantId = params.get('b');
@@ -82,7 +82,7 @@ async function getTenantSubscription() {
     cachedSubscription = { planId: subData.plan_id, tenantId: activeTenantId, expires: subData.expires_at };
     return cachedSubscription;
   } catch (err) {
-    console.warn("Error cargando suscripción de Supabase, usando fallback.", err);
+    console.warn("Error cargando suscripciÃ³n de Supabase, usando fallback.", err);
     return { planId: 'sencillito', expires: null };
   }
 }
@@ -94,14 +94,14 @@ async function hasFeature(featureName) {
 }
 
 /**
- * Obtiene los límites del plan actual.
+ * Obtiene los lÃ­mites del plan actual.
  */
 async function getPlanLimits() {
   const currentSub = await getTenantSubscription();
   return PLANS[currentSub.planId.toUpperCase()] || PLANS.SENCILLITO;
 }
 
-// Registro y gestión global de negocios (Para Super Admin)
+// Registro y gestiÃ³n global de negocios (Para Super Admin)
 
 /**
  * Registra un negocio en la lista global de Supabase.
@@ -132,7 +132,7 @@ async function registerTenant(id) {
       
       if (error) console.warn("Error registrando tenant en Supabase:", error);
     } else if (!existing.owner_email && userEmail) {
-      // Si existe pero no tiene dueño, y tenemos un usuario logueado, lo asignamos
+      // Si existe pero no tiene dueÃ±o, y tenemos un usuario logueado, lo asignamos
       await window.supabaseClient
         .from('tenants')
         .update({ owner_email: userEmail })
@@ -178,7 +178,7 @@ async function updateTenantPlan(tenantIdInternal, planId) {
     cachedSubscription = null; // Limpiar cache
   } catch (err) {
     console.error("Error actualizando plan del tenant:", err);
-    alert(`Error al actualizar plan en Supabase: ${err.message || 'Error desconocido'}\n\nVerifica que tengas permisos de administrador.`);
+    throw err;
   }
 }
 
@@ -192,3 +192,4 @@ window.SaaS = {
   updateTenantPlan,
   PLANS
 };
+
