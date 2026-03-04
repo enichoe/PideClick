@@ -1,3 +1,4 @@
+console.log("DEBUG: subscription-manager.js loading...");
 /**
  * SUBSCRIPTION MANAGER
  * Gestiona los planes y límites de cada negocio (tenant).
@@ -45,23 +46,23 @@ const PLANS = {
 
 // Cache para evitar peticiones excesivas
 let cachedSubscription = null;
-let tenantId = null;
+let activeTenantId = null;
 
 async function getTenantSubscription() {
-  // Intentar obtener tenantId si no se ha registrado explícitamente
-  if (!tenantId) {
+  // Intentar obtener activeTenantId si no se ha registrado explícitamente
+  if (!activeTenantId) {
     const params = new URLSearchParams(window.location.search);
-    tenantId = params.get('b');
+    activeTenantId = params.get('b');
   }
 
-  if (!tenantId || tenantId === 'default') return { planId: 'sencillito', expires: null };
-  if (cachedSubscription && cachedSubscription.tenantId === tenantId) return cachedSubscription;
+  if (!activeTenantId || activeTenantId === 'default') return { planId: 'sencillito', expires: null };
+  if (cachedSubscription && cachedSubscription.tenantId === activeTenantId) return cachedSubscription;
 
   try {
     const { data: tenant, error: tError } = await window.supabaseClient
       .from('tenants')
       .select('id, slug')
-      .eq('slug', tenantId)
+      .eq('slug', activeTenantId)
       .single();
 
     if (tError) {
@@ -78,7 +79,7 @@ async function getTenantSubscription() {
         if (sError && sError.code !== 'PGRST116') throw sError;
 
     const subData = sub || { plan_id: 'sencillito' };
-    cachedSubscription = { planId: subData.plan_id, tenantId: tenantId, expires: subData.expires_at };
+    cachedSubscription = { planId: subData.plan_id, tenantId: activeTenantId, expires: subData.expires_at };
     return cachedSubscription;
   } catch (err) {
     console.warn("Error cargando suscripción de Supabase, usando fallback.", err);
@@ -107,7 +108,7 @@ async function getPlanLimits() {
  */
 async function registerTenant(id) {
   if (!id || id === 'default') return;
-  tenantId = id; // Guardar globalmente
+  activeTenantId = id; // Guardar globalmente
   
   try {
     const { data: { session } } = await window.supabaseClient.auth.getSession();

@@ -4,8 +4,8 @@ const getTenantId = () => {
   return urlParams.get('b') || 'default';
 };
 
-const tenantId = getTenantId();
-const storageKey = (key) => `${tenantId}_${key}`;
+const currentStoreSlug = getTenantId();
+const storageKey = (key) => `${currentStoreSlug}_${key}`;
 
 // ======================== INITIAL DATA (FALLBACK) ========================
 let defaultProducts = [
@@ -185,13 +185,16 @@ async function fetchProductsFromSupabase(restaurantId) {
 }
 
 async function initApp() {
+  console.log("DEBUG: initApp starting...");
   try {
     const params = new URLSearchParams(window.location.search);
     const b = params.get('b');
 
     if (!b) {
+      console.log("DEBUG: No 'b' parameter, showing landing page...");
       showLandingPage();
     } else {
+      console.log("DEBUG: Parameter 'b' found:", b);
       await window.SaaS.registerTenant(b);
       const nav = document.getElementById('mainNav');
       if (nav) nav.classList.remove('hidden');
@@ -464,7 +467,13 @@ function setupRealtimeOrders(restaurantId) {
 }
 
 function showLandingPage() {
-  document.getElementById('landingView').classList.remove('hidden');
+  console.log("DEBUG: showLandingPage running...");
+  const lv = document.getElementById('landingView');
+  if (!lv) {
+    console.error("CRITICAL ERROR: 'landingView' element not found!");
+    return;
+  }
+  lv.classList.remove('hidden');
   document.getElementById('mainNav').classList.add('hidden');
   document.getElementById('clienteView').classList.add('hidden');
   document.getElementById('adminView').classList.add('hidden');
