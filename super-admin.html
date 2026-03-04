@@ -174,7 +174,9 @@
       }
 
       tenantsList.forEach(t => {
-        const sub = (t.subscriptions && t.subscriptions[0]) || { plan_id: 'sencillito' };
+        // En lugar de [0], ordenamos por fecha por si hay basura en la DB
+        const sortedSubs = (t.subscriptions || []).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        const sub = sortedSubs[0] || { plan_id: 'sencillito' };
         const plan = window.SaaS.PLANS[sub.plan_id.toUpperCase()] || window.SaaS.PLANS.SENCILLITO;
         
         const tr = document.createElement('tr');
@@ -190,7 +192,10 @@
             </div>
           </td>
           <td class="px-8 py-6">
-            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${sub.plan_id === 'pro' ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
+            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider 
+              ${sub.plan_id === 'poderoso' ? 'bg-primary/20 text-primary border border-primary/30' : 
+                sub.plan_id === 'punche' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : 
+                'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
               ${plan.name}
             </span>
           </td>

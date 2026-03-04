@@ -121,7 +121,8 @@ async function getAllTenants() {
   try {
     const { data, error } = await window.supabaseClient
       .from('tenants')
-      .select('*, subscriptions(plan_id, updated_at)');
+      .select('*, subscriptions(plan_id, updated_at)')
+      .order('created_at', { ascending: false });
     
     if (error) throw error;
     return data || [];
