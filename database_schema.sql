@@ -11,6 +11,13 @@ CREATE TABLE IF NOT EXISTS tenants (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Asegurar que las columnas existan si la tabla ya fue creada
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tenants' AND column_name='updated_at') THEN
+        ALTER TABLE tenants ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+    END IF;
+END $$;
+
 -- TABLA DE SUSCRIPCIONES
 CREATE TABLE IF NOT EXISTS subscriptions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -21,6 +28,12 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='subscriptions' AND column_name='updated_at') THEN
+        ALTER TABLE subscriptions ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+    END IF;
+END $$;
+
 -- HABILITAR RLS
 ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
@@ -30,9 +43,12 @@ DO $$ BEGIN
     DROP POLICY IF EXISTS "Permitir lectura pública de tenants" ON tenants;
     CREATE POLICY "Permitir lectura pública de tenants" ON tenants FOR SELECT USING (true);
     
+    DROP POLICY IF EXISTS "Public Insert Tenants" ON tenants;
+    CREATE POLICY "Public Insert Tenants" ON tenants FOR INSERT WITH CHECK (true);
+
     DROP POLICY IF EXISTS "Super Admin Full Access" ON tenants;
     CREATE POLICY "Super Admin Full Access" ON tenants FOR ALL TO authenticated 
-    USING (auth.jwt() ->> 'email' = 'programador.web.ernesto@gmail.com');
+    USING (lower(auth.jwt() ->> 'email') = 'programador.web.ernesto@gmail.com');
 END $$;
 
 -- POLÍTICAS SUBSCRIPTIONS
@@ -42,7 +58,7 @@ DO $$ BEGIN
     
     DROP POLICY IF EXISTS "Super Admin Subscriptions Access" ON subscriptions;
     CREATE POLICY "Super Admin Subscriptions Access" ON subscriptions FOR ALL TO authenticated 
-    USING (auth.jwt() ->> 'email' = 'programador.web.ernesto@gmail.com');
+    USING (lower(auth.jwt() ->> 'email') = 'programador.web.ernesto@gmail.com');
 END $$;
 
 -- FUNCIÓN UPDATED_AT
@@ -79,6 +95,12 @@ CREATE TABLE IF NOT EXISTS restaurants (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='restaurants' AND column_name='updated_at') THEN
+        ALTER TABLE restaurants ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+    END IF;
+END $$;
+
 -- TABLA DE PEDIDOS (ORDERS)
 CREATE TABLE IF NOT EXISTS orders (
   id BIGSERIAL PRIMARY KEY,
@@ -100,33 +122,40 @@ CREATE TABLE IF NOT EXISTS orders (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='orders' AND column_name='updated_at') THEN
+        ALTER TABLE orders ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+    END IF;
+END $$;
+
 -- HABILITAR RLS OTROS
 ALTER TABLE restaurants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 
--- POLÍTICAS RESTAURANTS / ORDERS
+-- POLÍTICAS RESTAURANTS
 DO $$ BEGIN
-    -- RESTAURANTS
     DROP POLICY IF EXISTS "Public Read Restaurants" ON restaurants;
     CREATE POLICY "Public Read Restaurants" ON restaurants FOR SELECT USING (true);
     
     DROP POLICY IF EXISTS "Public Insert Restaurants" ON restaurants;
     CREATE POLICY "Public Insert Restaurants" ON restaurants FOR INSERT WITH CHECK (true);
     
-    DROP POLICY IF EXISTS "Admin Update Restaurants" ON restaurants;
-    CREATE POLICY "Admin Update Restaurants" ON restaurants FOR UPDATE TO authenticated 
-    USING (auth.jwt() ->> 'email' = 'programador.web.ernesto@gmail.com');
+    DROP POLICY IF EXISTS "Admin Full Access Restaurants" ON restaurants;
+    CREATE POLICY "Admin Full Access Restaurants" ON restaurants FOR ALL TO authenticated 
+    USING (lower(auth.jwt() ->> 'email') = 'programador.web.ernesto@gmail.com');
+END $$;
 
-    -- ORDERS
+-- POLÍTICAS ORDERS
+DO $$ BEGIN
     DROP POLICY IF EXISTS "Public Read Orders" ON orders;
     CREATE POLICY "Public Read Orders" ON orders FOR SELECT USING (true);
     
     DROP POLICY IF EXISTS "Public Insert Orders" ON orders;
     CREATE POLICY "Public Insert Orders" ON orders FOR INSERT WITH CHECK (true);
 
-    DROP POLICY IF EXISTS "Admin Update Orders" ON orders;
-    CREATE POLICY "Admin Update Orders" ON orders FOR UPDATE TO authenticated 
-    USING (auth.jwt() ->> 'email' = 'programador.web.ernesto@gmail.com');
+    DROP POLICY IF EXISTS "Admin Full Access Orders" ON orders;
+    CREATE POLICY "Admin Full Access Orders" ON orders FOR ALL TO authenticated 
+    USING (lower(auth.jwt() ->> 'email') = 'programador.web.ernesto@gmail.com');
 END $$;
 
 -- TRIGGERS OTROS

@@ -497,6 +497,7 @@ function loadCustomSettings() {
   const adminInstagram = document.getElementById('adminInstagram');
   const adminWhatsapp = document.getElementById('adminWhatsapp');
   const adminDeliveryWhatsapp = document.getElementById('adminDeliveryWhatsapp');
+  const adminPaymentWhatsapp = document.getElementById('adminPaymentWhatsapp');
   const adminFacebook = document.getElementById('adminFacebook');
   const adminLocation = document.getElementById('adminLocation');
   const adminOpenTime = document.getElementById('adminOpenTime');
@@ -590,7 +591,8 @@ async function saveCustomSettings() {
 
   if (errorData) {
     console.error("DEBUG SAVE SETTINGS ERROR:", errorData);
-    alert("ERROR GUARDANDO AJUSTES EN BD:\nVerifica que la tabla 'restaurants' exista y tenga políticas de INSERT/UPDATE correctas en Supabase.\nDetalle: " + (errorData.message || JSON.stringify(errorData)));
+    const detail = errorData.message || JSON.stringify(errorData);
+    alert(`ERROR GUARDANDO AJUSTES EN BD:\n\n1. Verifica que tu correo (${'programador.web.ernesto@gmail.com'}) sea el mismo con el que iniciaste sesión.\n2. Asegúrate de haber ejecutado el SQL de RLS en Supabase.\n\nDetalle técnico: ${detail}`);
     showNotification("Error", "No se pudo guardar en la nube", "error");
     return;
   }
