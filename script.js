@@ -43,38 +43,75 @@ async function updatePlanUI() {
   const badge = document.getElementById('planBadge');
   if (badge) {
     badge.textContent = plan.name;
-    badge.className = `px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${sub.planId === 'pro' ? 'bg-primary text-white border-primary' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`;
+    // Color del badge según el plan
+    let badgeClass = "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ";
+    if (sub.planId === 'poderoso') badgeClass += "bg-primary text-white border-primary shadow-lg shadow-primary/20";
+    else if (sub.planId === 'punche') badgeClass += "bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20";
+    else badgeClass += "bg-zinc-800 text-zinc-400 border border-zinc-700";
+    badge.className = badgeClass;
   }
 
-  // Si no es PRO, mostramos CTA de mejora, PERO dejamos el branding visible para que pruebe el banner
-  const isPro = sub.planId === 'pro';
-  const brandingSection = document.getElementById('brandingConfig'); 
-  if (brandingSection) brandingSection.classList.remove('hidden'); // Siempre visible
+  // Feature Gating: Dashboard / Estadísticas
+  const canSeeStats = await window.SaaS.hasFeature('advancedAnalytics');
+  const tabDashboard = document.getElementById('tabDashboard');
+  const dashboardPanel = document.getElementById('dashboardPanel');
   
-  const upgradeCTA = document.getElementById('upgradeCTA');
-  if (upgradeCTA) upgradeCTA.classList.toggle('hidden', isPro);
+  if (tabDashboard) {
+    if (!canSeeStats) {
+      tabDashboard.classList.add('opacity-40', 'cursor-not-allowed');
+      tabDashboard.title = "Disponible solo en Plan Poderoso";
+      tabDashboard.onclick = () => showUpgradeModal('Estadísticas');
+    } else {
+      tabDashboard.classList.remove('opacity-40', 'cursor-not-allowed');
+      tabDashboard.title = "";
+      tabDashboard.onclick = () => switchAdminTab('dashboard');
+    }
+  }
 
-  // Footer Branding (Solo pro puede removerlo, pero la lógica hasFeature lo controla)
+  // Feature Gating: Branding / Colores
+  const canCustomBranding = await window.SaaS.hasFeature('customBranding');
+  const brandingSection = document.getElementById('brandingConfig'); 
+  const colorConfigSection = document.getElementById('colorConfig'); // Asumiendo que existirá o se creará
+
+  if (brandingSection) {
+     if (!canCustomBranding) {
+       brandingSection.classList.add('opacity-50', 'pointer-events-none', 'grayscale');
+       brandingSection.title = "Desbloquea branding profesional con el Plan Poderoso";
+     } else {
+       brandingSection.classList.remove('opacity-50', 'pointer-events-none', 'grayscale');
+       brandingSection.title = "";
+     }
+  }
+
+  // Footer Branding (Solo pro puede removerlo)
+  const isPoderoso = sub.planId === 'poderoso';
   const footerBadge = document.getElementById('pideClickFooterBadge');
   if (footerBadge) {
-    footerBadge.classList.toggle('hidden', isPro && !window.SaaS.hasFeature('whatsappFollowup')); 
-    // En realidad, si es PRO y el usuario elige quitarlo (fase posterior), se ocultaría. 
-    // Por ahora, solo los PRO tienen la sección de configuración de marca visible.
+    footerBadge.classList.toggle('hidden', isPoderoso); 
   }
   
   // Mostrar mensaje si alcanzó límite de productos
   const btnNewProduct = document.querySelector('button[onclick="openProductModal()"]');
   if (btnNewProduct) {
     const atLimit = products.length >= plan.maxProducts;
-    btnNewProduct.disabled = atLimit && !isPro;
-    if (atLimit && !isPro) {
-      btnNewProduct.title = "Límite de productos alcanzado (Plan Esencial)";
+    const canExceedLimit = plan.maxProducts > 50; // Ilimitado en Punche/Poderoso
+    
+    if (atLimit && !canExceedLimit) {
+      btnNewProduct.disabled = true;
+      btnNewProduct.title = `Límite de ${plan.maxProducts} productos alcanzado (${plan.name})`;
       btnNewProduct.classList.add('opacity-50', 'grayscale');
     } else {
+      btnNewProduct.disabled = false;
       btnNewProduct.title = "";
       btnNewProduct.classList.remove('opacity-50', 'grayscale');
     }
   }
+}
+
+// Modal de Upgrade (Simple)
+function showUpgradeModal(feature) {
+  alert(`La función de ${feature} está disponible en el Plan Poderoso.\n\nContáctanos para mejorar tu plan.`);
+  window.open('https://wa.me/51972498691?text=Hola,%20quiero%20mejorar%20mi%20plan%20en%20PideClick%20para%20usar%20' + feature, '_blank');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1617,7 +1654,17 @@ function renderAdminProducts() {
 }
 
 
-function openProductModal(id = null) {
+async function openProductModal(id = null) {
+  // Solo verificar límite si es un producto NUEVO
+  if (!id) {
+    const plan = await window.SaaS.getPlanLimits();
+    const canExceedLimit = plan.maxProducts > 50; 
+    if (products.length >= plan.maxProducts && !canExceedLimit) {
+      showUpgradeModal('más de 10 productos');
+      return;
+    }
+  }
+
   const modal = document.getElementById('productModal');
   const form = document.getElementById('productForm');
   const preview = document.getElementById('productPreviewImg');

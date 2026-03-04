@@ -146,13 +146,15 @@
       document.getElementById('totalTenants').textContent = tenants.length;
       
       let proCount = 0;
+      let puncheCount = 0;
       tenants.forEach(t => {
         const sub = t.subscriptions && t.subscriptions[0];
-        if (sub && sub.plan_id === 'pro') proCount++;
+        if (sub && sub.plan_id === 'poderoso') proCount++;
+        else if (sub && sub.plan_id === 'punche') puncheCount++;
       });
       
       document.getElementById('proTenants').textContent = proCount;
-      document.getElementById('freeTenants').textContent = tenants.length - proCount;
+      document.getElementById('freeTenants').textContent = tenants.length - (proCount + puncheCount);
       
       refreshTenantList(tenants);
     }
@@ -172,8 +174,8 @@
       }
 
       tenantsList.forEach(t => {
-        const sub = (t.subscriptions && t.subscriptions[0]) || { plan_id: 'essential' };
-        const plan = window.SaaS.PLANS[sub.plan_id.toUpperCase()] || window.SaaS.PLANS.ESSENTIAL;
+        const sub = (t.subscriptions && t.subscriptions[0]) || { plan_id: 'sencillito' };
+        const plan = window.SaaS.PLANS[sub.plan_id.toUpperCase()] || window.SaaS.PLANS.SENCILLITO;
         
         const tr = document.createElement('tr');
         tr.className = "hover:bg-white/[0.02] transition-all group";
@@ -196,10 +198,11 @@
             ${sub.updated_at ? new Date(sub.updated_at).toLocaleDateString() : 'N/A'}
           </td>
           <td class="px-8 py-6 text-right">
-            ${sub.plan_id === 'pro' 
-              ? `<button onclick="changePlan('${t.id}', 'essential')" class="text-xs font-bold text-zinc-500 hover:text-white transition-colors">Bajar a Esencial</button>`
-              : `<button onclick="changePlan('${t.id}', 'pro')" class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-primary/10">Activar PRO</button>`
-            }
+            <div class="flex gap-2 justify-end">
+              <button onclick="changePlan('${t.id}', 'sencillito')" class="px-3 py-1 bg-zinc-800 text-zinc-400 rounded-lg text-xs font-bold hover:text-white transition-all">Sencillito</button>
+              <button onclick="changePlan('${t.id}', 'punche')" class="px-3 py-1 bg-amber-500/20 text-amber-500 rounded-lg text-xs font-bold hover:bg-amber-500/30 transition-all">Punche</button>
+              <button onclick="changePlan('${t.id}', 'poderoso')" class="px-3 py-1 bg-primary/20 text-primary rounded-lg text-xs font-bold hover:bg-primary/30 transition-all">Poderoso</button>
+            </div>
           </td>
         `;
         tbody.appendChild(tr);

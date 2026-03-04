@@ -4,9 +4,9 @@
  */
 
 const PLANS = {
-  ESSENTIAL: {
-    id: 'essential',
-    name: 'Plan Esencial',
+  SENCILLITO: {
+    id: 'sencillito',
+    name: 'Plan Sencillito',
     maxProducts: 10,
     features: {
       customBranding: false,
@@ -15,9 +15,20 @@ const PLANS = {
       removablePideClickBadge: false
     }
   },
-  PRO: {
-    id: 'pro',
-    name: 'Plan Pro',
+  PUNCHE: {
+    id: 'punche',
+    name: 'Plan Punche',
+    maxProducts: 999,
+    features: {
+      customBranding: false,
+      advancedAnalytics: false,
+      whatsappFollowup: true,
+      removablePideClickBadge: false
+    }
+  },
+  PODEROSO: {
+    id: 'poderoso',
+    name: 'Plan Poderoso',
     maxProducts: 999,
     features: {
       customBranding: true,
@@ -55,7 +66,7 @@ async function getTenantSubscription() {
 
     if (sError && sError.code !== 'PGRST116') throw sError;
 
-    const subData = sub || { plan_id: 'essential' };
+    const subData = sub || { plan_id: 'sencillito' };
     cachedSubscription = { planId: subData.plan_id, tenantId: tenantId, expires: subData.expires_at };
     return cachedSubscription;
   } catch (err) {
@@ -134,7 +145,7 @@ async function updateTenantPlan(tenantIdInternal, planId) {
     cachedSubscription = null; // Limpiar cache
   } catch (err) {
     console.error("Error actualizando plan del tenant:", err);
-    alert("Error al actualizar plan en Supabase");
+    alert(`Error al actualizar plan en Supabase: ${err.message || 'Error desconocido'}\n\nVerifica que tengas permisos de administrador.`);
   }
 }
 

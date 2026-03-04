@@ -471,83 +471,198 @@
         </div>
       </section>
 
-      <section class="py-24 px-4 bg-zinc-900/50 border-y border-zinc-800/10" id="pricing">
-        <div class="max-w-6xl mx-auto">
+      <section class="py-24 px-4 bg-zinc-950 relative overflow-hidden" id="pricing">
+        <div class="absolute inset-0 bg-primary/5 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+        <div class="max-w-7xl mx-auto relative z-10">
           <div class="text-center mb-16">
-            <h2 class="text-3xl sm:text-5xl font-black font-display mb-4 text-white">Planes Hechos para <span class="text-primary">Crecer</span></h2>
-            <p class="text-zinc-400 font-medium">Empieza gratis, escala cuando estés listo.</p>
+            <h2 class="text-4xl sm:text-6xl font-black font-display mb-6 text-white">Planes Hechos para <span class="text-primary">Ganar</span></h2>
+            <p class="text-zinc-400 text-lg max-w-2xl mx-auto mb-10">Elige el plan que mejor se adapte a tu chamba. Sin comisiones ocultas.</p>
+            
+            <!-- Pricing Toggle -->
+            <div class="flex items-center justify-center gap-4 mb-12">
+              <span class="text-sm font-bold text-zinc-400 transition-colors duration-300" id="billing-monthly-text">Mensual</span>
+              <button onclick="toggleBilling()" id="billing-toggle" class="relative w-14 h-7 bg-zinc-800 rounded-full p-1 transition-all duration-300 group hover:ring-2 hover:ring-primary/50">
+                <div id="billing-knob" class="w-5 h-5 bg-primary rounded-full shadow-lg transition-transform duration-300 ease-in-out"></div>
+              </button>
+              <span class="text-sm font-bold text-zinc-500 transition-colors duration-300 flex items-center gap-2" id="billing-annual-text">
+                Anual
+                <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-500 text-[10px] rounded-full uppercase tracking-tighter">2 Meses Gratis</span>
+              </span>
+            </div>
           </div>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <!-- Plan Esencial -->
-            <div class="p-8 bg-zinc-950 rounded-[2.5rem] border border-zinc-800 flex flex-col hover:border-zinc-700 transition-all shadow-xl">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            
+            <!-- Plan Sencillito (Gratis) -->
+            <div class="p-8 bg-zinc-900/50 backdrop-blur-sm rounded-[2.5rem] border border-zinc-800 flex flex-col hover:border-emerald-500/30 transition-all duration-500 shadow-xl group">
               <div class="mb-8">
-                <h3 class="text-2xl font-bold text-white mb-2">Plan Esencial</h3>
-                <p class="text-zinc-500 text-sm">Perfecto para emprendedores.</p>
-                <div class="mt-6 flex items-baseline gap-1">
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 mb-4 group-hover:scale-110 transition-transform duration-500">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Plan Sencillito</h3>
+                <p class="text-zinc-500 text-sm italic">Gratis para siempre.</p>
+                <div class="mt-6">
                   <span class="text-4xl font-black text-white">S/. 0</span>
-                  <span class="text-zinc-500 text-sm">/ de por vida</span>
                 </div>
               </div>
               <ul class="space-y-4 mb-10 flex-1">
                 <li class="flex items-center gap-3 text-zinc-300">
-                  <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  Hasta 05 productos
+                  <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Hasta 10 productos</span>
                 </li>
                 <li class="flex items-center gap-3 text-zinc-300">
-                  <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  Menú digital optimizado
+                  <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Menú digital básico</span>
                 </li>
                 <li class="flex items-center gap-3 text-zinc-300">
-                  <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  Pedidos por WhatsApp
+                  <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Pedidos ilimitados a WhatsApp</span>
                 </li>
-                <li class="flex items-center gap-3 text-zinc-500">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                  Branding Personalizado
+                <li class="flex items-center gap-3 text-zinc-300">
+                  <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Gestión básica desde el celular</span>
+                </li>
+                <li class="flex items-center gap-3 text-zinc-600 line-through text-xs">
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  <span>Personalización de colores</span>
+                </li>
+                <li class="flex items-center gap-3 text-zinc-600 line-through text-xs">
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  <span>Estadísticas</span>
                 </li>
               </ul>
-              <button onclick="window.location.href='index.html?b=nuevo-negocio'" class="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl font-bold transition-all">Empezar Gratis</button>
+              <button onclick="window.location.href='index.html?b=nuevo-negocio'" class="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl font-bold transition-all active:scale-95 border border-white/5">Empezar Gratis</button>
+              <p class="text-[10px] text-zinc-500 mt-4 text-center">Enlace: pide-click.tunegocio-app</p>
             </div>
 
-            <!-- Plan PRO -->
-            <div class="p-8 bg-zinc-950 rounded-[2.5rem] border-2 border-primary flex flex-col relative scale-105 shadow-2xl shadow-primary/10">
-              <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-xs font-bold rounded-full uppercase tracking-widest shadow-lg">Más Popular</div>
+            <!-- Plan Punche (S/ 29) -->
+            <div class="p-8 bg-zinc-900/40 backdrop-blur-md rounded-[2.5rem] border-2 border-amber-500 flex flex-col relative shadow-2xl shadow-amber-500/10 scale-105 group transition-all duration-500 hover:border-amber-400">
+              <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-amber-500 text-black text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg animate-pulse">Recomendado</div>
               <div class="mb-8">
-                <h3 class="text-2xl font-bold text-white mb-2">Plan PRO</h3>
-                <p class="text-zinc-500 text-sm">Todo lo que necesitas para escalar.</p>
+                <div class="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 mb-4 group-hover:scale-110 transition-transform duration-500">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Plan Punche</h3>
+                <p class="text-zinc-500 text-sm">Para negocios en movimiento.</p>
                 <div class="mt-6 flex items-baseline gap-1">
-                  <span class="text-4xl font-black text-white">S/. 30</span>
-                  <span class="text-zinc-500 text-sm">/ mes</span>
+                  <span class="text-4xl font-black text-white price-value" data-monthly="29" data-annual="290">S/. 29</span>
+                  <span class="text-zinc-500 text-sm billing-period">/ mes</span>
                 </div>
               </div>
               <ul class="space-y-4 mb-10 flex-1">
-                <li class="flex items-center gap-3 text-zinc-300">
-                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  Productos <strong>Ilimitados</strong>
+                <li class="flex items-center gap-3 text-zinc-200">
+                  <svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Productos <strong>Ilimitados</strong></span>
                 </li>
-                <li class="flex items-center gap-3 text-zinc-300">
-                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  Branding Personalizado
+                <li class="flex items-center gap-3 text-zinc-200">
+                  <svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Menú digital completo</span>
                 </li>
-                <li class="flex items-center gap-3 text-zinc-300">
-                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  Banners Promocionales
+                <li class="flex items-center gap-3 text-zinc-200">
+                  <svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Pedidos ilimitados</span>
                 </li>
-                <li class="flex items-center gap-3 text-zinc-300">
-                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  Estadísticas de Venta
+                <li class="flex items-center gap-3 text-zinc-200">
+                  <svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Activar / Desactivar productos</span>
                 </li>
-                <li class="flex items-center gap-3 text-zinc-300">
-                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  Soporte VIP
+                <li class="flex items-center gap-3 text-zinc-200">
+                  <svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Gestión completa desde el celular</span>
+                </li>
+                <li class="flex items-center gap-3 text-zinc-600 line-through text-xs">
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  <span>Personalización / Estadísticas</span>
                 </li>
               </ul>
-              <a href="https://wa.me/51972498691?text=Hola,%20quisiera%20activar%20el%20Plan%20PRO%20de%20PideClick" target="_blank" class="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-2xl font-bold transition-all shadow-xl shadow-primary/20 text-center">Mejorar Ahora</a>
+              <a href="https://wa.me/51972498691?text=Hola,%20quisiera%20activar%20el%20Plan%20Punche%20de%20PideClick" target="_blank" class="w-full py-4 bg-amber-500 hover:bg-amber-400 text-black rounded-2xl font-black transition-all shadow-xl shadow-amber-500/20 text-center active:scale-95">¡Métale Punche!</a>
+            </div>
+
+            <!-- Plan Poderoso (S/ 49) -->
+            <div class="p-8 bg-zinc-900/50 backdrop-blur-sm rounded-[2.5rem] border border-primary flex flex-col hover:border-primary/50 transition-all duration-500 shadow-xl group">
+              <div class="mb-8">
+                <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform duration-500">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Plan Poderoso</h3>
+                <p class="text-zinc-500 text-sm italic">Tu marca a otro nivel.</p>
+                <div class="mt-6 flex items-baseline gap-1">
+                  <span class="text-4xl font-black text-white price-value" data-monthly="49" data-annual="490">S/. 49</span>
+                  <span class="text-zinc-500 text-sm billing-period">/ mes</span>
+                </div>
+              </div>
+              <ul class="space-y-4 mb-10 flex-1">
+                <li class="text-primary text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+                   <span class="w-8 h-px bg-primary/30"></span> Todo lo anterior +
+                </li>
+                <li class="flex items-center gap-3 text-zinc-200">
+                  <svg class="w-5 h-5 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Personalización de colores</span>
+                </li>
+                <li class="flex items-center gap-3 text-zinc-200">
+                  <svg class="w-5 h-5 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Branding más profesional</span>
+                </li>
+                <li class="flex items-center gap-3 text-zinc-200">
+                  <svg class="w-5 h-5 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Estadísticas de ventas</span>
+                </li>
+                <li class="flex items-center gap-3 text-zinc-200">
+                  <svg class="w-5 h-5 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Reportes básicos</span>
+                </li>
+                <li class="flex items-center gap-3 text-zinc-200">
+                  <svg class="w-5 h-5 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Soporte prioritario</span>
+                </li>
+              </ul>
+              <a href="https://wa.me/51972498691?text=Hola,%20quisiera%20activar%20el%20Plan%20Poderoso%20de%20PideClick" target="_blank" class="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-2xl font-black transition-all shadow-xl shadow-primary/20 text-center active:scale-95">Ser Poderoso</a>
             </div>
           </div>
         </div>
+
+        <script>
+          let isAnnual = false;
+          function toggleBilling() {
+            isAnnual = !isAnnual;
+            const knob = document.getElementById('billing-knob');
+            const toggle = document.getElementById('billing-toggle');
+            const monthlyText = document.getElementById('billing-monthly-text');
+            const annualText = document.getElementById('billing-annual-text');
+            const prices = document.querySelectorAll('.price-value');
+            const periods = document.querySelectorAll('.billing-period');
+            
+            if (isAnnual) {
+              knob.style.transform = 'translateX(28px)';
+              toggle.classList.remove('bg-zinc-800');
+              toggle.classList.add('bg-primary/20');
+              monthlyText.classList.remove('text-white');
+              monthlyText.classList.add('text-zinc-500');
+              annualText.classList.remove('text-zinc-500');
+              annualText.classList.add('text-white');
+              
+              prices.forEach(p => {
+                p.textContent = 'S/. ' + p.getAttribute('data-annual');
+              });
+              periods.forEach(p => p.textContent = '/ año');
+            } else {
+              knob.style.transform = 'translateX(0)';
+              toggle.classList.add('bg-zinc-800');
+              toggle.classList.remove('bg-primary/20');
+              monthlyText.classList.remove('text-zinc-500');
+              monthlyText.classList.add('text-white');
+              annualText.classList.remove('text-white');
+              annualText.classList.add('text-zinc-500');
+              
+              prices.forEach(p => {
+                p.textContent = 'S/. ' + p.getAttribute('data-monthly');
+              });
+              periods.forEach(p => p.textContent = '/ mes');
+            }
+          }
+        </script>
       </section>
+
 
       <!-- FAQ -->
       <section class="py-24 px-4 bg-zinc-950">
