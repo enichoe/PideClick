@@ -637,27 +637,25 @@ async function saveCustomSettings() {
   const closeTime = closeTimeEl.value.trim() || restaurantData?.close_time || "23:00";
 
   // Limpiar los números de WhatsApp
-  whatsapp = whatsapp.replace(/\D/g, '');
-  deliveryWhatsapp = deliveryWhatsapp.replace(/\D/g, '');
-  payment_whatsapp_num = paymentWhatsapp.replace(/\D/g, '');
+  const cleanWhatsapp = whatsapp.replace(/\D/g, '');
+  const cleanDeliveryWhatsapp = deliveryWhatsapp.replace(/\D/g, '');
+  const cleanPaymentWhatsapp = paymentWhatsapp ? paymentWhatsapp.replace(/\D/g, '') : "";
   
   const bSlug = new URLSearchParams(window.location.search).get('b') || 'default';
 
-  // Usar UPSERT para insertar o actualizar en base al slug (requiere que slug sea UNIQUE en BD)
-  // O en nuestro caso, actualizamos usando el ID si lo tenemos, si no, intentamos con el slug
   const updatePayload = {
-        slogan,
-        tiktok_url: tiktok,
-        instagram_url: instagram,
-        whatsapp_num: whatsapp,
-        delivery_whatsapp_num: deliveryWhatsapp,
-        payment_whatsapp_num: paymentWhatsapp,
-        facebook_url: facebook,
-        location_url: location,
-        open_time: openTime,
-        close_time: closeTime,
-        primary_color: document.getElementById('adminPrimaryColor')?.value || '#f97316',
-        theme_font: document.getElementById('adminThemeFont')?.value || 'Inter'
+    slogan,
+    tiktok_url: tiktok,
+    instagram_url: instagram,
+    whatsapp_num: cleanWhatsapp,
+    delivery_whatsapp_num: cleanDeliveryWhatsapp,
+    payment_whatsapp_num: cleanPaymentWhatsapp,
+    facebook_url: facebook,
+    location_url: location,
+    open_time: openTime,
+    close_time: closeTime,
+    primary_color: document.getElementById('adminPrimaryColor')?.value || '#f97316',
+    theme_font: document.getElementById('adminThemeFont')?.value || 'Inter'
   };
 
   let errorData = null;
