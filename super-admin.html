@@ -166,6 +166,7 @@
       }
       
       const tbody = document.getElementById('tenantTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
 
       if (tenantsList.length === 0) {
@@ -174,54 +175,74 @@
       }
 
       tenantsList.forEach(t => {
-        // En lugar de [0], ordenamos por fecha por si hay basura en la DB
-        const sortedSubs = (t.subscriptions || []).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-        const sub = sortedSubs[0] || { plan_id: 'sencillito' };
-        const plan = window.SaaS.PLANS[sub.plan_id.toUpperCase()] || window.SaaS.PLANS.SENCILLITO;
-        
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-white/[0.02] transition-all group";
-        tr.innerHTML = `
-          <td class="px-8 py-6">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center font-bold text-lg text-primary uppercase">${t.slug.charAt(0)}</div>
-              <div>
-                <p class="font-bold text-white uppercase">${t.slug}</p>
-                <a href="index.html?b=${t.slug}" target="_blank" class="text-xs text-primary hover:underline">Ver Tienda →</a>
+        try {
+          if (!t.slug) return; // Saltar si no tiene slug por alguna razón
+
+          // Obtener la suscripción más reciente de forma segura
+          const subs = t.subscriptions || [];
+          const sortedSubs = [...subs].sort((a, b) => {
+            const dateA = a.updated_at ? new Date(a.updated_at) : new Date(0);
+            const dateB = b.updated_at ? new Date(b.updated_at) : new Date(0);
+            return dateB - dateA;
+          });
+          
+          const sub = sortedSubs[0] || { plan_id: 'sencillito' };
+          const planId = (sub.plan_id || 'sencillito').toLowerCase();
+          const plan = window.SaaS.PLANS[planId.toUpperCase()] || window.SaaS.PLANS.SENCILLITO;
+          
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-white/[0.02] transition-all group";
+          tr.innerHTML = `
+            <td class="px-8 py-6">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center font-bold text-lg text-primary uppercase">${t.slug.charAt(0)}</div>
+                <div>
+                  <p class="font-bold text-white uppercase">${t.slug}</p>
+                  <a href="index.html?b=${t.slug}" target="_blank" class="text-xs text-primary hover:underline">Ver Tienda →</a>
+                </div>
               </div>
-            </div>
-          </td>
-          <td class="px-8 py-6">
-            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider 
-              ${sub.plan_id === 'poderoso' ? 'bg-primary/20 text-primary border border-primary/30' : 
-                sub.plan_id === 'punche' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : 
-                'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
-              ${plan.name}
-            </span>
-          </td>
-          <td class="px-8 py-6 text-sm text-zinc-400">
-            ${sub.updated_at ? new Date(sub.updated_at).toLocaleDateString() : 'N/A'}
-          </td>
-          <td class="px-8 py-6 text-right">
-            <div class="flex gap-2 justify-end">
-              <button onclick="changePlan('${t.id}', 'sencillito')" class="px-3 py-1 bg-zinc-800 text-zinc-400 rounded-lg text-xs font-bold hover:text-white transition-all">Sencillito</button>
-              <button onclick="changePlan('${t.id}', 'punche')" class="px-3 py-1 bg-amber-500/20 text-amber-500 rounded-lg text-xs font-bold hover:bg-amber-500/30 transition-all">Punche</button>
-              <button onclick="changePlan('${t.id}', 'poderoso')" class="px-3 py-1 bg-primary/20 text-primary rounded-lg text-xs font-bold hover:bg-primary/30 transition-all">Poderoso</button>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(tr);
+            </td>
+            <td class="px-8 py-6">
+              <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider 
+                ${planId === 'poderoso' ? 'bg-primary/20 text-primary border border-primary/30' : 
+                  planId === 'punche' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : 
+                  'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
+                ${plan.name}
+              </span>
+            </td>
+            <td class="px-8 py-6 text-sm text-zinc-400">
+              ${sub.updated_at ? new Date(sub.updated_at).toLocaleDateString() : 'Directo / Nuevo'}
+            </td>
+            <td class="px-8 py-6 text-right">
+              <div class="flex gap-2 justify-end">
+                <button onclick="changePlan('${t.id}', 'sencillito')" class="px-3 py-1 bg-zinc-800 text-zinc-400 rounded-lg text-xs font-bold hover:text-white transition-all">Sencillito</button>
+                <button onclick="changePlan('${t.id}', 'punche')" class="px-3 py-1 bg-amber-500/20 text-amber-500 rounded-lg text-xs font-bold hover:bg-amber-500/30 transition-all">Punche</button>
+                <button onclick="changePlan('${t.id}', 'poderoso')" class="px-3 py-1 bg-primary/20 text-primary rounded-lg text-xs font-bold hover:bg-primary/30 transition-all">Poderoso</button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        } catch (err) {
+          console.error("Error renderizando fila de tenant:", err, t);
+        }
       });
     }
 
     async function changePlan(internalId, newPlan) {
       if (confirm(`¿Seguro que quieres cambiar el plan a ${newPlan.toUpperCase()}?`)) {
-        await window.SaaS.updateTenantPlan(internalId, newPlan);
-        // Pequeño delay para que Supabase propague el cambio y no traiga data vieja
-        setTimeout(async () => {
+        try {
+          // Mostrar feedback visual inmediato si es posible
+          showNotification && showNotification("Actualizando", "Cambiando plan...", "warning");
+          
+          await window.SaaS.updateTenantPlan(internalId, newPlan);
+          
+          // Recargar datos frescos
           await renderDashboard();
           alert("Plan actualizado correctamente");
-        }, 500);
+        } catch (err) {
+          console.error(err);
+          alert("Error al actualizar el plan: " + err.message);
+        }
       }
     }
   </script>

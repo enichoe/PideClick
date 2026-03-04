@@ -104,13 +104,22 @@ async function registerTenant(id) {
   if (!id || id === 'default') return;
   
   try {
-    const { error } = await window.supabaseClient
+    // Primero verificamos si ya existe para no pisar el 'name' si el usuario lo cambió manualmente en BD
+    const { data: existing } = await window.supabaseClient
       .from('tenants')
-      .upsert([{ slug: id, name: id }], { onConflict: 'slug' });
-    
-    if (error) console.warn("Error registrando tenant en Supabase:", error);
+      .select('slug')
+      .eq('slug', id)
+      .single();
+
+    if (!existing) {
+      const { error } = await window.supabaseClient
+        .from('tenants')
+        .upsert([{ slug: id, name: `Negocio ${id}` }], { onConflict: 'slug' });
+      
+      if (error) console.warn("Error registrando tenant en Supabase:", error);
+    }
   } catch (e) {
-    console.error(e);
+    console.error("RegisterTenant Error:", e);
   }
 }
 
