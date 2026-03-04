@@ -184,16 +184,18 @@
           const displayName = t.name || displaySlug;
 
           // Obtener la suscripción más reciente de forma segura
-          const subs = t.subscriptions || [];
+          const subs = Array.isArray(t.subscriptions) ? t.subscriptions : [];
           const sortedSubs = [...subs].sort((a, b) => {
-            const dateA = (a.updated_at || a.created_at) ? new Date(a.updated_at || a.created_at) : new Date(0);
-            const dateB = (b.updated_at || b.created_at) ? new Date(b.updated_at || b.created_at) : new Date(0);
+            const dateA = new Date(a.updated_at || a.created_at || 0);
+            const dateB = new Date(b.updated_at || b.created_at || 0);
             return dateB - dateA;
           });
           
           const sub = sortedSubs[0] || { plan_id: 'sencillito' };
-          const planId = (sub.plan_id || 'sencillito').toLowerCase();
-          const plan = window.SaaS.PLANS[planId.toUpperCase()] || window.SaaS.PLANS.SENCILLITO;
+          const planIdRaw = sub.plan_id || 'sencillito';
+          const planId = planIdRaw.toString().toLowerCase();
+          const plan = (window.SaaS && window.SaaS.PLANS && window.SaaS.PLANS[planId.toUpperCase()]) 
+                       || (window.SaaS && window.SaaS.PLANS ? window.SaaS.PLANS.SENCILLITO : { name: 'Sencillito' });
           
           const tr = document.createElement('tr');
           tr.className = "hover:bg-white/[0.02] transition-all group";
@@ -230,9 +232,12 @@
           tbody.appendChild(tr);
         } catch (err) {
           console.error("Error renderizando fila de tenant:", err, t);
-          // Fila de error para no "perder" el registro
+          // Fila de error para no "perder" el registro y ayudar a debuguear
           const trErr = document.createElement('tr');
-          trErr.innerHTML = `<td colspan="4" class="px-8 py-4 text-xs text-red-500/50 italic">Error cargando datos de un negocio (ID: ${t.id})</td>`;
+          const errorId = t ? (t.id || 'sin-id') : 'objeto-nulo';
+          trErr.innerHTML = `<td colspan="4" class="px-8 py-4 text-xs text-red-500/50 italic">
+            Error en negocio (ID: ${errorId}): ${err.message}
+          </td>`;
           tbody.appendChild(trErr);
         }
       });
