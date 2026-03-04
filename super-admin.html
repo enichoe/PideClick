@@ -174,6 +174,12 @@
               class="p-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-zinc-400 hover:text-white transition-all">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             </button>
+            <!-- CREATE BUTTON -->
+            <button onclick="openCreateModal()"
+              class="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Crear Negocio
+            </button>
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -204,6 +210,100 @@
   <div id="toast" class="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl text-sm font-semibold shadow-2xl flex items-center gap-3 translate-y-16 opacity-0 pointer-events-none">
     <span id="toastIcon"></span>
     <span id="toastMsg"></span>
+  </div>
+
+  <!-- ====== CREATE BUSINESS MODAL ====== -->
+  <div id="createModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onclick="if(event.target===this)closeCreateModal()">
+    <div class="w-full max-w-lg bg-zinc-900 rounded-3xl border border-zinc-700 shadow-2xl shadow-black/60 fade-in overflow-hidden">
+      <!-- Modal header -->
+      <div class="px-8 py-6 border-b border-zinc-800 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white">Crear Nuevo Negocio</h3>
+            <p class="text-zinc-500 text-xs">Registra en tenants + restaurants</p>
+          </div>
+        </div>
+        <button onclick="closeCreateModal()" class="w-8 h-8 flex items-center justify-center rounded-xl text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal body -->
+      <form onsubmit="createNegocio(event)" class="px-8 py-6 space-y-5">
+
+        <!-- Slug -->
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Slug (URL del negocio) *</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm font-mono">index.html?b=</span>
+            <input type="text" id="newSlug" required placeholder="mi-restaurante"
+              oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_-]/g,'');"
+              class="w-full pl-[130px] pr-4 py-3.5 bg-zinc-800 border border-zinc-700 rounded-2xl text-white text-sm font-mono outline-none focus:border-primary transition-all placeholder-zinc-600">
+          </div>
+          <p class="text-zinc-600 text-xs mt-1.5">Solo letras minúsculas, números y guiones. Sin espacios.</p>
+        </div>
+
+        <!-- Nombre -->
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Nombre del Negocio *</label>
+          <input type="text" id="newName" required placeholder="Ej: Hamburguesería El Trome"
+            class="w-full px-4 py-3.5 bg-zinc-800 border border-zinc-700 rounded-2xl text-white text-sm outline-none focus:border-primary transition-all placeholder-zinc-600">
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Email del dueño</label>
+          <input type="email" id="newEmail" placeholder="dueno@gmail.com"
+            class="w-full px-4 py-3.5 bg-zinc-800 border border-zinc-700 rounded-2xl text-white text-sm outline-none focus:border-primary transition-all placeholder-zinc-600">
+        </div>
+
+        <!-- Phone -->
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Teléfono WhatsApp</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">+51</span>
+            <input type="tel" id="newPhone" placeholder="987654321"
+              oninput="this.value=this.value.replace(/\D/g,'')"
+              class="w-full pl-12 pr-4 py-3.5 bg-zinc-800 border border-zinc-700 rounded-2xl text-white text-sm font-mono outline-none focus:border-primary transition-all placeholder-zinc-600">
+          </div>
+        </div>
+
+        <!-- Plan inicial -->
+        <div>
+          <label class="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Plan Inicial</label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="flex items-center justify-center gap-2 p-3 rounded-2xl border border-zinc-700 bg-zinc-800 cursor-pointer hover:border-zinc-500 transition-all has-[:checked]:border-zinc-400 has-[:checked]:bg-zinc-700">
+              <input type="radio" name="newPlan" value="sencillito" checked class="accent-orange-500"> <span class="text-sm font-bold text-zinc-300">Sencillito</span>
+            </label>
+            <label class="flex items-center justify-center gap-2 p-3 rounded-2xl border border-zinc-700 bg-zinc-800 cursor-pointer hover:border-amber-500/50 transition-all has-[:checked]:border-amber-500 has-[:checked]:bg-amber-500/10">
+              <input type="radio" name="newPlan" value="punche" class="accent-amber-500"> <span class="text-sm font-bold text-amber-400">Punche</span>
+            </label>
+            <label class="flex items-center justify-center gap-2 p-3 rounded-2xl border border-zinc-700 bg-zinc-800 cursor-pointer hover:border-primary/50 transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/10">
+              <input type="radio" name="newPlan" value="poderoso" class="accent-orange-500"> <span class="text-sm font-bold text-primary">Poderoso</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <p id="createError" class="text-red-400 text-sm hidden"></p>
+
+        <!-- Actions -->
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeCreateModal()"
+            class="flex-1 py-3.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-2xl font-bold text-sm transition-all border border-zinc-700">
+            Cancelar
+          </button>
+          <button type="submit" id="createSubmitBtn"
+            class="flex-1 py-3.5 bg-primary hover:bg-primary-dark text-white rounded-2xl font-bold text-sm transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Crear Negocio
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -515,6 +615,88 @@
         toast.style.opacity   = '0';
       }, 3500);
     }
+
+    // ==================== CREATE NEGOCIO MODAL ====================
+    function openCreateModal() {
+      const modal = document.getElementById('createModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('newSlug').value  = '';
+      document.getElementById('newName').value  = '';
+      document.getElementById('newEmail').value = '';
+      document.getElementById('newPhone').value = '';
+      document.querySelector('input[name="newPlan"][value="sencillito"]').checked = true;
+      const errEl = document.getElementById('createError');
+      errEl.textContent = '';
+      errEl.classList.add('hidden');
+      setTimeout(() => document.getElementById('newSlug').focus(), 150);
+    }
+
+    function closeCreateModal() {
+      document.getElementById('createModal').classList.add('hidden');
+      document.getElementById('createModal').classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    async function createNegocio(e) {
+      e.preventDefault();
+      const btn   = document.getElementById('createSubmitBtn');
+      const errEl = document.getElementById('createError');
+      const slug  = document.getElementById('newSlug').value.trim().toLowerCase();
+      const name  = document.getElementById('newName').value.trim();
+      const email = document.getElementById('newEmail').value.trim() || null;
+      const phone = document.getElementById('newPhone').value.trim().replace(/\D/g,'') || null;
+      const plan  = document.querySelector('input[name="newPlan"]:checked').value;
+
+      errEl.classList.add('hidden');
+      btn.disabled = true;
+      btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Creando...';
+
+      try {
+        // 1. Check slug uniqueness
+        const { data: dup } = await window.supabaseClient
+          .from('tenants').select('id').eq('slug', slug).single();
+        if (dup) throw new Error(`El slug "${slug}" ya existe. Usa otro nombre.`);
+
+        // 2. Create tenant
+        const { data: tenant, error: tErr } = await window.supabaseClient
+          .from('tenants')
+          .insert([{ slug, name, owner_email: email }])
+          .select().single();
+        if (tErr) throw tErr;
+
+        // 3. Create restaurant row (initial config)
+        await window.supabaseClient.from('restaurants').insert([{
+          slug, name, owner_email: email,
+          whatsapp_num: phone,
+          slogan: 'Bienvenido a ' + name
+        }]);
+
+        // 4. Create subscription if plan is not sencillito
+        if (plan !== 'sencillito') {
+          await window.supabaseClient.from('subscriptions').upsert([{
+            tenant_id: tenant.id,
+            plan_id: plan,
+            updated_at: new Date().toISOString()
+          }], { onConflict: 'tenant_id' });
+        }
+
+        closeCreateModal();
+        showToast(`¡Negocio "${name}" creado exitosamente! 🎉`, 'success');
+        await renderDashboard();
+
+      } catch (err) {
+        errEl.textContent = err.message || 'Error inesperado al crear el negocio.';
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Crear Negocio';
+      }
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCreateModal(); });
   </script>
 </body>
 </html>
