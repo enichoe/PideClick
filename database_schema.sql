@@ -106,14 +106,27 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 
 -- POLÍTICAS RESTAURANTS / ORDERS
 DO $$ BEGIN
+    -- RESTAURANTS
     DROP POLICY IF EXISTS "Public Read Restaurants" ON restaurants;
     CREATE POLICY "Public Read Restaurants" ON restaurants FOR SELECT USING (true);
     
+    DROP POLICY IF EXISTS "Public Insert Restaurants" ON restaurants;
+    CREATE POLICY "Public Insert Restaurants" ON restaurants FOR INSERT WITH CHECK (true);
+    
+    DROP POLICY IF EXISTS "Admin Update Restaurants" ON restaurants;
+    CREATE POLICY "Admin Update Restaurants" ON restaurants FOR UPDATE TO authenticated 
+    USING (auth.jwt() ->> 'email' = 'programador.web.ernesto@gmail.com');
+
+    -- ORDERS
     DROP POLICY IF EXISTS "Public Read Orders" ON orders;
     CREATE POLICY "Public Read Orders" ON orders FOR SELECT USING (true);
     
     DROP POLICY IF EXISTS "Public Insert Orders" ON orders;
     CREATE POLICY "Public Insert Orders" ON orders FOR INSERT WITH CHECK (true);
+
+    DROP POLICY IF EXISTS "Admin Update Orders" ON orders;
+    CREATE POLICY "Admin Update Orders" ON orders FOR UPDATE TO authenticated 
+    USING (auth.jwt() ->> 'email' = 'programador.web.ernesto@gmail.com');
 END $$;
 
 -- TRIGGERS OTROS
