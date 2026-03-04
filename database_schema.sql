@@ -89,6 +89,8 @@ CREATE TABLE IF NOT EXISTS restaurants (
   instagram_url TEXT,
   tiktok_url TEXT,
   location_url TEXT,
+  primary_color TEXT DEFAULT '#f97316',
+  theme_font TEXT DEFAULT 'Inter',
   open_time TEXT DEFAULT '08:00',
   close_time TEXT DEFAULT '22:00',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -96,6 +98,12 @@ CREATE TABLE IF NOT EXISTS restaurants (
 );
 
 DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='restaurants' AND column_name='primary_color') THEN
+        ALTER TABLE restaurants ADD COLUMN primary_color TEXT DEFAULT '#f97316';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='restaurants' AND column_name='theme_font') THEN
+        ALTER TABLE restaurants ADD COLUMN theme_font TEXT DEFAULT 'Inter';
+    END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='restaurants' AND column_name='updated_at') THEN
         ALTER TABLE restaurants ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
     END IF;

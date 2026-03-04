@@ -41,9 +41,9 @@ async function updatePlanUI() {
   const sub = await window.SaaS.getTenantSubscription();
   const plan = await window.SaaS.getPlanLimits();
   const badge = document.getElementById('planBadge');
+  
   if (badge) {
     badge.textContent = plan.name;
-    // Color del badge según el plan
     let badgeClass = "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ";
     if (sub.planId === 'poderoso') badgeClass += "bg-primary text-white border-primary shadow-lg shadow-primary/20";
     else if (sub.planId === 'punche') badgeClass += "bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20";
@@ -51,11 +51,9 @@ async function updatePlanUI() {
     badge.className = badgeClass;
   }
 
-  // Feature Gating: Dashboard / Estadísticas
+  // Gating: Dashboard
   const canSeeStats = await window.SaaS.hasFeature('advancedAnalytics');
   const tabDashboard = document.getElementById('tabDashboard');
-  const dashboardPanel = document.getElementById('dashboardPanel');
-  
   if (tabDashboard) {
     if (!canSeeStats) {
       tabDashboard.classList.add('opacity-40', 'cursor-not-allowed');
@@ -68,22 +66,21 @@ async function updatePlanUI() {
     }
   }
 
-  // Feature Gating: Branding / Colores
-  const canCustomBranding = await window.SaaS.hasFeature('customBranding');
-  const brandingSection = document.getElementById('brandingConfig'); 
-  const colorConfigSection = document.getElementById('colorConfig'); // Asumiendo que existirá o se creará
-
+  // Gating: Branding (Personalización)
+  const canBranding = await window.SaaS.hasFeature('customBranding');
+  const brandingSection = document.getElementById('brandingSection');
+  const brandingLock = document.getElementById('brandingLock');
   if (brandingSection) {
-     if (!canCustomBranding) {
-       brandingSection.classList.add('opacity-50', 'pointer-events-none', 'grayscale');
-       brandingSection.title = "Desbloquea branding profesional con el Plan Poderoso";
-     } else {
-       brandingSection.classList.remove('opacity-50', 'pointer-events-none', 'grayscale');
-       brandingSection.title = "";
-     }
+    if (!canBranding) {
+      brandingSection.classList.add('opacity-50', 'grayscale', 'pointer-events-none');
+      if (brandingLock) brandingLock.classList.remove('hidden');
+    } else {
+      brandingSection.classList.remove('opacity-50', 'grayscale', 'pointer-events-none');
+      if (brandingLock) brandingLock.classList.add('hidden');
+    }
   }
 
-  // Feature Gating: Clientes
+  // Gating: Clientes
   const canSeeCustomers = await window.SaaS.hasFeature('customerManagement');
   const tabClientes = document.getElementById('tabClientes');
   if (tabClientes) {
@@ -105,11 +102,11 @@ async function updatePlanUI() {
     footerBadge.classList.toggle('hidden', isPoderoso); 
   }
   
-  // Mostrar mensaje si alcanzó límite de productos
+  // Límite de productos
   const btnNewProduct = document.querySelector('button[onclick="openProductModal()"]');
   if (btnNewProduct) {
     const atLimit = products.length >= plan.maxProducts;
-    const canExceedLimit = plan.maxProducts > 50; // Ilimitado en Punche/Poderoso
+    const canExceedLimit = plan.maxProducts > 50; 
     
     if (atLimit && !canExceedLimit) {
       btnNewProduct.disabled = true;
@@ -259,19 +256,17 @@ async function updateDashboardStats() {
   if (!restaurantData || !isAdminAuthenticated) return;
 
   const today = new Date().toISOString().split('T')[0];
-  
-  // Filtrar pedidos de hoy
+  const completedOrders = orders.filter(o => o.status === 'delivered');
   const todayOrders = orders.filter(o => o.created_at && o.created_at.startsWith(today));
   
-  // Sumar ventas de hoy (solo listos o entregados)
+  // Sumar ventas de hoy
   const todaySales = todayOrders
     .filter(o => o.status === 'ready' || o.status === 'delivered')
     .reduce((sum, o) => sum + (o.total || 0), 0);
 
   // Totales generales para ticket promedio
-  const closedOrders = orders.filter(o => o.status === 'ready' || o.status === 'delivered');
-  const totalSalesValue = closedOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-  const avgTicketValue = closedOrders.length > 0 ? totalSalesValue / closedOrders.length : 0;
+  const totalSalesValue = completedOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+  const avgTicketValue = completedOrders.length > 0 ? totalSalesValue / completedOrders.length : 0;
 
   // Actualizar UI del Dashboard
   const elSales = document.getElementById('statsTodaySales');
@@ -292,29 +287,75 @@ async function updateDashboardStats() {
     `;
   }
 
-  // Mejor Vendido
-  const topProductEl = document.getElementById('statsTopProduct');
-  if (topProductEl) {
-    const counts = {};
-    closedOrders.forEach(o => {
-      if (o.items) o.items.forEach(item => {
-        counts[item.name] = (counts[item.name] || 0) + (item.quantity || 1);
-      });
-    });
-
-    const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 3);
-    if (sorted.length > 0) {
-      topProductEl.innerHTML = sorted.map(([name, count], i) => `
-        <div class="flex items-center justify-between p-3 bg-zinc-800 border border-zinc-700/50 rounded-xl">
-          <div class="flex items-center gap-3">
-            <span class="text-primary font-bold">#${i+1}</span>
-            <span class="text-white text-sm">${name}</span>
-          </div>
-          <span class="bg-primary/20 text-primary px-2 py-0.5 rounded text-[10px] font-bold">${count} uds</span>
-        </div>
-      `).join('');
+  // Lógica Avanzada (Solo Poderoso)
+  const canSeeAdvanced = await window.SaaS.hasFeature('advancedAnalytics');
+  const advSection = document.getElementById('advancedStats');
+  
+  if (advSection) {
+    if (!canSeeAdvanced) {
+      advSection.classList.add('hidden');
     } else {
-      topProductEl.innerHTML = `<p class="text-zinc-500 text-sm italic">Sin ventas registradas</p>`;
+      advSection.classList.remove('hidden');
+
+      // 1. Top Productos
+      const productSales = {};
+      completedOrders.forEach(o => {
+        const items = (typeof o.items === 'string') ? JSON.parse(o.items) : (o.items || []);
+        items.forEach(item => {
+          productSales[item.name] = (productSales[item.name] || 0) + (item.quantity || 1);
+        });
+      });
+
+      const topProducts = Object.entries(productSales)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      const topProductsList = document.getElementById('topProductsList');
+      if (topProductsList) {
+        topProductsList.innerHTML = topProducts.length ? topProducts.map(([name, qty]) => `
+          <div class="flex items-center justify-between text-sm py-2 border-b border-zinc-800 last:border-0">
+            <span class="text-zinc-300 font-medium">${name}</span>
+            <span class="font-bold text-primary">${qty} vendidos</span>
+          </div>
+        `).join('') : '<p class="text-zinc-500 text-xs italic">Sin ventas aún.</p>';
+      }
+
+      // 2. Ventas Diarias (Últimos 7 días)
+      const dailySales = {};
+      const last7Days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        dailySales[dateStr] = 0;
+        last7Days.push(dateStr);
+      }
+
+      completedOrders.forEach(o => {
+        const dateStr = new Date(o.created_at || o.createdAt).toISOString().split('T')[0];
+        if (dailySales[dateStr] !== undefined) {
+          dailySales[dateStr] += o.total || 0;
+        }
+      });
+
+      const chartContainer = document.getElementById('dailySalesChart');
+      if (chartContainer) {
+        const maxSale = Math.max(...Object.values(dailySales), 1);
+        chartContainer.innerHTML = last7Days.map(date => {
+          const amount = dailySales[date];
+          const height = (amount / maxSale) * 100;
+          const dayName = new Date(date).toLocaleDateString('es', { weekday: 'short' });
+          return `
+            <div class="flex flex-col items-center gap-2 flex-1 group h-full justify-end">
+              <div class="relative w-full bg-zinc-800 rounded-t-lg overflow-hidden flex flex-col justify-end min-h-[4px]" style="height: ${height}%">
+                 <div class="bg-primary group-hover:bg-orange-600 transition-all duration-500 w-full h-full"></div>
+                 <div class="absolute inset-x-0 bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-center font-bold text-white bg-zinc-950 p-1 rounded">S/.${amount.toFixed(0)}</div>
+              </div>
+              <span class="text-[10px] text-zinc-500 font-bold uppercase">${dayName}</span>
+            </div>
+          `;
+        }).join('');
+      }
     }
   }
 }
@@ -401,6 +442,23 @@ async function uploadImageToSupabase(file, folder = 'products', bucket = 'pidecl
     showNotification("Error", "No se pudo subir la imagen al servidor.", "error");
     return null;
   }
+}
+
+function adjustColor(color, percent) {
+  if (!color || color.charAt(0) !== '#') return color;
+  let R = parseInt(color.substring(1, 3), 16);
+  let G = parseInt(color.substring(3, 5), 16);
+  let B = parseInt(color.substring(5, 7), 16);
+  R = parseInt(R * (100 + percent) / 100);
+  G = parseInt(G * (100 + percent) / 100);
+  B = parseInt(B * (100 + percent) / 100);
+  R = (R < 255) ? R : 255;
+  G = (G < 255) ? G : 255;
+  B = (B < 255) ? B : 255;
+  const RR = ((R.toString(16).length == 1) ? "0" + R.toString(16) : R.toString(16));
+  const GG = ((G.toString(16).length == 1) ? "0" + G.toString(16) : G.toString(16));
+  const BB = ((B.toString(16).length == 1) ? "0" + B.toString(16) : B.toString(16));
+  return "#" + RR + GG + BB;
 }
 
 function saveData() {
@@ -523,48 +581,36 @@ function loadCustomSettings() {
     if(restaurantData.banner_url) localStorage.setItem(storageKey('su_banner'), restaurantData.banner_url);
   }
 
-  const whatsappUrl = whatsappNum ? `https://wa.me/51${whatsappNum}` : "#";
-
-  // Actualizar Vista Cliente
-  const sloganEl = document.getElementById('customSlogan');
-  const tiktokEl = document.getElementById('linkTiktok');
-  const instagramEl = document.getElementById('linkInstagram');
-  const whatsappEl = document.getElementById('linkWhatsapp');
-  const facebookEl = document.getElementById('linkFacebook');
-  const locationEl = document.getElementById('linkLocation');
-
-  if (sloganEl) sloganEl.textContent = slogan;
-  if (tiktokEl) tiktokEl.href = tiktok;
-  if (instagramEl) instagramEl.href = instagram;
-  if (whatsappEl) whatsappEl.href = whatsappUrl;
-  if (facebookEl) facebookEl.href = facebook;
-  if (locationEl) locationEl.href = location;
-
-  updateStoreStatusUI(openTime, closeTime);
-  updateDashboardStats(); // Forzamos recálculo del estado Abierto/Cerrado en vivo
-
-  // Actualizar Inputs Admin
-  const adminSlogan = document.getElementById('adminSlogan');
-  const adminTiktok = document.getElementById('adminTiktok');
-  const adminInstagram = document.getElementById('adminInstagram');
-  const adminWhatsapp = document.getElementById('adminWhatsapp');
-  const adminDeliveryWhatsapp = document.getElementById('adminDeliveryWhatsapp');
-  const adminPaymentWhatsapp = document.getElementById('adminPaymentWhatsapp');
-  const adminFacebook = document.getElementById('adminFacebook');
-  const adminLocation = document.getElementById('adminLocation');
-  const adminOpenTime = document.getElementById('adminOpenTime');
-  const adminCloseTime = document.getElementById('adminCloseTime');
-
-  if (adminSlogan) adminSlogan.value = slogan;
-  if (adminTiktok) adminTiktok.value = tiktok;
-  if (adminInstagram) adminInstagram.value = instagram;
-  if (adminWhatsapp) adminWhatsapp.value = whatsappNum;
-  if (adminDeliveryWhatsapp) adminDeliveryWhatsapp.value = deliveryWhatsappNum;
-  if (adminPaymentWhatsapp) adminPaymentWhatsapp.value = restaurantData?.payment_whatsapp_num || "";
-  if (adminFacebook) adminFacebook.value = facebook;
-  if (adminLocation) adminLocation.value = location;
   if (adminOpenTime) adminOpenTime.value = openTime;
   if (adminCloseTime) adminCloseTime.value = closeTime;
+
+  // Branding (Solo Poderoso)
+  const primaryColor = restaurantData?.primary_color || '#f97316';
+  const themeFont = restaurantData?.theme_font || 'Inter';
+  
+  // Aplicar Branding (CSS Variables)
+  document.documentElement.style.setProperty('--primary-color', primaryColor);
+  document.documentElement.style.setProperty('--primary-color-dark', adjustColor(primaryColor, -20));
+  document.documentElement.style.setProperty('--theme-font', themeFont);
+  document.body.style.fontFamily = themeFont;
+
+  // Actualizar Inputs Admin Branding
+  const colorPicker = document.getElementById('adminPrimaryColor');
+  const colorText = document.getElementById('adminPrimaryColorText');
+  const fontSelect = document.getElementById('adminThemeFont');
+
+  if (colorPicker) colorPicker.value = primaryColor;
+  if (colorText) colorText.value = primaryColor;
+  if (fontSelect) fontSelect.value = themeFont;
+
+  // Sincronizar picker con texto
+  if (colorPicker && colorText) {
+    colorPicker.oninput = (e) => colorText.value = e.target.value.toUpperCase();
+    colorText.oninput = (e) => {
+      const val = e.target.value;
+      if (/^#[0-9A-F]{6}$/i.test(val)) colorPicker.value = val;
+    };
+  }
 }
 
 async function saveCustomSettings() {
@@ -593,7 +639,7 @@ async function saveCustomSettings() {
   // Limpiar los números de WhatsApp
   whatsapp = whatsapp.replace(/\D/g, '');
   deliveryWhatsapp = deliveryWhatsapp.replace(/\D/g, '');
-  paymentWhatsapp = paymentWhatsapp.replace(/\D/g, '');
+  payment_whatsapp_num = paymentWhatsapp.replace(/\D/g, '');
   
   const bSlug = new URLSearchParams(window.location.search).get('b') || 'default';
 
@@ -609,7 +655,9 @@ async function saveCustomSettings() {
         facebook_url: facebook,
         location_url: location,
         open_time: openTime,
-        close_time: closeTime
+        close_time: closeTime,
+        primary_color: document.getElementById('adminPrimaryColor')?.value || '#f97316',
+        theme_font: document.getElementById('adminThemeFont')?.value || 'Inter'
   };
 
   let errorData = null;

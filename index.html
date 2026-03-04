@@ -45,8 +45,8 @@
       theme: {
         extend: {
           colors: {
-            primary: '#F97316',
-            'primary-dark': '#EA580C',
+            primary: 'var(--primary-color, #F97316)',
+            'primary-dark': 'var(--primary-color-dark, #EA580C)',
             background: '#09090B',
             surface: '#18181B',
             success: '#10B981',
@@ -54,7 +54,7 @@
           },
           fontFamily: {
             display: ['Space Grotesk', 'sans-serif'],
-            body: ['DM Sans', 'sans-serif']
+            body: ['var(--theme-font, "DM Sans")', 'sans-serif']
           }
         }
       }
@@ -876,28 +876,23 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div id="advancedStats" class="grid grid-cols-1 lg:grid-cols-3 gap-6 hidden">
              <div class="lg:col-span-2 bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl">
-               <h4 class="text-lg font-bold text-white mb-4 font-display">Resumen Semanal</h4>
-               <div class="h-48 flex items-end justify-between gap-2 px-2">
-                  <div class="flex-1 bg-primary/20 rounded-t-lg h-[20%] relative group">
-                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-zinc-800 text-white text-[10px] px-2 py-1 rounded hidden group-hover:block">S/. 45</div>
-                  </div>
-                  <div class="flex-1 bg-primary/20 rounded-t-lg h-[35%] relative group"></div>
-                  <div class="flex-1 bg-primary/20 rounded-t-lg h-[25%] relative group"></div>
-                  <div class="flex-1 bg-primary/20 rounded-t-lg h-[50%] relative group"></div>
-                  <div class="flex-1 bg-primary/20 rounded-t-lg h-[70%] relative group"></div>
-                  <div class="flex-1 bg-primary/40 rounded-t-lg h-[85%] relative group"></div>
-                  <div class="flex-1 bg-primary rounded-t-lg h-[60%] relative group"></div>
+               <h4 class="text-lg font-bold text-white mb-4 font-display">Ventas Diarias (Últimos 7 días)</h4>
+               <div id="dailySalesChart" class="h-48 flex items-end justify-between gap-2 px-2">
+                  <!-- Generado dinámicamente -->
                </div>
                <div class="flex justify-between mt-4 text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
                  <span>Lun</span><span>Mar</span><span>Mie</span><span>Jue</span><span>Vie</span><span>Sab</span><span>Dom</span>
                </div>
              </div>
              <div class="bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl">
-               <h4 class="text-lg font-bold text-white mb-4 font-display">Mejor Vendido</h4>
-               <div id="statsTopProduct" class="space-y-4">
-                 <p class="text-zinc-500 text-sm italic">Cargando datos...</p>
+               <h4 class="text-lg font-bold text-white mb-4 font-display">Ranking de Productos</h4>
+               <div id="topProductsList" class="space-y-2">
+                 <!-- Generado dinámicamente -->
+               </div>
+             </div>
+          </div>
                </div>
              </div>
           </div>
@@ -1010,6 +1005,39 @@
                     <span class="px-3 py-3 bg-zinc-700 rounded-xl text-zinc-400 text-sm font-mono">+51</span>
                     <input type="tel" id="adminDeliveryWhatsapp" placeholder="987654321" class="flex-1 px-4 py-3 bg-zinc-800 rounded-xl border border-zinc-700 text-white focus:border-primary outline-none transition-all">
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Branding y Diseño (Solo Poderoso) -->
+            <div id="brandingSection" class="bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl opacity-50 grayscale pointer-events-none relative transition-all">
+              <div id="brandingLock" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-zinc-950/40 backdrop-blur-[2px] rounded-3xl group cursor-pointer" onclick="showUpgradeModal('Personalización de Colores')">
+                <div class="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-800 group-hover:border-primary transition-all">
+                  <svg class="w-6 h-6 text-zinc-500 group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+                <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-2 group-hover:text-primary">Solo Plan Poderoso</p>
+              </div>
+
+              <h3 class="text-lg font-bold text-white font-display mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                Branding y Diseño
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Color Principal</label>
+                  <div class="flex items-center gap-3 bg-zinc-800 p-3 rounded-2xl border border-zinc-700">
+                    <input type="color" id="adminPrimaryColor" value="#f97316" class="w-10 h-10 rounded-lg bg-transparent border-none cursor-pointer">
+                    <input type="text" id="adminPrimaryColorText" value="#f97316" class="bg-transparent text-white font-mono text-sm uppercase outline-none w-24">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Fuente de la Tienda</label>
+                  <select id="adminThemeFont" class="w-full px-4 py-3 bg-zinc-800 rounded-xl border border-zinc-700 text-white focus:border-primary outline-none transition-all">
+                    <option value="Inter">Inter (Moderna)</option>
+                    <option value="'Outfit', sans-serif">Outfit (Premium)</option>
+                    <option value="'Playfair Display', serif">Playfair (Elegante)</option>
+                    <option value="'Roboto Mono', monospace">Roboto Mono (Tech)</option>
+                  </select>
                 </div>
               </div>
             </div>
