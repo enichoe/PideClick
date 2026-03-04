@@ -515,8 +515,15 @@ function showNotification(title, message, type = 'success') {
 
 // ======================== GESTIÓN DE IMÁGENES GLOBALES ========================
 function loadGlobalImages() {
-  const banner = restaurantData?.banner_url || localStorage.getItem(storageKey('su_banner'));
-  if (banner) document.getElementById('mainBanner').src = banner;
+  const banner = restaurantData?.banner_url || localStorage.getItem(storageKey('su_banner')) || "https://via.placeholder.com/1200x400/2D2A26/E85D4C?text=Tu+Banner+Aqui";
+  const bannerImg = document.getElementById('mainBanner');
+  if (bannerImg) bannerImg.src = banner;
+  
+  const previewImg = document.getElementById('bannerPreview');
+  if (previewImg && restaurantData?.banner_url) {
+    previewImg.src = restaurantData.banner_url;
+    previewImg.classList.remove('hidden');
+  }
 }
 
 async function uploadGlobalImage(type, input) {
@@ -567,32 +574,66 @@ async function uploadGlobalImage(type, input) {
 
 // ======================== GESTIÓN DE PERSONALIZACIÓN ========================
 function loadCustomSettings() {
-  // Si hay datos del backend, forzamos que sea el punto de verdad, ignorando vacíos que puedan traer default
+  // Prioridad Absoluta: Supabase (restaurantData) > LocalStorage (Legacy/Fallback)
   const slogan = restaurantData?.slogan || localStorage.getItem(storageKey('su_custom_slogan')) || "Tu frase favorita aquí";
   const tiktok = restaurantData?.tiktok_url || localStorage.getItem(storageKey('su_custom_tiktok')) || "#";
   const instagram = restaurantData?.instagram_url || localStorage.getItem(storageKey('su_custom_instagram')) || "#";
   const whatsappNum = restaurantData?.whatsapp_num || localStorage.getItem(storageKey('su_custom_whatsapp')) || "";
-  const deliveryWhatsappNum = restaurantData?.delivery_whatsapp_num || localStorage.getItem(storageKey('su_custom_delivery_whatsapp')) || "";
+  const paymentWhatsappNum = restaurantData?.payment_whatsapp_num || localStorage.getItem(storageKey('su_custom_payment_whatsapp')) || "";
   const facebook = restaurantData?.facebook_url || localStorage.getItem(storageKey('su_custom_facebook')) || "#";
   const location = restaurantData?.location_url || localStorage.getItem(storageKey('su_custom_location')) || "#";
   const openTime = restaurantData?.open_time || localStorage.getItem(storageKey('su_custom_open_time')) || "08:00";
   const closeTime = restaurantData?.close_time || localStorage.getItem(storageKey('su_custom_close_time')) || "23:00";
 
-  // Sicronizamos de vuelta al local storage x si aca falla Supabase después
-  if (restaurantData) {
-    localStorage.setItem(storageKey('su_custom_slogan'), slogan);
-    localStorage.setItem(storageKey('su_custom_tiktok'), tiktok);
-    localStorage.setItem(storageKey('su_custom_instagram'), instagram);
-    localStorage.setItem(storageKey('su_custom_whatsapp'), whatsappNum);
-    localStorage.setItem(storageKey('su_custom_delivery_whatsapp'), deliveryWhatsappNum);
-    localStorage.setItem(storageKey('su_custom_payment_whatsapp'), restaurantData.payment_whatsapp_num || "");
-    localStorage.setItem(storageKey('su_custom_facebook'), facebook);
-    localStorage.setItem(storageKey('su_custom_location'), location);
-    localStorage.setItem(storageKey('su_custom_open_time'), openTime);
-    localStorage.setItem(storageKey('su_custom_close_time'), closeTime);
-    if(restaurantData.banner_url) localStorage.setItem(storageKey('su_banner'), restaurantData.banner_url);
+  // 1. ACTUALIZAR VISTA CLIENTE (Storefront)
+  const sloganEl = document.getElementById('customSlogan');
+  if (sloganEl) sloganEl.innerText = slogan;
+
+  const tiktokLink = document.getElementById('linkTiktok');
+  if (tiktokLink) {
+    tiktokLink.href = tiktok;
+    tiktokLink.style.display = (tiktok === '#' || !tiktok) ? 'none' : 'flex';
   }
 
+  const instaLink = document.getElementById('linkInstagram');
+  if (instaLink) {
+    instaLink.href = instagram;
+    instaLink.style.display = (instagram === '#' || !instagram) ? 'none' : 'flex';
+  }
+
+  const fbLink = document.getElementById('linkFacebook');
+  if (fbLink) {
+    fbLink.href = facebook;
+    fbLink.style.display = (facebook === '#' || !facebook) ? 'none' : 'flex';
+  }
+
+  const locLink = document.getElementById('linkLocation');
+  if (locLink) {
+    locLink.href = location;
+    locLink.style.display = (location === '#' || !location) ? 'none' : 'flex';
+  }
+
+  const waLink = document.getElementById('linkWhatsapp');
+  if (waLink && whatsappNum) {
+    waLink.href = `https://wa.me/51${whatsappNum}`;
+    waLink.style.display = 'flex';
+  }
+
+  const hoursDisplay = document.getElementById('storeHoursDisplay');
+  if (hoursDisplay) hoursDisplay.innerText = `Horario: ${openTime} a ${closeTime}`;
+
+  // 2. ACTUALIZAR PARA MODAL DE PEDIDO
+  const phoneSpan = document.getElementById('paymentPhoneText');
+  if (phoneSpan) phoneSpan.innerText = paymentWhatsappNum || whatsappNum;
+
+  // 3. ACTUALIZAR INPUTS ADMIN
+  if (adminSlogan) adminSlogan.value = restaurantData?.slogan || "";
+  if (adminTiktok) adminTiktok.value = restaurantData?.tiktok_url || "";
+  if (adminInstagram) adminInstagram.value = restaurantData?.instagram_url || "";
+  if (adminFacebook) adminFacebook.value = restaurantData?.facebook_url || "";
+  if (adminLocation) adminLocation.value = restaurantData?.location_url || "";
+  if (adminWhatsapp) adminWhatsapp.value = restaurantData?.whatsapp_num || "";
+  if (adminPaymentWhatsapp) adminPaymentWhatsapp.value = restaurantData?.payment_whatsapp_num || "";
   if (adminOpenTime) adminOpenTime.value = openTime;
   if (adminCloseTime) adminCloseTime.value = closeTime;
 
@@ -606,12 +647,14 @@ function loadCustomSettings() {
   document.documentElement.style.setProperty('--theme-font', themeFont);
   document.body.style.fontFamily = themeFont;
 
-  // Actualizar Inputs Admin Branding
   const colorPicker = document.getElementById('adminPrimaryColor');
+  if (colorPicker) colorPicker.value = primaryColor;
+  
+  const fontSelector = document.getElementById('adminThemeFont');
+  if (fontSelector) fontSelector.value = themeFont;
   const colorText = document.getElementById('adminPrimaryColorText');
   const fontSelect = document.getElementById('adminThemeFont');
 
-  if (colorPicker) colorPicker.value = primaryColor;
   if (colorText) colorText.value = primaryColor;
   if (fontSelect) fontSelect.value = themeFont;
 
@@ -711,8 +754,10 @@ async function saveCustomSettings() {
      restaurantData = { ...restaurantData, ...updatePayload };
   }
 
-  loadCustomSettings(); 
-  showNotification("Éxito", "Configuración guardada en Supabase correctamente");
+  // ÉXITO: Sincronizar UI inmediatamente
+  showNotification("Éxito", "Configuración guardada correctamente");
+  loadCustomSettings();
+  loadGlobalImages();
 }
 
 // ======================== CAMBIO DE VISTAS ========================
