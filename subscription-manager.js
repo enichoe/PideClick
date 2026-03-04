@@ -28,22 +28,47 @@ const PLANS = {
   }
 };
 
+
+// Cache para evitar peticiones excesivas
+let cachedSubscription = null;
+
 /**
- * Obtiene el plan actual del negocio.
- * En esta fase manual, lo guardamos en localStorage con prefijo global (su_subscription_[tenantId]).
+ * Obtiene el plan actual del negocio desde Supabase.
  */
-function getTenantSubscription() {
-  const defaultSub = { planId: 'essential', expires: null };
-  // Usamos una clave global (su_global_sub_) para que no se mezcle con los datos del propio tenant
-  const subData = localStorage.getItem(`su_global_sub_${tenantId}`);
-  return subData ? JSON.parse(subData) : defaultSub;
+async function getTenantSubscription() {
+  if (cachedSubscription && cachedSubscription.tenantId === tenantId) return cachedSubscription;
+
+  try {
+    const { data: tenant, error: tError } = await window.supabaseClient
+      .from('tenants')
+      .select('id, slug')
+      .eq('slug', tenantId)
+      .single();
+
+    if (tError) throw tError;
+
+    const { data: sub, error: sError } = await window.supabaseClient
+      .from('subscriptions')
+      .select('plan_id, status, expires_at')
+      .eq('tenant_id', tenant.id)
+      .single();
+
+    if (sError && sError.code !== 'PGRST116') throw sError;
+
+    const subData = sub || { plan_id: 'essential' };
+    cachedSubscription = { planId: subData.plan_id, tenantId: tenantId, expires: subData.expires_at };
+    return cachedSubscription;
+  } catch (err) {
+    console.warn("Error cargando suscripción de Supabase, usando fallback esencial.", err);
+    return { planId: 'essential', expires: null };
+  }
 }
 
 /**
  * Verifica si el negocio tiene una función específica disponible.
  */
-function hasFeature(featureName) {
-  const currentSub = getTenantSubscription();
+async function hasFeature(featureName) {
+  const currentSub = await getTenantSubscription();
   const plan = PLANS[currentSub.planId.toUpperCase()] || PLANS.ESSENTIAL;
   return plan.features[featureName] || false;
 }
@@ -51,38 +76,66 @@ function hasFeature(featureName) {
 /**
  * Obtiene los límites del plan actual.
  */
-function getPlanLimits() {
-  const currentSub = getTenantSubscription();
+async function getPlanLimits() {
+  const currentSub = await getTenantSubscription();
   return PLANS[currentSub.planId.toUpperCase()] || PLANS.ESSENTIAL;
 }
 
 // Registro y gestión global de negocios (Para Super Admin)
 
 /**
- * Registra un negocio en la lista global si no existe.
+ * Registra un negocio en la lista global de Supabase.
  */
-function registerTenant(id) {
+async function registerTenant(id) {
   if (!id || id === 'default') return;
-  let tenants = JSON.parse(localStorage.getItem('su_global_tenants') || '[]');
-  if (!tenants.includes(id)) {
-    tenants.push(id);
-    localStorage.setItem('su_global_tenants', JSON.stringify(tenants));
+  
+  try {
+    const { error } = await window.supabaseClient
+      .from('tenants')
+      .upsert([{ slug: id, name: id }], { onConflict: 'slug' });
+    
+    if (error) console.warn("Error registrando tenant en Supabase:", error);
+  } catch (e) {
+    console.error(e);
   }
 }
 
 /**
- * Obtiene todos los negocios registrados.
+ * Obtiene todos los negocios registrados desde Supabase.
  */
-function getAllTenants() {
-  return JSON.parse(localStorage.getItem('su_global_tenants') || '[]');
+async function getAllTenants() {
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('tenants')
+      .select('*, subscriptions(plan_id, updated_at)');
+    
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error("Error obteniendo todos los tenants:", err);
+    return [];
+  }
 }
 
 /**
- * Actualiza el plan de un negocio de forma global.
+ * Actualiza el plan de un negocio en Supabase.
  */
-function updateTenantPlan(id, planId) {
-  const subData = { planId: planId, updatedAt: new Date().toISOString() };
-  localStorage.setItem(`su_global_sub_${id}`, JSON.stringify(subData));
+async function updateTenantPlan(tenantIdInternal, planId) {
+  try {
+    const { error } = await window.supabaseClient
+      .from('subscriptions')
+      .upsert([{ 
+        tenant_id: tenantIdInternal, 
+        plan_id: planId, 
+        updated_at: new Date().toISOString() 
+      }], { onConflict: 'tenant_id' });
+    
+    if (error) throw error;
+    cachedSubscription = null; // Limpiar cache
+  } catch (err) {
+    console.error("Error actualizando plan del tenant:", err);
+    alert("Error al actualizar plan en Supabase");
+  }
 }
 
 // Exportar funciones (en este entorno frontend simple, las dejamos globales)
