@@ -192,7 +192,7 @@ async function initApp() {
     if (!b) {
       showLandingPage();
     } else {
-      window.SaaS.registerTenant(b);
+      await window.SaaS.registerTenant(b);
       const nav = document.getElementById('mainNav');
       if (nav) nav.classList.remove('hidden');
       

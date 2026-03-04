@@ -45,11 +45,16 @@ const PLANS = {
 
 // Cache para evitar peticiones excesivas
 let cachedSubscription = null;
+let tenantId = null;
 
-/**
- * Obtiene el plan actual del negocio desde Supabase.
- */
 async function getTenantSubscription() {
+  // Intentar obtener tenantId si no se ha registrado explícitamente
+  if (!tenantId) {
+    const params = new URLSearchParams(window.location.search);
+    tenantId = params.get('b');
+  }
+
+  if (!tenantId || tenantId === 'default') return { planId: 'sencillito', expires: null };
   if (cachedSubscription && cachedSubscription.tenantId === tenantId) return cachedSubscription;
 
   try {
@@ -59,7 +64,10 @@ async function getTenantSubscription() {
       .eq('slug', tenantId)
       .single();
 
-    if (tError) throw tError;
+    if (tError) {
+       if (tError.code === 'PGRST116') return { planId: 'sencillito', expires: null };
+       throw tError;
+    }
 
     const { data: sub, error: sError } = await window.supabaseClient
       .from('subscriptions')
@@ -67,23 +75,20 @@ async function getTenantSubscription() {
       .eq('tenant_id', tenant.id)
       .single();
 
-    if (sError && sError.code !== 'PGRST116') throw sError;
+        if (sError && sError.code !== 'PGRST116') throw sError;
 
     const subData = sub || { plan_id: 'sencillito' };
     cachedSubscription = { planId: subData.plan_id, tenantId: tenantId, expires: subData.expires_at };
     return cachedSubscription;
   } catch (err) {
-    console.warn("Error cargando suscripción de Supabase, usando fallback esencial.", err);
-    return { planId: 'essential', expires: null };
+    console.warn("Error cargando suscripción de Supabase, usando fallback.", err);
+    return { planId: 'sencillito', expires: null };
   }
 }
 
-/**
- * Verifica si el negocio tiene una función específica disponible.
- */
 async function hasFeature(featureName) {
   const currentSub = await getTenantSubscription();
-  const plan = PLANS[currentSub.planId.toUpperCase()] || PLANS.ESSENTIAL;
+  const plan = PLANS[currentSub.planId.toUpperCase()] || PLANS.SENCILLITO;
   return plan.features[featureName] || false;
 }
 
@@ -92,7 +97,7 @@ async function hasFeature(featureName) {
  */
 async function getPlanLimits() {
   const currentSub = await getTenantSubscription();
-  return PLANS[currentSub.planId.toUpperCase()] || PLANS.ESSENTIAL;
+  return PLANS[currentSub.planId.toUpperCase()] || PLANS.SENCILLITO;
 }
 
 // Registro y gestión global de negocios (Para Super Admin)
@@ -102,6 +107,7 @@ async function getPlanLimits() {
  */
 async function registerTenant(id) {
   if (!id || id === 'default') return;
+  tenantId = id; // Guardar globalmente
   
   try {
     const { data: { session } } = await window.supabaseClient.auth.getSession();
