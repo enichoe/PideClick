@@ -104,19 +104,32 @@ async function registerTenant(id) {
   if (!id || id === 'default') return;
   
   try {
-    // Primero verificamos si ya existe para no pisar el 'name' si el usuario lo cambió manualmente en BD
+    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    const userEmail = session?.user?.email;
+
+    // Primero verificamos si ya existe
     const { data: existing } = await window.supabaseClient
       .from('tenants')
-      .select('slug')
+      .select('slug, owner_email')
       .eq('slug', id)
       .single();
 
     if (!existing) {
       const { error } = await window.supabaseClient
         .from('tenants')
-        .upsert([{ slug: id, name: `Negocio ${id}` }], { onConflict: 'slug' });
+        .upsert([{ 
+          slug: id, 
+          name: `Negocio ${id}`,
+          owner_email: userEmail || null 
+        }], { onConflict: 'slug' });
       
       if (error) console.warn("Error registrando tenant en Supabase:", error);
+    } else if (!existing.owner_email && userEmail) {
+      // Si existe pero no tiene dueño, y tenemos un usuario logueado, lo asignamos
+      await window.supabaseClient
+        .from('tenants')
+        .update({ owner_email: userEmail })
+        .eq('slug', id);
     }
   } catch (e) {
     console.error("RegisterTenant Error:", e);

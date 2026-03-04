@@ -142,9 +142,16 @@ async function fetchRestaurantFromSupabase(slug) {
     // Si da error porque no encontró la fila (PGRST116), la creamos
     if (error && error.code === 'PGRST116') {
        console.log("No se encontró el restaurante en Supabase, inicializándolo...");
+       const { data: { session } } = await window.supabaseClient.auth.getSession();
+       const userEmail = session?.user?.email;
+
        const { data: newRest, error: insertError } = await window.supabaseClient
          .from('restaurants')
-         .insert([{ slug: slug, name: 'Mi Nuevo Negocio' }])
+         .insert([{ 
+           slug: slug, 
+           name: 'Mi Nuevo Negocio', 
+           owner_email: userEmail || null 
+         }])
          .select()
          .single();
          
@@ -193,9 +200,18 @@ async function initApp() {
       if (footerAdm) footerAdm.classList.remove('hidden');
 
       const { data: { session } } = await window.supabaseClient.auth.getSession();
-      isAdminAuthenticated = !!session;
+      const userEmail = session?.user?.email;
 
       restaurantData = await fetchRestaurantFromSupabase(b);
+      
+      // Determinar si el usuario es administrador de ESTE negocio
+      const isSuperAdmin = ['programador.web.ernesto@gmail.com', 'enichoe@gmail.com'].includes(userEmail?.toLowerCase());
+      const isOwner = restaurantData && restaurantData.owner_email && userEmail && (restaurantData.owner_email.toLowerCase() === userEmail.toLowerCase());
+      
+      isAdminAuthenticated = !!session && (isOwner || isSuperAdmin);
+      
+      // Sincronizar estado de autenticación en sessionStorage para compatibilidad con el resto del script
+      sessionStorage.setItem(storageKey('su_admin_auth'), isAdminAuthenticated ? 'true' : 'false');
       
       let dbProducts = null;
       if (restaurantData && restaurantData.id) {
@@ -228,10 +244,6 @@ async function initApp() {
       try { loadGlobalImages(); } catch(e){ console.error(e) }
       try { loadCustomSettings(); } catch(e){ console.error(e) }
 
-      // Registrar tenant en lista global (Super Admin)
-      if (window.SaaS && window.SaaS.registerTenant) {
-        window.SaaS.registerTenant(tenantId);
-      }
       try { renderProducts(); } catch(e){ console.error(e) }
       try { renderOrders(); } catch(e){ console.error(e) }
       try { updateOrderCounts(); } catch(e){ console.error(e) }
@@ -247,7 +259,7 @@ async function initApp() {
     }
   } catch (error) {
     console.error("DEBUG CRITICAL INIT ERROR:", error);
-    alert("Error crítico al cargar la aplicación: " + error.message);
+    alert("Error al cargar la aplicación. Por favor, recarga la página.");
   }
 }
 
@@ -688,9 +700,8 @@ async function saveCustomSettings() {
   }
 
   if (errorData) {
-    console.error("DEBUG SAVE SETTINGS ERROR:", errorData);
     const detail = errorData.message || JSON.stringify(errorData);
-    alert(`ERROR GUARDANDO AJUSTES EN BD:\n\n1. Verifica que tu correo (${'programador.web.ernesto@gmail.com'}) sea el mismo con el que iniciaste sesión.\n2. Asegúrate de haber ejecutado el SQL de RLS en Supabase.\n\nDetalle técnico: ${detail}`);
+    alert(`ERROR AL GUARDAR CONFIGURACIÓN:\n\n1. Asegúrate de haber iniciado sesión con la cuenta correcta.\n2. Verifica tu conexión a internet.\n\nDetalle técnico: ${detail}`);
     showNotification("Error", "No se pudo guardar en la nube", "error");
     return;
   }
