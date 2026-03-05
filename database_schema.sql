@@ -42,11 +42,13 @@ DO $$ BEGIN
     
     DROP POLICY IF EXISTS "Owners can manage their subscriptions" ON subscriptions;
     CREATE POLICY "Owners can manage their subscriptions" ON subscriptions FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM tenants WHERE tenants.id = subscriptions.tenant_id AND lower(tenants.owner_email) = lower(auth.jwt() ->> 'email')));
+    USING (EXISTS (SELECT 1 FROM tenants WHERE tenants.id = subscriptions.tenant_id AND lower(tenants.owner_email) = lower(auth.jwt() ->> 'email')))
+    WITH CHECK (EXISTS (SELECT 1 FROM tenants WHERE tenants.id = subscriptions.tenant_id AND lower(tenants.owner_email) = lower(auth.jwt() ->> 'email')));
 
     DROP POLICY IF EXISTS "Super Admin Subscriptions Access" ON subscriptions;
     CREATE POLICY "Super Admin Subscriptions Access" ON subscriptions FOR ALL TO authenticated 
-    USING (lower(auth.jwt() ->> 'email') IN ('programador.web.ernesto@gmail.com', 'enichoe@gmail.com'));
+    USING (lower(auth.jwt() ->> 'email') IN ('programador.web.ernesto@gmail.com', 'enichoe@gmail.com'))
+    WITH CHECK (lower(auth.jwt() ->> 'email') IN ('programador.web.ernesto@gmail.com', 'enichoe@gmail.com'));
 END $$;
 
 -- TABLA DE RESTAURANTES (Asegurar owner_email para RLS directo)
