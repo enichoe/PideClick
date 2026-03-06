@@ -51,10 +51,16 @@ DO $$ BEGIN
     WITH CHECK (lower(auth.jwt() ->> 'email') IN ('programador.web.ernesto@gmail.com', 'enichoe@gmail.com'));
 END $$;
 
--- TABLA DE RESTAURANTES (Asegurar owner_email para RLS directo)
+-- TABLA DE RESTAURANTES (Asegurar owner_email para RLS directo y QRs)
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='restaurants' AND column_name='owner_email') THEN
         ALTER TABLE restaurants ADD COLUMN owner_email TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='restaurants' AND column_name='yape_qr_url') THEN
+        ALTER TABLE restaurants ADD COLUMN yape_qr_url TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='restaurants' AND column_name='plin_qr_url') THEN
+        ALTER TABLE restaurants ADD COLUMN plin_qr_url TEXT;
     END IF;
 END $$;
 

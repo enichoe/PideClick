@@ -641,32 +641,54 @@ async function uploadGlobalImage(type, input) {
     
     const publicUrl = await uploadImageToSupabase(file, 'restaurants');
     
-    if (publicUrl && type === 'banner') {
+    if (publicUrl && (type === 'banner' || type === 'yape_qr' || type === 'plin_qr')) {
       let errorData = null;
       let newRest = null;
+
+      let updatePayload = {};
+      if (type === 'banner') updatePayload.banner_url = publicUrl;
+      if (type === 'yape_qr') updatePayload.yape_qr_url = publicUrl;
+      if (type === 'plin_qr') updatePayload.plin_qr_url = publicUrl;
 
       // Si el restaurante ya existe, actualizamos. Si no, lo insertamos.
       if (restaurantData && restaurantData.id) {
         const { error } = await window.supabaseClient
           .from('restaurants')
-          .update({ banner_url: publicUrl })
+          .update(updatePayload)
           .eq('id', restaurantData.id);
         errorData = error;
       } else {
         const { data, error } = await window.supabaseClient
           .from('restaurants')
-          .insert([{ banner_url: publicUrl, slug: bSlug, name: 'Mi Nuevo Negocio' }])
+          .insert([{ ...updatePayload, slug: bSlug, name: 'Mi Nuevo Negocio' }])
           .select()
           .single();
         errorData = error;
         newRest = data;
       }
-        
-      if (!errorData) {
+              if (!errorData) {
         if (newRest) restaurantData = newRest;
-        if (restaurantData) restaurantData.banner_url = publicUrl;
-        document.getElementById('mainBanner').src = publicUrl;
-        showNotification("Éxito", "Banner guardado en la base de datos");
+        if (restaurantData) {
+          if (type === 'banner') restaurantData.banner_url = publicUrl;
+          if (type === 'yape_qr') restaurantData.yape_qr_url = publicUrl;
+          if (type === 'plin_qr') restaurantData.plin_qr_url = publicUrl;
+        }
+
+        if (type === 'banner') document.getElementById('mainBanner').src = publicUrl;
+        if (type === 'yape_qr') {
+          const preview = document.getElementById('yapeQrPreview');
+          if (preview) { preview.src = publicUrl; preview.classList.remove('hidden'); }
+          const icon = document.getElementById('yapeQrIcon');
+          if (icon) icon.classList.add('hidden');
+        }
+        if (type === 'plin_qr') {
+          const preview = document.getElementById('plinQrPreview');
+          if (preview) { preview.src = publicUrl; preview.classList.remove('hidden'); }
+          const icon = document.getElementById('plinQrIcon');
+          if (icon) icon.classList.add('hidden');
+        }
+
+        showNotification("Éxito", "Imagen guardada en la base de datos");
       } else {
         console.error("DEBUG UPLOAD IMAGE DB ERROR:", errorData);
         alert("ERROR SUBIENDO BANNER A DB:\nVerifica que la tabla 'restaurants' existe y tenga políticas correctas.\nDetalle: " + (errorData.message || JSON.stringify(errorData)));
@@ -742,6 +764,21 @@ function loadCustomSettings() {
   if (adminPaymentWhatsapp) adminPaymentWhatsapp.value = restaurantData?.payment_whatsapp_num || "";
   if (adminOpenTime) adminOpenTime.value = openTime;
   if (adminCloseTime) adminCloseTime.value = closeTime;
+
+  // QRs Previews Admin
+  const yapeQrPreview = document.getElementById('yapeQrPreview');
+  const yapeQrIcon = document.getElementById('yapeQrIcon');
+  if (restaurantData?.yape_qr_url) {
+    if (yapeQrPreview) { yapeQrPreview.src = restaurantData.yape_qr_url; yapeQrPreview.classList.remove('hidden'); }
+    if (yapeQrIcon) yapeQrIcon.classList.add('hidden');
+  }
+
+  const plinQrPreview = document.getElementById('plinQrPreview');
+  const plinQrIcon = document.getElementById('plinQrIcon');
+  if (restaurantData?.plin_qr_url) {
+    if (plinQrPreview) { plinQrPreview.src = restaurantData.plin_qr_url; plinQrPreview.classList.remove('hidden'); }
+    if (plinQrIcon) plinQrIcon.classList.add('hidden');
+  }
 
   // Branding (Solo Poderoso)
   const primaryColor = restaurantData?.primary_color || '#f97316';
@@ -1384,9 +1421,27 @@ function togglePaymentFields() {
       </div>`;
   } else if (method === 'yape' || method === 'plin') {
     const payNum = restaurantData?.payment_whatsapp_num || "987654321";
+    let qrHtml = "";
+    
+    // Check if the business uploaded a custom QR code for the selected method
+    if (method === 'yape' && restaurantData?.yape_qr_url) {
+      qrHtml = `
+        <div class="mb-4 text-center">
+          <p class="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Escanea para pagar</p>
+          <img src="${restaurantData.yape_qr_url}" alt="QR Yape" class="w-48 h-48 object-contain mx-auto rounded-xl border border-zinc-700 bg-white p-2">
+        </div>`;
+    } else if (method === 'plin' && restaurantData?.plin_qr_url) {
+      qrHtml = `
+        <div class="mb-4 text-center">
+          <p class="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Escanea para pagar</p>
+          <img src="${restaurantData.plin_qr_url}" alt="QR Plin" class="w-48 h-48 object-contain mx-auto rounded-xl border border-zinc-700 bg-white p-2">
+        </div>`;
+    }
+
     container.innerHTML = `
       <div class="bg-zinc-800 p-4 rounded-xl mt-4">
-        <p class="text-sm text-white mb-2">Realiza el pago y sube la captura:</p>
+        ${qrHtml}
+        <p class="text-sm text-white mb-2">${qrHtml ? 'O transfiere al número y sube la captura:' : 'Realiza el pago y sube la captura:'}</p>
         <div class="flex items-center justify-between bg-zinc-950 p-3 rounded-xl border border-zinc-700 mb-3">
           <p class="text-xl font-bold text-success">Numero: <span id="paymentNumToCopy">${payNum}</span></p>
           <button type="button" onclick="copyPaymentNumber('${payNum}', this)" class="p-2 bg-success/10 text-success rounded-lg hover:bg-success/20 transition-all flex items-center gap-1 text-xs font-bold">
