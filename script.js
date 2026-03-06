@@ -1416,7 +1416,7 @@ function togglePaymentFields() {
     container.innerHTML = `
       <div class="bg-zinc-800 p-4 rounded-xl mt-4">
         <label class="block text-sm font-medium text-white mb-1">Con cuanto pagas?</label>
-        <input type="number" step="0.01" name="cashAmount" required class="w-full px-4 py-2 rounded-lg border border-zinc-800" placeholder="0.00" onchange="calculateChange(this.value)">
+        <input type="number" step="0.01" name="cashAmount" required class="w-full px-4 py-3 rounded-xl border border-zinc-700 focus:border-primary outline-none transition-all bg-white text-black placeholder-zinc-500 font-bold" placeholder="0.00" onchange="calculateChange(this.value)">
         <div id="changeResult" class="mt-2 text-sm font-medium text-success hidden"></div>
       </div>`;
   } else if (method === 'yape' || method === 'plin') {
