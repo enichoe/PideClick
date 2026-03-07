@@ -1313,11 +1313,11 @@
   </div>
   <div id="cartOverlay" class="fixed inset-0 bg-primary-dark/50 z-40 hidden opacity-0 transition-opacity duration-300" onclick="toggleCart()"></div>
 
-  <!-- Resto de Modales (Checkout, Dispatch, Product, Success) -->
+  <!-- Modales: Estilo Vercel/Apple (Bordes suaves, Glassmorphism, Sombras Inmersivas) -->
   <div id="customizeModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-primary-dark/60 backdrop-blur-sm" onclick="closeCustomizeModal()"></div>
-    <div class="relative bg-zinc-900 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto slide-in border border-zinc-800/50">
-      <div class="p-6">
+    <div class="absolute inset-0 bg-zinc-950/80 backdrop-blur-md transition-opacity" onclick="closeCustomizeModal()"></div>
+    <div class="relative bg-zinc-900 border border-white/5 shadow-2xl shadow-black/80 rounded-[2.5rem] w-full max-w-md max-h-[90vh] overflow-y-auto slide-in">
+      <div class="p-8">
         <h3 id="customizeTitle" class="text-2xl font-bold text-white mb-6 font-display">Personalizar</h3>
         <form id="customizeForm" onsubmit="addToCartWithCustomization(event)">
           <input type="hidden" id="customProductId">
@@ -1342,9 +1342,9 @@
 
   <!-- MODAL: CHECKOUT (Finalizar Pedido) -->
   <div id="checkoutModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-primary-dark/60 backdrop-blur-sm" onclick="closeCheckoutModal()"></div>
-    <div class="relative bg-zinc-900 rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-      <div class="p-6">
+    <div class="absolute inset-0 bg-zinc-950/80 backdrop-blur-md transition-opacity" onclick="closeCheckoutModal()"></div>
+    <div class="relative bg-zinc-900 border border-white/5 shadow-2xl shadow-black/80 rounded-[2.5rem] w-full max-w-lg max-h-[90vh] overflow-y-auto slide-in">
+      <div class="p-8">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-2xl font-bold text-white font-display">Finalizar Pedido</h3>
           <button onclick="closeCheckoutModal()" class="p-2 hover:bg-primary-dark/5 rounded-lg"><svg class="w-6 h-6 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
@@ -1418,9 +1418,9 @@
 
   <!-- MODAL: PRODUCTO (Admin) -->
   <div id="productModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-primary-dark/50 modal-overlay" onclick="closeProductModal()"></div>
-    <div class="relative bg-zinc-900 rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-      <div class="p-6">
+    <div class="absolute inset-0 bg-zinc-950/80 backdrop-blur-md modal-overlay transition-opacity" onclick="closeProductModal()"></div>
+    <div class="relative bg-zinc-900 border border-white/5 shadow-2xl shadow-black/80 rounded-[2.5rem] w-full max-w-lg max-h-[90vh] overflow-y-auto slide-in">
+      <div class="p-8">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-2xl font-bold text-white font-display" id="productModalTitle">Nuevo Producto</h3>
           <button onclick="closeProductModal()" class="p-2 hover:bg-primary-dark/5 rounded-lg"><svg class="w-6 h-6 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
@@ -1477,9 +1477,9 @@
   
   <!-- MODAL: SUCCESS -->
   <div id="successModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-primary-dark/60" onclick="closeSuccessModal()"></div>
-    <div class="relative bg-zinc-900 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
-      <div class="w-16 h-16 bg-success rounded-full flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></div>
+    <div class="absolute inset-0 bg-zinc-950/80 backdrop-blur-md transition-opacity" onclick="closeSuccessModal()"></div>
+    <div class="relative bg-zinc-900 border border-white/5 shadow-2xl shadow-emerald-500/10 rounded-[2.5rem] p-10 max-w-sm w-full text-center slide-in">
+      <div class="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-emerald-500/20"><svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></div>
       <h3 class="text-xl font-bold text-white mb-2">Pedido Confirmado</h3>
       <p class="text-zinc-300 mb-4">Tu pedido ha sido recibido. Revisa tu WhatsApp para el seguimiento.</p>
       <button onclick="closeSuccessModal()" class="w-full btn-primary py-3 rounded-xl text-white font-medium">Aceptar</button>
@@ -1488,9 +1488,9 @@
 
   <!-- MODAL: INCOMING ORDER (Admin) -->
   <div id="incomingOrderModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-    <div class="relative bg-zinc-900 border-2 border-primary rounded-3xl p-8 max-w-md w-full text-center shadow-[0_0_50px_rgba(234,179,8,0.3)] animate-bounce">
-      <div class="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+    <div class="absolute inset-0 bg-zinc-950/90 backdrop-blur-lg"></div>
+    <div class="relative bg-zinc-900 border-2 border-primary rounded-[2.5rem] p-10 max-w-md w-full text-center shadow-[0_0_80px_rgba(234,179,8,0.2)] animate-in fade-in zoom-in-95 slide-in-from-bottom-5 duration-300">
+      <div class="w-24 h-24 bg-gradient-to-br from-primary to-amber-500 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-primary/30 animate-pulse">
         <svg class="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
       </div>
       <h3 class="text-3xl font-black text-white mb-2 font-display uppercase tracking-widest">¡Nuevo Pedido!</h3>
@@ -1503,9 +1503,9 @@
 
   <!-- MODAL: DISPATCH -->
   <div id="dispatchModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-primary-dark/60 backdrop-blur-sm" onclick="closeDispatchModal()"></div>
-    <div class="relative bg-zinc-900 rounded-3xl w-full max-w-lg shadow-2xl slide-in">
-      <div class="p-6">
+    <div class="absolute inset-0 bg-zinc-950/80 backdrop-blur-md transition-opacity" onclick="closeDispatchModal()"></div>
+    <div class="relative bg-zinc-900 border border-white/5 shadow-2xl shadow-black/80 rounded-[2.5rem] w-full max-w-lg slide-in">
+      <div class="p-8">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-2xl font-bold text-white font-display">Detalles de Entrega</h3>
           <button onclick="closeDispatchModal()" class="p-2 hover:bg-primary-dark/5 rounded-lg transition-colors">
@@ -1538,8 +1538,8 @@
 
   <!-- MODAL: LOGIN ADMIN -->
   <div id="loginModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-zinc-950/80 backdrop-blur-md" onclick="closeLoginModal()"></div>
-    <div class="relative bg-zinc-900 rounded-3xl w-full max-w-sm p-8 shadow-2xl border border-zinc-800 slide-in">
+    <div class="absolute inset-0 bg-zinc-950/90 backdrop-blur-xl transition-opacity" onclick="closeLoginModal()"></div>
+    <div class="relative bg-zinc-900 border border-white/5 rounded-[2.5rem] w-full max-w-sm p-10 shadow-2xl shadow-black/90 slide-in">
       <div class="text-center mb-8">
         <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-primary/20">
           <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
