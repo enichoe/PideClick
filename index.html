@@ -1564,6 +1564,33 @@
     </div>
   </div>
 
+  <!-- ====== CUSTOM CONFIRM MODAL ====== -->
+  <div id="customConfirmModal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md transition-opacity" onclick="if(event.target===this)closeCustomConfirm()">
+    <div class="relative bg-zinc-900 border border-white/5 shadow-2xl shadow-black/80 rounded-[2.5rem] w-full max-w-sm p-8 text-center slide-in">
+      <div class="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-amber-500/20">
+        <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      </div>
+      <h3 id="customConfirmTitle" class="text-xl font-bold text-white mb-2 font-display">Confirmar Acción</h3>
+      <p id="customConfirmMsg" class="text-zinc-400 text-sm mb-8 leading-relaxed">¿Estás seguro de realizar esto?</p>
+      <div class="flex gap-3">
+        <button onclick="closeCustomConfirm()" class="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl font-bold transition-all border border-zinc-700">Cancelar</button>
+        <button id="customConfirmBtn" onclick="executeCustomConfirm()" class="flex-1 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== CUSTOM ALERT MODAL ====== -->
+  <div id="customAlertModal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md transition-opacity" onclick="if(event.target===this)closeCustomAlert()">
+    <div class="relative bg-zinc-900 border border-white/5 shadow-2xl shadow-black/80 rounded-[2.5rem] w-full max-w-sm p-8 text-center slide-in">
+      <div id="customAlertIconBox" class="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+        <svg id="customAlertIcon" class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <h3 id="customAlertTitle" class="text-xl font-bold text-white mb-2 font-display">Alerta</h3>
+      <p id="customAlertMsg" class="text-zinc-400 text-sm mb-8 leading-relaxed max-h-[40vh] overflow-y-auto w-full break-words whitespace-pre-wrap"></p>
+      <button onclick="closeCustomAlert()" class="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-bold transition-all border border-zinc-700">Aceptar</button>
+    </div>
+  </div>
+
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>

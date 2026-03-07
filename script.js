@@ -1,3 +1,85 @@
+// ==================== CUSTOM MODALS GLOBALES ====================
+let pendingCustomConfirm = null;
+
+window.customConfirm = function(title, message, btnText, isDanger, callback) {
+    const titleEl = document.getElementById('customConfirmTitle');
+    const msgEl = document.getElementById('customConfirmMsg');
+    const btn = document.getElementById('customConfirmBtn');
+    if (!titleEl || !msgEl || !btn) {
+        // Fallback nativo si no cargó el HTML aún
+        if (confirm(title + '\n\n' + message)) callback();
+        return;
+    }
+    
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+    btn.textContent = btnText;
+    btn.className = `flex-1 py-3 rounded-xl font-bold shadow-lg transition-all text-white ${isDanger ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' : 'bg-primary hover:bg-primary-dark shadow-primary/20'}`;
+    
+    pendingCustomConfirm = callback;
+    const modal = document.getElementById('customConfirmModal');
+    if(modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+};
+
+window.closeCustomConfirm = function() {
+    const modal = document.getElementById('customConfirmModal');
+    if(modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    pendingCustomConfirm = null;
+};
+
+window.executeCustomConfirm = function() {
+    if (pendingCustomConfirm) pendingCustomConfirm();
+    closeCustomConfirm();
+};
+
+window.customAlert = function(title, message, isError = false) {
+    const titleEl = document.getElementById('customAlertTitle');
+    const msgEl = document.getElementById('customAlertMsg');
+    if (!titleEl || !msgEl) {
+        // Fallback
+        alert(title + '\n\n' + message);
+        return;
+    }
+    
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+    
+    const iconBox = document.getElementById('customAlertIconBox');
+    const icon = document.getElementById('customAlertIcon');
+    
+    if(iconBox && icon) {
+        if(isError) {
+            iconBox.className = "w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-red-500/20";
+            icon.className.baseVal = "w-8 h-8 text-red-500";
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+        } else {
+            iconBox.className = "w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-blue-500/20";
+            icon.className.baseVal = "w-8 h-8 text-blue-500";
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+        }
+    }
+    
+    const modal = document.getElementById('customAlertModal');
+    if(modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+};
+
+window.closeCustomAlert = function() {
+    const modal = document.getElementById('customAlertModal');
+    if(modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+};
+
 // ======================== SISTEMA MULTI-TENANT ========================
 const getTenantId = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -122,7 +204,7 @@ async function updatePlanUI() {
 
 // Modal de Upgrade (Simple)
 function showUpgradeModal(feature) {
-  alert(`La función de ${feature} está disponible en el Plan Poderoso.\n\nContáctanos para mejorar tu plan.`);
+  customAlert('Función Premium', `La función de ${feature} está disponible en el Plan Poderoso.\n\nContáctanos para mejorar tu plan.`, false);
   window.open('https://wa.me/51972498691?text=Hola,%20quiero%20mejorar%20mi%20plan%20en%20PideClick%20para%20usar%20' + feature, '_blank');
 }
 
@@ -286,7 +368,7 @@ async function initApp() {
     }
   } catch (error) {
     console.error("DEBUG CRITICAL INIT ERROR:", error);
-    alert("Error al cargar la aplicación. Por favor, recarga la página.");
+    customAlert("Error de Carga", "Error al cargar la aplicación. Por favor, recarga la página.", true);
   }
 }
 
@@ -580,7 +662,7 @@ async function uploadImageToSupabase(file, folder = 'products', bucket = 'pidecl
     return publicUrl;
   } catch (err) {
     console.error("DEBUG STORAGE ERROR:", err);
-    alert(`Error de Storage (Subida de Imagen):\nCausa probable: El bucket '${bucket}' no existe, o no tiene políticas de RLS (INSERT) habilitadas.\n\nDetalle técnico: ${err.message}`);
+    customAlert("Error de Subida", `Error de Storage:\nEl bucket '${bucket}' no existe o faltan permisos.\n\nDetalle técnico: ${err.message}`, true);
     showNotification("Error", "No se pudo subir la imagen al servidor.", "error");
     return null;
   }
@@ -715,7 +797,7 @@ async function uploadGlobalImage(type, input) {
         showNotification("Éxito", "Imagen guardada en la base de datos");
       } else {
         console.error("DEBUG UPLOAD IMAGE DB ERROR:", errorData);
-        alert("ERROR SUBIENDO BANNER A DB:\nVerifica que la tabla 'restaurants' existe y tenga políticas correctas.\nDetalle: " + (errorData.message || JSON.stringify(errorData)));
+        customAlert("Error Subiendo Banner", "Verifica que la base de datos tenga políticas correctas.\nDetalle: " + (errorData.message || JSON.stringify(errorData)), true);
         showNotification("Error", "No se pudo guardar la URL en la BD", "error");
       }
     }
@@ -911,7 +993,7 @@ async function saveCustomSettings() {
 
   if (errorData) {
     const detail = errorData.message || JSON.stringify(errorData);
-    alert(`ERROR AL GUARDAR CONFIGURACIÓN:\n\n1. Asegúrate de haber iniciado sesión con la cuenta correcta.\n2. Verifica tu conexión a internet.\n\nDetalle técnico: ${detail}`);
+    customAlert("Error al Guardar", `No se pudo guardar la configuración:\n\n1. Asegúrate de iniciar sesión.\n2. Verifica tu red.\n\nDetalle: ${detail}`, true);
     showNotification("Error", "No se pudo guardar en la nube", "error");
     return;
   }
@@ -1604,7 +1686,7 @@ async function submitOrder(e) {
       }
       
       const errorMsg = `MSG: ${err.message}\nHINT: ${err.hint || 'N/A'}\nDETAILS: ${err.details || 'N/A'}\nCODE: ${err.code || 'N/A'}`;
-      alert("ERROR DETALLADO DE SUPABASE AL CREAR PEDIDO:\n\n" + errorMsg);
+      customAlert("Error de Supabase", "Error al crear pedido:\n\n" + errorMsg, true);
       showNotification("Error", "No se pudo crear el pedido. Revisa el alert.", "error");
       return; 
     }
@@ -2100,25 +2182,30 @@ async function saveProduct(e) {
 function editProduct(id) { openProductModal(id); }
 
 async function deleteProduct(id) {
-  if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+  customConfirm(
+    'Eliminar Producto',
+    '¿Estás seguro de que deseas eliminar este producto permanentemente?',
+    'Sí, Eliminar',
+    true, // isDanger
+    async () => {
+      try {
+        const { error } = await window.supabaseClient
+          .from('products')
+          .delete()
+          .eq('id', id);
 
-  // Manejo de UUID/Strings con comparador laxo
-  try {
-    const { error } = await window.supabaseClient
-      .from('products')
-      .delete()
-      .eq('id', id);
+        if (error) throw error;
 
-    if (error) throw error;
-
-    products = products.filter(p => p.id != id);
-    renderProducts();
-    renderAdminProducts();
-    showNotification("Éxito", "Producto eliminado");
-  } catch (err) {
-    console.error("Error eliminando producto:", err);
-    showNotification("Error", "No se pudo eliminar de la nube", "error");
-  }
+        products = products.filter(p => p.id != id);
+        renderProducts();
+        renderAdminProducts();
+        showNotification("Éxito", "Producto eliminado");
+      } catch (err) {
+        console.error("Error eliminando producto:", err);
+        showNotification("Error", "No se pudo eliminar de la nube", "error");
+      }
+    }
+  );
 }
 
 function formatDate(isoString) {
@@ -2286,7 +2373,7 @@ async function loginAdmin(e) {
     }
 
     // Alerta técnica para depuración
-    alert("DETALLE TÉCNICO DEL ERROR:\n" + msg);
+    customAlert("Error Técnico", msg, true);
     
     showNotification("Error de Acceso", msg, "error");
   }
