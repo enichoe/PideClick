@@ -62,6 +62,9 @@ DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='restaurants' AND column_name='plin_qr_url') THEN
         ALTER TABLE restaurants ADD COLUMN plin_qr_url TEXT;
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='restaurants' AND column_name='is_active') THEN
+        ALTER TABLE restaurants ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
+    END IF;
 END $$;
 
 -- POLÍTICAS RESTAURANTS (Dinámicas)

@@ -252,10 +252,34 @@ async function initApp() {
       try { updateOrderCounts(); } catch(e){ console.error(e) }
       try { renderAdminProducts(); } catch(e){ console.error(e) }
       try { updatePlanUI(); } catch(e){ console.error(e) }
+
+      // ------ INICIO CHECK SUSPENSIÓN ------
+      // Si la tienda está suspendida (is_active === false)
+      if (restaurantData && restaurantData.is_active === false) {
+          // Si NO es el dueño o super admin, lo bloqueamos completamente
+          if (!isAdminAuthenticated) {
+              document.getElementById('clienteView').classList.add('hidden');
+              document.getElementById('adminView').classList.add('hidden');
+              document.getElementById('cartIndicator').classList.add('hidden');
+              const suspendedView = document.getElementById('suspendedStoreView');
+              if (suspendedView) suspendedView.classList.remove('hidden');
+              return; // Detenemos la carga aquí para el cliente
+          } else {
+              // Si ES administrador, lo dejamos entrar pero le avisamos agresivamente
+              showNotification("ATENCIÓN: TIENDA SUSPENDIDA", "Tu tienda no es visible para el público. Por favor, regulariza tu cuenta o contacta a soporte.", "error");
+              // Mantenemos una alerta pegadiza por si cierra el toast
+              const banner = document.createElement('div');
+              banner.className = "bg-red-500 text-white text-center py-2 px-4 shadow-lg text-sm font-bold z-50 animate-pulse w-full";
+              banner.innerHTML = "⚠️ TU TIENDA ESTÁ ACTUALMENTE SUSPENDIDA Y NO RECIBE PEDIDOS ⚠️";
+              document.body.prepend(banner);
+          }
+      }
+      // ------ FIN CHECK SUSPENSIÓN ------
       
       if (isAdminAuthenticated) {
         switchView('admin');
         switchAdminTab('pedidos'); 
+
       } else {
         switchView('cliente');
       }
