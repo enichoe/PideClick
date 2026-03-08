@@ -1312,6 +1312,7 @@ function handleAddToCart(id) {
 
   document.getElementById('customizeModal').classList.remove('hidden');
   document.getElementById('customizeModal').classList.add('flex');
+}
 
 function closeCustomizeModal() {
   document.getElementById('customizeModal').classList.add('hidden');
