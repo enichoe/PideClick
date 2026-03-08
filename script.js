@@ -1198,12 +1198,13 @@ function handleAddToCart(id) {
 
   // ========= SALSAS / CREMAS DINÁMICAS =========
   // Solo mostrar si: la tienda tiene use_sauces=true Y el producto lo permite
+  const isBebida = p.category?.toLowerCase() === 'bebidas';
   const storeUseSauces = restaurantData?.use_sauces === true;
   const productAllowSauces = (p.allow_sauces !== false) && (co.allowSauces !== false);
   const activeSauces = storeSauces.filter(s => s.is_active);
 
   let saucesHtml = '';
-  if (storeUseSauces && productAllowSauces && activeSauces.length > 0) {
+  if (!isBebida && storeUseSauces && productAllowSauces && activeSauces.length > 0) {
     saucesHtml = `
       <div id="saucesSection">
         <label class="block text-sm font-bold text-white mb-3 flex items-center gap-2">
@@ -1220,61 +1221,60 @@ function handleAddToCart(id) {
         </div>
       </div>`;
   }
-  // ========= FIN SALSAS =========
 
-  // Render Extras Dinámicos
   let extrasHtml = '';
-  const extras = co.extras || [];
-  if (extras.length > 0) {
-    extrasHtml = `
-      <div id="extrasSection">
-        <label class="block text-sm font-bold text-white mb-3">Acompañamientos / Extras</label>
-        <div class="grid grid-cols-2 gap-2">
-          ${extras.map(e => `
-            <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-              <input type="checkbox" name="extra" value="${e}" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-              <span class="text-sm font-medium text-white">${e}</span>
+  if (!isBebida) {
+    const extras = co.extras || [];
+    if (extras.length > 0) {
+      extrasHtml = `
+        <div id="extrasSection">
+          <label class="block text-sm font-bold text-white mb-3">Acompañamientos / Extras</label>
+          <div class="grid grid-cols-2 gap-2">
+            ${extras.map(e => `
+              <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+                <input type="checkbox" name="extra" value="${e}" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+                <span class="text-sm font-medium text-white">${e}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>`;
+    } else if (['hamburguesas', 'salchipapas'].includes(p.category?.toLowerCase())) {
+      extrasHtml = `
+        <div id="papaSection">
+          <label class="block text-sm font-bold text-white mb-3">Papas</label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="cursor-pointer">
+              <input type="radio" name="potato" value="Normales" checked class="peer sr-only">
+              <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Normales</div>
             </label>
-          `).join('')}
+            <label class="cursor-pointer">
+              <input type="radio" name="potato" value="Al Hilo" class="peer sr-only">
+              <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Al Hilo</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="potato" value="Sin papas" class="peer sr-only">
+              <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Sin papas</div>
+            </label>
+          </div>
         </div>
-      </div>`;
-  } else if (['hamburguesas', 'salchipapas'].includes(p.category)) { // Fallback for specific categories
-    extrasHtml = `
-      <div id="papaSection">
-        <label class="block text-sm font-bold text-white mb-3">Papas</label>
-        <div class="grid grid-cols-3 gap-2">
-          <label class="cursor-pointer">
-            <input type="radio" name="potato" value="Normales" checked class="peer sr-only">
-            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Normales</div>
-          </label>
-          <label class="cursor-pointer">
-            <input type="radio" name="potato" value="Al Hilo" class="peer sr-only">
-            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Al Hilo</div>
-          </label>
-          <label class="cursor-pointer">
-            <input type="radio" name="potato" value="Sin papas" class="peer sr-only">
-            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Sin papas</div>
-          </label>
-        </div>
-      </div>
-      <div id="saladSection">
-        <label class="block text-sm font-bold text-white mb-3">Ensalada</label>
-        <div class="grid grid-cols-2 gap-2">
-          <label class="cursor-pointer">
-            <input type="radio" name="salad" value="Con ensalada" checked class="peer sr-only">
-            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Con ensalada</div>
-          </label>
-          <label class="cursor-pointer">
-            <input type="radio" name="salad" value="Sin ensalada" class="peer sr-only">
-            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Sin ensalada</div>
-          </label>
-        </div>
-      </div>`;
+        <div id="saladSection">
+          <label class="block text-sm font-bold text-white mb-3">Ensalada</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="cursor-pointer">
+              <input type="radio" name="salad" value="Con ensalada" checked class="peer sr-only">
+              <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Con ensalada</div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="salad" value="Sin ensalada" class="peer sr-only">
+              <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Sin ensalada</div>
+            </label>
+          </div>
+        </div>`;
+    }
   }
 
-  // Notas
   let notesHtml = '';
-  if (co.allowNotes !== false) {
+  if (!isBebida && co.allowNotes !== false) {
     notesHtml = `
       <div>
         <label class="block text-sm font-bold text-white mb-3">Instrucciones Especiales</label>
@@ -1282,20 +1282,19 @@ function handleAddToCart(id) {
       </div>`;
   }
 
-  // Caso Bebidas (Legacy fallback or specific)
   let tempHtml = '';
-  if (p.category === 'bebidas') {
+  if (isBebida) {
     tempHtml = `
       <div id="tempSection">
-        <label class="block text-sm font-bold text-white mb-3">Temperatura</label>
+        <label class="block text-sm font-bold text-white mb-3">¿Cómo deseas tu bebida?</label>
         <div class="grid grid-cols-2 gap-2">
           <label class="cursor-pointer">
-            <input type="radio" name="temp" value="Helada" checked class="peer sr-only">
-            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Helada</div>
+            <input type="radio" name="temp" value="HELADA" checked class="peer sr-only">
+            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">HELADA</div>
           </label>
           <label class="cursor-pointer">
-            <input type="radio" name="temp" value="Al Tiempo" class="peer sr-only">
-            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Al Tiempo</div>
+            <input type="radio" name="temp" value="SIN HELAR" class="peer sr-only">
+            <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">SIN HELAR</div>
           </label>
         </div>
       </div>`;
@@ -1414,7 +1413,7 @@ function formatExtras(extras) {
   if (extras.extrasList && extras.extrasList.length > 0) parts.push(extras.extrasList.join(', '));
   if (extras.potato) parts.push(`Papas: ${extras.potato}`);
   if (extras.salad) parts.push(extras.salad);
-  if (extras.temp) parts.push(`Temp: ${extras.temp}`);
+  if (extras.temp) parts.push(extras.temp);
   if (extras.notes) parts.push(`*Nota:* ${extras.notes}`);
   return parts.join(' | ');
 }
