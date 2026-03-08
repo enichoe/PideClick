@@ -108,3 +108,66 @@ CREATE TRIGGER update_restaurants_updated_at BEFORE UPDATE ON restaurants FOR EA
 
 DROP TRIGGER IF EXISTS update_orders_updated_at ON orders;
 CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON orders FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+
+-- TABLA DE PRODUCTOS (Asegurar campos de personalización de salsas/cremas)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='custom_sauces') THEN
+        ALTER TABLE products ADD COLUMN custom_sauces TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='custom_extras') THEN
+        ALTER TABLE products ADD COLUMN custom_extras TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='allow_customer_notes') THEN
+        ALTER TABLE products ADD COLUMN allow_customer_notes BOOLEAN DEFAULT TRUE;
+    END IF;
+    -- allow_sauces: Each product can opt in/out of the store's global sauce system
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='allow_sauces') THEN
+        ALTER TABLE products ADD COLUMN allow_sauces BOOLEAN DEFAULT TRUE;
+    END IF;
+END $$;
+
+-- =====================================================
+-- SISTEMA DE CREMAS / SALSAS (Gestionable por tienda)
+-- =====================================================
+
+-- use_sauces: Global ON/OFF flag per restaurant for the sauces system
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='restaurants' AND column_name='use_sauces') THEN
+        ALTER TABLE restaurants ADD COLUMN use_sauces BOOLEAN DEFAULT FALSE;
+    END IF;
+END $$;
+
+-- TABLA DE SALSAS/CREMAS (por restaurante)
+CREATE TABLE IF NOT EXISTS sauces (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- RLS para sauces
+ALTER TABLE sauces ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+    DROP POLICY IF EXISTS "Public Read Sauces" ON sauces;
+    CREATE POLICY "Public Read Sauces" ON sauces FOR SELECT USING (true);
+
+    DROP POLICY IF EXISTS "Owners can manage their sauces" ON sauces;
+    CREATE POLICY "Owners can manage their sauces" ON sauces FOR ALL TO authenticated
+    USING (EXISTS (
+        SELECT 1 FROM restaurants
+        WHERE restaurants.id = sauces.restaurant_id
+        AND lower(restaurants.owner_email) = lower(auth.jwt() ->> 'email')
+    ))
+    WITH CHECK (EXISTS (
+        SELECT 1 FROM restaurants
+        WHERE restaurants.id = sauces.restaurant_id
+        AND lower(restaurants.owner_email) = lower(auth.jwt() ->> 'email')
+    ));
+
+    DROP POLICY IF EXISTS "Admin Full Access Sauces" ON sauces;
+    CREATE POLICY "Admin Full Access Sauces" ON sauces FOR ALL TO authenticated
+    USING (lower(auth.jwt() ->> 'email') IN ('programador.web.ernesto@gmail.com', 'enichoe@gmail.com'));
+END $$;

@@ -118,6 +118,9 @@ let currentDispatchOrderId = null;
 
 let isAdminAuthenticated = sessionStorage.getItem(storageKey('su_admin_auth')) === 'true';
 
+// ======================== SISTEMA DE CREMAS / SALSAS ========================
+let storeSauces = []; // Cremas cargadas desde Supabase para esta tienda
+
 // UI de Planes y Suscripciones (Fase 2)
 async function updatePlanUI() {
   const sub = await window.SaaS.getTenantSubscription();
@@ -328,6 +331,11 @@ async function initApp() {
       // Safe renders
       try { loadGlobalImages(); } catch(e){ console.error(e) }
       try { loadCustomSettings(); } catch(e){ console.error(e) }
+      
+      // Cargar cremas del restaurante
+      if (restaurantData && restaurantData.id) {
+        try { await loadSauces(restaurantData.id); } catch(e){ console.error('loadSauces error:', e); }
+      }
 
       try { renderProducts(); } catch(e){ console.error(e) }
       try { renderOrders(); } catch(e){ console.error(e) }
@@ -886,6 +894,22 @@ function loadCustomSettings() {
     if (plinQrIcon) plinQrIcon.classList.add('hidden');
   }
 
+  // Toggle de Cremas (use_sauces)
+  const useSaucesToggle = document.getElementById('adminUseSauces');
+  if (useSaucesToggle) {
+    useSaucesToggle.checked = restaurantData?.use_sauces === true;
+    const mgr = document.getElementById('saucesManagerPanel');
+    const msg = document.getElementById('saucesDisabledMsg');
+    if (useSaucesToggle.checked) {
+      if (mgr) mgr.classList.remove('hidden');
+      if (msg) msg.classList.add('hidden');
+    } else {
+      if (mgr) mgr.classList.add('hidden');
+      if (msg) msg.classList.remove('hidden');
+    }
+  }
+  renderAdminSauces();
+
   // Branding (Solo Poderoso)
   const primaryColor = restaurantData?.primary_color || '#f97316';
   const themeFont = restaurantData?.theme_font || 'Inter';
@@ -959,7 +983,8 @@ async function saveCustomSettings() {
     open_time: openTime,
     close_time: closeTime,
     primary_color: document.getElementById('adminPrimaryColor')?.value || '#f97316',
-    theme_font: document.getElementById('adminThemeFont')?.value || 'Inter'
+    theme_font: document.getElementById('adminThemeFont')?.value || 'Inter',
+    use_sauces: document.getElementById('adminUseSauces')?.checked || false
   };
 
   let errorData = null;
@@ -1171,10 +1196,14 @@ function handleAddToCart(id) {
   document.getElementById('customizeForm').reset();
   document.getElementById('customizeTitle').textContent = `Personalizar ${p.name}`;
 
-  // Render Salsas Dinámicas
+  // ========= SALSAS / CREMAS DINÁMICAS =========
+  // Solo mostrar si: la tienda tiene use_sauces=true Y el producto lo permite
+  const storeUseSauces = restaurantData?.use_sauces === true;
+  const productAllowSauces = (p.allow_sauces !== false) && (co.allowSauces !== false);
+  const activeSauces = storeSauces.filter(s => s.is_active);
+
   let saucesHtml = '';
-  const sauces = co.sauces || [];
-  if (sauces.length > 0) {
+  if (storeUseSauces && productAllowSauces && activeSauces.length > 0) {
     saucesHtml = `
       <div id="saucesSection">
         <label class="block text-sm font-bold text-white mb-3 flex items-center gap-2">
@@ -1182,41 +1211,16 @@ function handleAddToCart(id) {
           Elige tus cremas
         </label>
         <div class="grid grid-cols-2 gap-2">
-          ${sauces.map(s => `
+          ${activeSauces.map(s => `
             <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-              <input type="checkbox" name="sauce" value="${s}" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-              <span class="text-sm font-medium text-white">${s}</span>
+              <input type="checkbox" name="sauce" value="${s.name}" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+              <span class="text-sm font-medium text-white">${s.name}</span>
             </label>
           `).join('')}
         </div>
       </div>`;
-  } else if (p.category !== 'bebidas') { 
-    saucesHtml = `
-      <div id="saucesSection">
-        <label class="block text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-          Elige tus cremas
-        </label>
-        <div class="grid grid-cols-2 gap-2">
-          <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-            <input type="checkbox" name="sauce" value="Ketchup" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-            <span class="text-sm font-medium text-white">Ketchup</span>
-          </label>
-          <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-            <input type="checkbox" name="sauce" value="Mayonesa" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-            <span class="text-sm font-medium text-white">Mayonesa</span>
-          </label>
-          <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-            <input type="checkbox" name="sauce" value="Mostaza" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-            <span class="text-sm font-medium text-white">Mostaza</span>
-          </label>
-          <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-            <input type="checkbox" name="sauce" value="Aji" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-            <span class="text-sm font-medium text-white">Ají</span>
-          </label>
-        </div>
-      </div>`;
   }
+  // ========= FIN SALSAS =========
 
   // Render Extras Dinámicos
   let extrasHtml = '';
@@ -1308,7 +1312,6 @@ function handleAddToCart(id) {
 
   document.getElementById('customizeModal').classList.remove('hidden');
   document.getElementById('customizeModal').classList.add('flex');
-}
 
 function closeCustomizeModal() {
   document.getElementById('customizeModal').classList.add('hidden');
@@ -2077,7 +2080,9 @@ async function openProductModal(id = null) {
       document.getElementById('productAvailable').checked = p.available !== false;
       
       const co = p.customization_options || {};
-      document.getElementById('customSauces').value = (co.sauces || []).join(', ');
+      // allow_sauces: check product field first, then customization_options fallback
+      const allowSaucesEl = document.getElementById('productAllowSauces');
+      if (allowSaucesEl) allowSaucesEl.checked = (p.allow_sauces !== false) && (co.allowSauces !== false);
       document.getElementById('customExtras').value = (co.extras || []).join(', ');
       document.getElementById('allowCustomerNotes').checked = co.allowNotes !== false;
 
@@ -2091,7 +2096,8 @@ async function openProductModal(id = null) {
     document.getElementById('productModalTitle').innerText = 'Nuevo Producto';
     document.getElementById('productForm').reset();
     document.getElementById('productId').value = '';
-    document.getElementById('customSauces').value = '';
+    const allowSaucesElNew = document.getElementById('productAllowSauces');
+    if (allowSaucesElNew) allowSaucesElNew.checked = true;
     document.getElementById('customExtras').value = '';
     document.getElementById('allowCustomerNotes').checked = true;
   }
@@ -2136,9 +2142,9 @@ async function saveProduct(e) {
   }
 
   const customization = {
-    sauces: document.getElementById('customSauces').value.split(',').map(s => s.trim()).filter(s => s !== ""),
     extras: document.getElementById('customExtras').value.split(',').map(e => e.trim()).filter(e => e !== ""),
-    allowNotes: document.getElementById('allowCustomerNotes').checked
+    allowNotes: document.getElementById('allowCustomerNotes').checked,
+    allowSauces: document.getElementById('productAllowSauces')?.checked !== false
   };
 
   const productData = {
@@ -2149,7 +2155,9 @@ async function saveProduct(e) {
     description,
     available,
     image_url: imageUrl,
-    customization_options: customization
+    customization_options: customization,
+    // Direct column for fast query filtering
+    allow_sauces: document.getElementById('productAllowSauces')?.checked !== false
   };
 
   if (id) productData.id = id;
@@ -2384,4 +2392,200 @@ async function logoutAdmin() {
   isAdminAuthenticated = false;
   switchView('cliente');
   showNotification("Sesión Cerrada", "Has salido del panel de administración");
+}
+
+// ======================== SISTEMA DE CREMAS / SALSAS — ADMIN ========================
+
+/**
+ * Carga las cremas/salsas de este restaurante desde Supabase.
+ */
+async function loadSauces(restaurantId) {
+  if (!restaurantId) return;
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('sauces')
+      .select('*')
+      .eq('restaurant_id', restaurantId)
+      .order('display_order', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    storeSauces = data || [];
+  } catch (err) {
+    console.warn('loadSauces error:', err);
+    storeSauces = [];
+  }
+}
+
+/**
+ * Renderiza la lista de cremas en el panel admin de "Cremas / Salsas".
+ */
+function renderAdminSauces() {
+  const list = document.getElementById('adminSaucesList');
+  if (!list) return;
+
+  if (storeSauces.length === 0) {
+    list.innerHTML = '<p class="text-zinc-500 text-sm text-center py-4">No hay cremas configuradas aún.</p>';
+    return;
+  }
+
+  list.innerHTML = storeSauces.map(s => `
+    <div class="flex items-center justify-between bg-zinc-800 border ${s.is_active ? 'border-zinc-700' : 'border-zinc-700/40 opacity-60'} rounded-xl px-4 py-3 group">
+      <div class="flex items-center gap-3">
+        <!-- Active toggle -->
+        <label class="cursor-pointer flex-shrink-0">
+          <input type="checkbox" ${s.is_active ? 'checked' : ''} onchange="updateSauceActive('${s.id}', this.checked)" class="sr-only peer">
+          <div class="w-9 h-5 bg-zinc-600 rounded-full peer peer-checked:bg-primary transition-colors relative">
+            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4" style="transform: ${s.is_active ? 'translateX(16px)' : 'translateX(0)'}"></div>
+          </div>
+        </label>
+        <span class="text-sm font-medium text-white ${s.is_active ? '' : 'line-through text-zinc-500'}">${s.name}</span>
+      </div>
+      <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button onclick="renameSauce('${s.id}', '${s.name.replace(/'/g, "\\'")}')" title="Renombrar" class="p-1.5 text-zinc-400 hover:text-primary rounded-lg transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        </button>
+        <button onclick="deleteSauce('${s.id}', '${s.name.replace(/'/g, "\\'")}')" title="Eliminar" class="p-1.5 text-zinc-400 hover:text-red-500 rounded-lg transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/**
+ * Se llama cuando el toggle "Usar cremas" cambia.
+ */
+function onUseSaucesToggle(checked) {
+  const mgr = document.getElementById('saucesManagerPanel');
+  const msg = document.getElementById('saucesDisabledMsg');
+  if (checked) {
+    if (mgr) mgr.classList.remove('hidden');
+    if (msg) msg.classList.add('hidden');
+    renderAdminSauces();
+  } else {
+    if (mgr) mgr.classList.add('hidden');
+    if (msg) msg.classList.remove('hidden');
+  }
+}
+
+/**
+ * Crea una nueva crema/salsa en Supabase.
+ */
+async function saveSauce() {
+  if (!restaurantData?.id) {
+    showNotification('Error', 'Debes guardar la configuración primero.', 'error');
+    return;
+  }
+  const input = document.getElementById('newSauceName');
+  if (!input) return;
+  const name = input.value.trim();
+  if (!name) {
+    showNotification('Atención', 'Escribe el nombre de la crema.', 'warning');
+    input.focus();
+    return;
+  }
+
+  // Check duplicate
+  if (storeSauces.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+    showNotification('Atención', 'Ya existe una crema con ese nombre.', 'warning');
+    return;
+  }
+
+  try {
+    const { data, error } = await window.supabaseClient
+      .from('sauces')
+      .insert([{
+        restaurant_id: restaurantData.id,
+        name,
+        is_active: true,
+        display_order: storeSauces.length
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    storeSauces.push(data);
+    input.value = '';
+    renderAdminSauces();
+    showNotification('Éxito', `Crema "${name}" agregada correctamente`);
+  } catch (err) {
+    console.error('saveSauce error:', err);
+    showNotification('Error', 'No se pudo agregar la crema. Verifica permisos.', 'error');
+  }
+}
+
+/**
+ * Activa o desactiva una crema.
+ */
+async function updateSauceActive(id, isActive) {
+  try {
+    const { error } = await window.supabaseClient
+      .from('sauces')
+      .update({ is_active: isActive })
+      .eq('id', id);
+
+    if (error) throw error;
+    const sauce = storeSauces.find(s => s.id === id);
+    if (sauce) sauce.is_active = isActive;
+    renderAdminSauces();
+    showNotification('Actualizado', `Crema ${isActive ? 'activada' : 'desactivada'}`);
+  } catch (err) {
+    console.error('updateSauceActive error:', err);
+    showNotification('Error', 'No se pudo actualizar la crema.', 'error');
+    renderAdminSauces(); // Revert UI
+  }
+}
+
+/**
+ * Renombra una crema (inline via customAlert or prompt fallback).
+ */
+async function renameSauce(id, currentName) {
+  const newName = prompt(`Nuevo nombre para "${currentName}":`, currentName);
+  if (!newName || !newName.trim() || newName.trim() === currentName) return;
+  const trimmedName = newName.trim();
+
+  try {
+    const { error } = await window.supabaseClient
+      .from('sauces')
+      .update({ name: trimmedName })
+      .eq('id', id);
+
+    if (error) throw error;
+    const sauce = storeSauces.find(s => s.id === id);
+    if (sauce) sauce.name = trimmedName;
+    renderAdminSauces();
+    showNotification('Actualizado', `Crema renombrada a "${trimmedName}"`);
+  } catch (err) {
+    console.error('renameSauce error:', err);
+    showNotification('Error', 'No se pudo renombrar la crema.', 'error');
+  }
+}
+
+/**
+ * Elimina una crema con confirmación.
+ */
+async function deleteSauce(id, name) {
+  customConfirm(
+    'Eliminar Crema',
+    `¿Estás seguro de eliminar "${name}"? Esta acción no se puede deshacer.`,
+    'Eliminar',
+    true,
+    async () => {
+      try {
+        const { error } = await window.supabaseClient
+          .from('sauces')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        storeSauces = storeSauces.filter(s => s.id !== id);
+        renderAdminSauces();
+        showNotification('Eliminado', `Crema "${name}" eliminada`);
+      } catch (err) {
+        console.error('deleteSauce error:', err);
+        showNotification('Error', 'No se pudo eliminar la crema.', 'error');
+      }
+    }
+  );
 }
