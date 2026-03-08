@@ -1022,6 +1022,58 @@
 
         <!-- PRODUCTS PANEL -->
         <div id="productsPanel" class="hidden">
+            <!-- ===== GESTIÓN DE CREMAS / SALSAS ===== -->
+            <div class="bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl mb-6" id="saucesAdminSection">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-white font-display flex items-center gap-2">
+                  <span class="text-xl">🫙</span>
+                  Cremas / Salsas
+                </h3>
+                <!-- Toggle global use_sauces -->
+                <label class="flex items-center gap-3 cursor-pointer group">
+                  <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Activar</span>
+                  <div class="relative">
+                    <input type="checkbox" id="adminUseSauces" class="sr-only peer" onchange="onUseSaucesToggle(this.checked)">
+                    <div class="w-11 h-6 bg-zinc-700 rounded-full peer peer-checked:bg-primary transition-colors duration-300"></div>
+                    <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 peer-checked:translate-x-5"></div>
+                  </div>
+                </label>
+              </div>
+
+              <!-- Sub-panel: visible only when use_sauces is ON -->
+              <div id="saucesManagerPanel" class="hidden space-y-4">
+
+                <!-- Lista de cremas (se rellena por JS) -->
+                <div id="adminSaucesList" class="space-y-2 min-h-[40px]">
+                  <p class="text-zinc-500 text-sm text-center py-4">No hay cremas configuradas aún.</p>
+                </div>
+
+                <!-- Formulario inline para agregar crema -->
+                <div class="flex gap-2 pt-2 border-t border-zinc-700">
+                  <input
+                    type="text"
+                    id="newSauceName"
+                    placeholder="Nombre de la crema (ej: Mayonesa)"
+                    class="flex-1 px-4 py-2.5 bg-zinc-800 rounded-xl border border-zinc-700 text-white text-sm focus:border-primary outline-none transition-all"
+                    onkeydown="if(event.key==='Enter'){event.preventDefault();saveSauce()}"
+                  >
+                  <button
+                    onclick="saveSauce()"
+                    class="px-5 py-2.5 bg-primary hover:bg-orange-600 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-primary/20 whitespace-nowrap flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Agregar
+                  </button>
+                </div>
+
+                <p class="text-[11px] text-zinc-600 italic">Activa o desactiva cada crema según temporada o disponibilidad. Los clientes solo verán las cremas activas.</p>
+              </div>
+
+              <!-- Mensaje cuando está desactivado -->
+              <div id="saucesDisabledMsg" class="">
+                <p class="text-sm text-zinc-500 italic">Las cremas están desactivadas. Actívalas con el switch de arriba para configurarlas y mostrarlas a tus clientes.</p>
+              </div>
+            </div>
+            <!-- ===== FIN GESTIÓN DE CREMAS ===== -->
           <div id="adminProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
@@ -1209,58 +1261,6 @@
               </div>
             </div>
 
-            <!-- ===== GESTIÓN DE CREMAS / SALSAS ===== -->
-            <div class="bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl" id="saucesAdminSection">
-              <div class="flex items-center justify-between mb-5">
-                <h3 class="text-lg font-bold text-white font-display flex items-center gap-2">
-                  <span class="text-xl">🫙</span>
-                  Cremas / Salsas
-                </h3>
-                <!-- Toggle global use_sauces -->
-                <label class="flex items-center gap-3 cursor-pointer group">
-                  <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Activar</span>
-                  <div class="relative">
-                    <input type="checkbox" id="adminUseSauces" class="sr-only peer" onchange="onUseSaucesToggle(this.checked)">
-                    <div class="w-11 h-6 bg-zinc-700 rounded-full peer peer-checked:bg-primary transition-colors duration-300"></div>
-                    <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 peer-checked:translate-x-5"></div>
-                  </div>
-                </label>
-              </div>
-
-              <!-- Sub-panel: visible only when use_sauces is ON -->
-              <div id="saucesManagerPanel" class="hidden space-y-4">
-
-                <!-- Lista de cremas (se rellena por JS) -->
-                <div id="adminSaucesList" class="space-y-2 min-h-[40px]">
-                  <p class="text-zinc-500 text-sm text-center py-4">No hay cremas configuradas aún.</p>
-                </div>
-
-                <!-- Formulario inline para agregar crema -->
-                <div class="flex gap-2 pt-2 border-t border-zinc-700">
-                  <input
-                    type="text"
-                    id="newSauceName"
-                    placeholder="Nombre de la crema (ej: Mayonesa)"
-                    class="flex-1 px-4 py-2.5 bg-zinc-800 rounded-xl border border-zinc-700 text-white text-sm focus:border-primary outline-none transition-all"
-                    onkeydown="if(event.key==='Enter'){event.preventDefault();saveSauce()}"
-                  >
-                  <button
-                    onclick="saveSauce()"
-                    class="px-5 py-2.5 bg-primary hover:bg-orange-600 text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-primary/20 whitespace-nowrap flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    Agregar
-                  </button>
-                </div>
-
-                <p class="text-[11px] text-zinc-600 italic">Activa o desactiva cada crema según temporada o disponibilidad. Los clientes solo verán las cremas activas.</p>
-              </div>
-
-              <!-- Mensaje cuando está desactivado -->
-              <div id="saucesDisabledMsg" class="">
-                <p class="text-sm text-zinc-500 italic">Las cremas están desactivadas. Actívalas con el switch de arriba para configurarlas y mostrarlas a tus clientes.</p>
-              </div>
-            </div>
-            <!-- ===== FIN GESTIÓN DE CREMAS ===== -->
 
             <!-- Botón Guardar -->
             <button onclick="saveCustomSettings()" class="w-full py-4 bg-primary hover:bg-orange-600 text-white rounded-2xl font-bold text-lg transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3">

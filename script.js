@@ -1941,7 +1941,10 @@ function switchAdminTab(tab) {
   // Renderizar contenido del panel seleccionado
   if (tab === 'pedidos') renderOrders();
   if (tab === 'dashboard') updateDashboardStats();
-  if (tab === 'productos') renderAdminProducts();
+  if (tab === 'productos') {
+    renderAdminProducts();
+    renderAdminSauces();
+  }
   if (tab === 'clientes') renderAdminClientes();
 }
 
