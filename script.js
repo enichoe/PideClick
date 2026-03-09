@@ -2131,6 +2131,7 @@ function renderAdminProducts() {
 
 
 async function openProductModal(id = null) {
+  console.log("DEBUG: openProductModal called with ID:", id);
   // Solo verificar límite si es un producto NUEVO
   if (!id) {
     const plan = await window.SaaS.getPlanLimits();
@@ -2168,12 +2169,15 @@ async function openProductModal(id = null) {
       const allowSaucesEl = document.getElementById('productAllowSauces');
       if (allowSaucesEl) allowSaucesEl.checked = (p.allow_sauces !== false) && (co.allowSauces !== false);
       
-      // Renderizar extras como filas
       const container = document.getElementById('adminExtrasContainer');
       if (container) {
         container.innerHTML = '';
-        const extras = co.extras || [];
-        // Compatibilidad: si los extras son solo strings (viejo formato), convertirlos
+        let extras = co.extras || [];
+        // Compatibilidad: asegurar que extras sea un array
+        if (!Array.isArray(extras)) {
+           if (typeof extras === 'string') extras = extras.split(',').map(s => s.trim()).filter(Boolean);
+           else extras = [];
+        }
         extras.forEach(e => {
           if (typeof e === 'string') addExtraRow(e, 0);
           else addExtraRow(e.name, e.price);
@@ -2203,6 +2207,7 @@ async function openProductModal(id = null) {
 
 // --- GESTIÓN DE EXTRAS EN ADMIN ---
 function addExtraRow(name = '', price = 0) {
+  console.log("DEBUG: addExtraRow called with:", name, price);
   const container = document.getElementById('adminExtrasContainer');
   if (!container) return;
   const row = document.createElement('div');

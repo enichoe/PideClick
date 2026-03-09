@@ -124,6 +124,9 @@ DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='allow_sauces') THEN
         ALTER TABLE products ADD COLUMN allow_sauces BOOLEAN DEFAULT TRUE;
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='customization_options') THEN
+        ALTER TABLE products ADD COLUMN customization_options JSONB DEFAULT '{}'::jsonb;
+    END IF;
 END $$;
 
 -- =====================================================
