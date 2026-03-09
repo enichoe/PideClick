@@ -12,6 +12,13 @@
   <!-- SEO Técnico -->
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#F97316">
+  <link rel="manifest" href="/manifest.json">
+  
+  <!-- Apple PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PideClick">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
   
   <!-- Canonical URL -->
   <link rel="canonical" href="https://pide-click.vercel.app/" />
@@ -38,7 +45,8 @@
   <meta name="twitter:image" content="https://pide-click.vercel.app/img/hero.png?v=2">
   
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="/img/logo2.png">
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
 
   <!-- Estilos y Fuentes (Igual que antes) -->
   <link rel="stylesheet" href="styles.css">
@@ -1738,6 +1746,15 @@
         document.addEventListener('click', () => setTimeout(updateChatbotVisibility, 150));
       });
     })();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('Service Worker registrado', reg))
+          .catch(err => console.warn('Error registrando Service Worker', err));
+      });
+    }
   </script>
 </body>
 </html>
