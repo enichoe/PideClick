@@ -1,6 +1,21 @@
 // ==================== CUSTOM MODALS GLOBALES ====================
 let pendingCustomConfirm = null;
 
+// Unlocking audio context for browser autoplay policies
+document.addEventListener('click', function unlockAudio() {
+  const ringtone = document.getElementById('orderRingtone');
+  if (ringtone) {
+    ringtone.play().then(() => {
+      ringtone.pause();
+      ringtone.currentTime = 0;
+      console.log("Audio unlocked successfully");
+      document.removeEventListener('click', unlockAudio);
+    }).catch(e => {
+      // Still blocked or not clicked yet
+    });
+  }
+}, { once: false });
+
 window.customConfirm = function(title, message, btnText, isDanger, callback) {
     const titleEl = document.getElementById('customConfirmTitle');
     const msgEl = document.getElementById('customConfirmMsg');
@@ -1820,9 +1835,33 @@ function showIncomingOrderModal(order) {
     
     if (ringtone) {
       ringtone.currentTime = 0;
-      ringtone.play().catch(e => console.warn("Auto-play blocked", e));
+      console.log("DEBUG: Playing ringtone...");
+      ringtone.play().catch(e => {
+        console.warn("Auto-play blocked or play() failed", e);
+        showNotification('Aviso', 'Nuevo pedido registrado (Audio bloqueado por el navegador)', 'warning');
+      });
     }
   }
+}
+
+/**
+ * Función para probar el sonido manualmente desde configuración
+ */
+window.testSound = function() {
+  const ringtone = document.getElementById('orderRingtone');
+  if (!ringtone) {
+    showNotification('Error', 'Elemento de audio no encontrado', 'error');
+    return;
+  }
+  
+  showNotification('Probando', 'Reproduciendo sonido de alerta...');
+  ringtone.currentTime = 0;
+  ringtone.play()
+    .then(() => console.log("Test sound played successfully"))
+    .catch(e => {
+      console.error("Test sound failed", e);
+      customAlert('Audio bloqueado', 'El navegador bloqueó el sonido. Por favor haz clic en cualquier parte de la página e intenta de nuevo.');
+    });
 }
 
 function closeIncomingOrderModal() {
@@ -1885,10 +1924,10 @@ function renderOrders() {
           <div class="flex flex-wrap gap-1 mb-3">${orderItems.map(i => `<span class="bg-zinc-950 text-xs px-2 py-1 rounded border border-zinc-700/50">${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}</span>`).join('')}</div>
           <div class="flex gap-2 border-t border-zinc-700 pt-3 mt-2">
             ${o.status === 'pending' ? `<button onclick="updateOrderStatus('${o.id}', 'preparing')" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-bold shadow shadow-primary/20">Preparar</button>
-                                       <a href="https://wa.me/51${cPhone}?text=${encodeURIComponent('👋 ¡Hola ' + cName + '!%0A%0A🧾 Hemos recibido tu *pedido #' + String(o.id).substring(0,6) + '* en *PideClick*.%0A%0A👨‍🍳 Nuestro equipo ya lo está preparando con mucho cuidado.%0A%0A⏳ En breve te avisaremos cuando esté listo o en camino 🚚.%0A%0A🙏 ¡Gracias por tu pedido!')}" target="_blank" class="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm text-center shadow flex items-center justify-center gap-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg> Avisar</a>` : ''}
+                                       <a href="https://wa.me/51${cPhone}?text=${encodeURIComponent('👋 Hola ' + cName + '🧾 Hemos recibido tu *pedido #' + String(o.id).substring(0,6) + '* en *PideClick*.👨‍🍳 Nuestro equipo ya lo está preparando con mucho cuidado.⏳ En breve te avisaremos cuando esté listo o en camino 🚚.🙏 ¡Gracias por tu pedido!')}" target="_blank" class="flex-1 bg-[#25D366] text-white py-2 rounded-lg text-sm text-center shadow flex items-center justify-center gap-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg> Avisar</a>` : ''}
             ${o.status === 'preparing' ? `<button onclick="updateOrderStatus('${o.id}', 'ready')" class="flex-1 bg-success text-white py-2 rounded-lg text-sm shadow">Listo</button>` : ''}
             ${o.status === 'ready' ? `<button onclick="openDispatchModal('${o.id}')" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm shadow shadow-primary/20">Despachar</button>
-                                      <a href="https://wa.me/51${cPhone}?text=${encodeURIComponent('🎉 ¡Buenas noticias!%0A%0A🧾 Tu *pedido #' + String(o.id).substring(0,6) + '* ya está listo.%0A%0A📦 Puedes pasar a recogerlo o pronto estará en camino según tu modalidad de entrega.%0A%0A🙏 ¡Gracias por confiar en nosotros!')}" target="_blank" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm text-center shadow flex items-center justify-center gap-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg> Avisar</a>` : ''}
+                                      <a href="https://wa.me/51${cPhone}?text=${encodeURIComponent('🎉 ¡Buenas noticias!🧾 Tu *pedido #' + String(o.id).substring(0,6) + '* ya está listo.📦 Puedes pasar a recogerlo o pronto estará en camino según tu modalidad de entrega.🙏 ¡Gracias por confiar en nosotros!')}" target="_blank" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm text-center shadow flex items-center justify-center gap-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg> Avisar</a>` : ''}
           </div>
         </div>
       </div>`
@@ -1966,7 +2005,28 @@ function openDispatchModal(id) {
         <p class="text-lg font-bold">Total: S/. ${(o.total || 0).toFixed(2)}</p>
       </div>
     </div>`;
-  const waMsg = encodeURIComponent(`*Pedido #${String(o.id).substring(0,8)}*\\nCliente: ${cName}\\nDir: ${cAddress}\\nMaps: ${mapsLink}\\nTotal: S/. ${(o.total||0).toFixed(2)}`);
+  const waMsg = encodeURIComponent(
+`🧾 *NUEVO PEDIDO*
+
+━━━━━━━━━━━━━━━
+📦 *Pedido:* #${String(o.id).substring(0,8)}
+━━━━━━━━━━━━━━━
+
+👤 *Cliente:* ${cName}
+
+📍 *Dirección de entrega:*
+${cAddress}
+
+🗺️ *Ubicación en Maps:*
+${mapsLink}
+
+━━━━━━━━━━━━━━━
+💰 *TOTAL A PAGAR:* 
+S/. ${(o.total||0).toFixed(2)}
+━━━━━━━━━━━━━━━
+
+📲 *Pedido generado desde el sistema de pedidos*`
+);
   const deliveryNum = restaurantData?.delivery_whatsapp_num || localStorage.getItem(storageKey('su_custom_delivery_whatsapp')) || "999999999";
   document.getElementById('whatsappDeliveryLink').href = `https://wa.me/51${deliveryNum}?text=${waMsg}`;
   document.getElementById('printArea').innerHTML = `<div style="font-family: monospace; width: 100%;"><h2 style="text-align:center;">PIDECLICK</h2><p style="text-align:center; font-size:10px;">${formatDate(o.created_at || o.createdAt || new Date().toISOString())}</p><hr><p>Pedido: #${String(o.id).substring(0,8)}</p><p>Cliente: ${cName}</p><p>Dir: ${cAddress}</p><p>Telf: ${cPhone}</p><hr>${orderItems.map(i => `<p>${i.quantity}x ${i.name}${i.extras ? '<br><small style="font-size:10px; color:#555;">' + formatExtras(i.extras) + '</small>' : ''} - S/.${(i.price*i.quantity).toFixed(2)}</p>`).join('')}<hr><p><strong>TOTAL: S/. ${(o.total||0).toFixed(2)}</strong></p></div>`;

@@ -1263,6 +1263,29 @@
               </div>
             </div>
 
+            <!-- Sistema y Notificaciones -->
+            <div class="bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl">
+              <h3 class="text-lg font-bold text-white font-display mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                Sistema y Notificaciones
+              </h3>
+              <div class="p-4 bg-zinc-800/50 rounded-2xl border border-zinc-700">
+                <div class="flex items-center justify-between gap-4">
+                  <div>
+                    <p class="text-sm font-bold text-white">Sonido de Alerta</p>
+                    <p class="text-xs text-zinc-400 mt-1">Se activará automáticamente al recibir un nuevo pedido.</p>
+                  </div>
+                  <button type="button" onclick="testSound()" class="px-4 py-2 bg-zinc-700 hover:bg-zinc-650 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-zinc-600">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                    Probar Sonido
+                  </button>
+                </div>
+                <div class="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-xl">
+                  <p class="text-[10px] text-primary leading-tight font-medium italic">Nota: Si no escuchas nada, asegúrate de haber interactuado con la página al menos una vez para habilitar el audio del navegador.</p>
+                </div>
+              </div>
+            </div>
+
             <!-- Horario -->
             <div class="bg-zinc-900 rounded-3xl p-6 border border-zinc-800 shadow-xl">
               <h3 class="text-lg font-bold text-white font-display mb-4 flex items-center gap-2">
