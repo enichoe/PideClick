@@ -1400,6 +1400,11 @@
             <!-- Se llena dinámicamente desde script.js -->
           </div>
 
+          <div class="mt-8 pt-4 border-t border-zinc-800 flex justify-between items-center">
+            <span class="text-zinc-400 font-medium">Precio Total</span>
+            <span id="customizeTotal" class="text-2xl font-bold text-white">S/. 0.00</span>
+          </div>
+
           <div class="pt-8">
             <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-primary/20 transition-all active:scale-95">
               Agregar al Carrito
@@ -1539,9 +1544,14 @@
                 </label>
               </div>
 
-              <div>
-                <label class="block text-[10px] font-bold text-zinc-500 uppercase mb-2">Acompañamientos (Separa con comas)</label>
-                <input type="text" id="customExtras" placeholder="Papas Fritas, Papas al Hilo, Ensalada..." class="w-full px-4 py-2 bg-zinc-800 rounded-lg border border-zinc-800 text-white text-sm focus:border-primary outline-none">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="block text-[10px] font-bold text-zinc-500 uppercase">Adicionales / Extras</label>
+                  <button type="button" onclick="addExtraRow()" class="text-[10px] font-bold text-primary uppercase hover:underline">+ Agregar Adicional</button>
+                </div>
+                <div id="adminExtrasContainer" class="space-y-2">
+                  <!-- Filas dinámicas: [Nombre] [Precio] [X] -->
+                </div>
               </div>
 
               <div class="flex items-center gap-3">

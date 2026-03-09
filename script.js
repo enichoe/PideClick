@@ -1228,31 +1228,39 @@ function handleAddToCart(id) {
     if (extras.length > 0) {
       extrasHtml = `
         <div id="extrasSection">
-          <label class="block text-sm font-bold text-white mb-3">Acompañamientos / Extras</label>
-          <div class="grid grid-cols-2 gap-2">
-            ${extras.map(e => `
-              <label class="flex items-center gap-2 p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
-                <input type="checkbox" name="extra" value="${e}" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
-                <span class="text-sm font-medium text-white">${e}</span>
-              </label>
-            `).join('')}
+          <label class="block text-sm font-bold text-white mb-3">Adicionales</label>
+          <div class="grid grid-cols-1 gap-2">
+            ${extras.map(e => {
+              const name = typeof e === 'string' ? e : e.name;
+              const price = typeof e === 'string' ? 0 : e.price;
+              return `
+                <label class="flex items-center justify-between p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors">
+                  <div class="flex items-center gap-2">
+                    <input type="checkbox" name="extra" value="${name}" data-price="${price}" onchange="updateCustomizeTotal()" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
+                    <span class="text-sm font-medium text-white">${name}</span>
+                  </div>
+                  ${price > 0 ? `<span class="text-xs font-bold text-primary">+ S/ ${price.toFixed(2)}</span>` : ''}
+                </label>
+              `;
+            }).join('')}
           </div>
         </div>`;
     } else if (['hamburguesas', 'salchipapas'].includes(p.category?.toLowerCase())) {
+      // (Mantener lógica de papas y ensalada por defecto)
       extrasHtml = `
         <div id="papaSection">
           <label class="block text-sm font-bold text-white mb-3">Papas</label>
           <div class="grid grid-cols-3 gap-2">
             <label class="cursor-pointer">
-              <input type="radio" name="potato" value="Normales" checked class="peer sr-only">
+              <input type="radio" name="potato" value="Normales" checked onchange="updateCustomizeTotal()" class="peer sr-only">
               <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Normales</div>
             </label>
             <label class="cursor-pointer">
-              <input type="radio" name="potato" value="Al Hilo" class="peer sr-only">
+              <input type="radio" name="potato" value="Al Hilo" onchange="updateCustomizeTotal()" class="peer sr-only">
               <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Al Hilo</div>
             </label>
             <label class="cursor-pointer">
-              <input type="radio" name="potato" value="Sin papas" class="peer sr-only">
+              <input type="radio" name="potato" value="Sin papas" onchange="updateCustomizeTotal()" class="peer sr-only">
               <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-xs font-medium text-white">Sin papas</div>
             </label>
           </div>
@@ -1261,11 +1269,11 @@ function handleAddToCart(id) {
           <label class="block text-sm font-bold text-white mb-3">Ensalada</label>
           <div class="grid grid-cols-2 gap-2">
             <label class="cursor-pointer">
-              <input type="radio" name="salad" value="Con ensalada" checked class="peer sr-only">
+              <input type="radio" name="salad" value="Con ensalada" checked onchange="updateCustomizeTotal()" class="peer sr-only">
               <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Con ensalada</div>
             </label>
             <label class="cursor-pointer">
-              <input type="radio" name="salad" value="Sin ensalada" class="peer sr-only">
+              <input type="radio" name="salad" value="Sin ensalada" onchange="updateCustomizeTotal()" class="peer sr-only">
               <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">Sin ensalada</div>
             </label>
           </div>
@@ -1274,11 +1282,11 @@ function handleAddToCart(id) {
   }
 
   let notesHtml = '';
-  if (!isBebida && co.allowNotes !== false) {
+  if (p.allow_customer_notes !== false && co.allowNotes !== false) {
     notesHtml = `
-      <div>
-        <label class="block text-sm font-bold text-white mb-3">Instrucciones Especiales</label>
-        <textarea name="notes" rows="2" class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white text-sm focus:border-primary outline-none transition-all resize-none" placeholder="Ej: Sin cebolla, carne bien cocida, etc."></textarea>
+      <div id="notesSection">
+        <label class="block text-sm font-bold text-white mb-3">Notas para la cocina</label>
+        <textarea name="notes" rows="2" class="w-full px-4 py-3 bg-zinc-800/50 rounded-xl border border-zinc-700 text-white text-sm focus:border-primary outline-none resize-none" placeholder="Ej: Sin cebolla, bien frito..."></textarea>
       </div>`;
   }
 
@@ -1289,7 +1297,7 @@ function handleAddToCart(id) {
         <label class="block text-sm font-bold text-white mb-3">¿Cómo deseas tu bebida?</label>
         <div class="grid grid-cols-2 gap-2">
           <label class="cursor-pointer">
-            <input type="radio" name="temp" value="HELADA" checked class="peer sr-only">
+            <input type="radio" name="temp" value="HELADA" checked onchange="updateCustomizeTotal()" class="peer sr-only">
             <div class="p-3 bg-zinc-800/50 border border-zinc-700 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/10 text-center text-sm font-medium text-white">HELADA</div>
           </label>
           <label class="cursor-pointer">
@@ -1311,6 +1319,24 @@ function handleAddToCart(id) {
 
   document.getElementById('customizeModal').classList.remove('hidden');
   document.getElementById('customizeModal').classList.add('flex');
+}
+
+function updateCustomizeTotal() {
+  if (!currentProduct) return;
+  let total = currentProduct.price;
+  
+  // Sumar extras seleccionados (los nuevos con precio)
+  const selectedExtras = document.querySelectorAll('#customizeModal input[name="extra"]:checked');
+  selectedExtras.forEach(el => {
+    total += parseFloat(el.dataset.price || 0);
+  });
+  
+  // Sumar adicionales de papas si tienen precio extra (por ahora son gratis pero dejamos abierta la lógica)
+  // const potato = document.querySelector('#customizeModal input[name="potato"]:checked');
+  // if (potato && potato.dataset.price) total += parseFloat(potato.dataset.price);
+
+  const totalEl = document.getElementById('customizeTotal');
+  if (totalEl) totalEl.textContent = `S/. ${total.toFixed(2)}`;
 }
 
 function closeCustomizeModal() {
@@ -1342,12 +1368,21 @@ function addToCartWithCustomization(e) {
   const fd = new FormData(e.target);
   const extras = {};
 
-  // Recopilar salsas (checkboxes name="sauce")
+  // Recopilar salsas
   const selectedSauces = Array.from(fd.getAll('sauce'));
   if (selectedSauces.length > 0) extras.sauces = selectedSauces;
 
-  // Recopilar extras (checkboxes name="extra")
-  const selectedExtras = Array.from(fd.getAll('extra'));
+  // Recopilar extras seleccionados con sus precios
+  const selectedExtrasElements = document.querySelectorAll('#customizeModal input[name="extra"]:checked');
+  const selectedExtras = [];
+  let extrasPriceTotal = 0;
+  
+  selectedExtrasElements.forEach(el => {
+    const price = parseFloat(el.dataset.price || 0);
+    selectedExtras.push({ name: el.value, price: price });
+    extrasPriceTotal += price;
+  });
+  
   if (selectedExtras.length > 0) extras.extrasList = selectedExtras;
 
   // Recopilar otros campos
@@ -1356,7 +1391,9 @@ function addToCartWithCustomization(e) {
   if (fd.get('temp')) extras.temp = fd.get('temp');
   if (fd.get('notes')) extras.notes = fd.get('notes');
 
-  cart.push({ ...p, quantity: 1, extras, cartId: Date.now() });
+  const itemTotal = p.price + extrasPriceTotal;
+
+  cart.push({ ...p, quantity: 1, extras, basePrice: p.price, itemPrice: itemTotal, cartId: Date.now() });
   updateCartUI();
   closeCustomizeModal();
   toggleCart(); 
@@ -1366,7 +1403,7 @@ function addToCartWithCustomization(e) {
 // ======================== LÓGICA DEL CARRITO ========================
 function updateCartUI() {
   const count = cart.reduce((s, i) => s + i.quantity, 0);
-  const total = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+  const total = cart.reduce((s, i) => s + ((i.itemPrice || i.price) * i.quantity), 0);
   const countEl = document.getElementById('cartCount');
   const emptyEl = document.getElementById('emptyCart');
   const listEl = document.getElementById('cartItemsList');
@@ -1378,12 +1415,14 @@ function updateCartUI() {
     emptyEl.classList.add('hidden');
     listEl.classList.remove('hidden');
     footerEl.classList.remove('hidden');
-    listEl.innerHTML = cart.map((item, idx) => `
+    listEl.innerHTML = cart.map((item, idx) => {
+      const priceToDisplay = (item.itemPrice || item.price) * item.quantity;
+      return `
       <div class="flex items-center gap-4 bg-zinc-800/50 border border-zinc-800 rounded-2xl p-4 slide-in" style="animation-delay: ${idx * 100}ms">
         <div class="flex-1">
           <h4 class="font-bold text-white text-base">${item.name}</h4>
-          <p class="text-xs text-zinc-300 mt-1">${formatExtras(item.extras)}</p>
-          <p class="text-lg text-primary font-bold mt-1">S/. ${item.price.toFixed(2)}</p>
+          <p class="text-xs text-zinc-400 mt-1">${formatExtras(item.extras)}</p>
+          <p class="text-lg text-primary font-bold mt-1">S/. ${priceToDisplay.toFixed(2)}</p>
         </div>
         <div class="flex flex-col items-center gap-2">
           <div class="flex items-center gap-3 bg-zinc-950 rounded-xl border border-zinc-800 p-1">
@@ -1394,7 +1433,8 @@ function updateCartUI() {
           <button onclick="removeCartItem(${item.cartId})" class="text-xs text-red-500 hover:text-red-400 font-medium mt-1">Quitar</button>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
   } else {
     countEl.classList.add('hidden');
     emptyEl.classList.remove('hidden');
@@ -1410,7 +1450,13 @@ function formatExtras(extras) {
   if (!extras) return '';
   const parts = [];
   if (extras.sauces && extras.sauces.length > 0) parts.push(extras.sauces.join(', '));
-  if (extras.extrasList && extras.extrasList.length > 0) parts.push(extras.extrasList.join(', '));
+  if (extras.extrasList && extras.extrasList.length > 0) {
+    const list = extras.extrasList.map(e => {
+        if (typeof e === 'string') return e;
+        return `${e.name}${e.price > 0 ? ' (+S/ ' + e.price.toFixed(2) + ')' : ''}`;
+    });
+    parts.push(list.join(', '));
+  }
   if (extras.potato) parts.push(`Papas: ${extras.potato}`);
   if (extras.salad) parts.push(extras.salad);
   if (extras.temp) parts.push(extras.temp);
@@ -1632,7 +1678,7 @@ async function submitOrder(e) {
   showNotification("Procesando", "Enviando pedido...", "warning");
 
   const fd = new FormData(e.target);
-  const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+  const subtotal = cart.reduce((s, i) => s + ((i.itemPrice || i.price) * i.quantity), 0);
   const isDelivery = fd.get('deliveryType') === 'delivery';
   const total = isDelivery ? subtotal + 2 : subtotal;
 
@@ -1706,7 +1752,6 @@ Nombre: ${newOrder.customer_name}
 
 📲 *Mensaje automático del sistema de pedidos*
 
-Por favor confirmar el pedido y el tiempo aproximado de entrega. 🙏
 
 ¡Gracias! 😊`
 );
@@ -2122,7 +2167,19 @@ async function openProductModal(id = null) {
       // allow_sauces: check product field first, then customization_options fallback
       const allowSaucesEl = document.getElementById('productAllowSauces');
       if (allowSaucesEl) allowSaucesEl.checked = (p.allow_sauces !== false) && (co.allowSauces !== false);
-      document.getElementById('customExtras').value = (co.extras || []).join(', ');
+      
+      // Renderizar extras como filas
+      const container = document.getElementById('adminExtrasContainer');
+      if (container) {
+        container.innerHTML = '';
+        const extras = co.extras || [];
+        // Compatibilidad: si los extras son solo strings (viejo formato), convertirlos
+        extras.forEach(e => {
+          if (typeof e === 'string') addExtraRow(e, 0);
+          else addExtraRow(e.name, e.price);
+        });
+      }
+
       document.getElementById('allowCustomerNotes').checked = co.allowNotes !== false;
 
       const imgToShow = p.image_url || p.image;
@@ -2137,10 +2194,30 @@ async function openProductModal(id = null) {
     document.getElementById('productId').value = '';
     const allowSaucesElNew = document.getElementById('productAllowSauces');
     if (allowSaucesElNew) allowSaucesElNew.checked = true;
-    document.getElementById('customExtras').value = '';
+    const container = document.getElementById('adminExtrasContainer');
+    if (container) container.innerHTML = '';
     document.getElementById('allowCustomerNotes').checked = true;
   }
   modal.classList.remove('hidden'); modal.classList.add('flex');
+}
+
+// --- GESTIÓN DE EXTRAS EN ADMIN ---
+function addExtraRow(name = '', price = 0) {
+  const container = document.getElementById('adminExtrasContainer');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.className = 'flex gap-2 items-center slide-in';
+  row.innerHTML = `
+    <input type="text" placeholder="Nombre (ej: Queso)" value="${name}" class="extra-name flex-1 px-3 py-2 bg-zinc-800 rounded-lg border border-zinc-700 text-white text-sm outline-none focus:border-primary">
+    <div class="relative w-24">
+      <span class="absolute left-2 top-2 text-zinc-500 text-xs">S/</span>
+      <input type="number" step="0.1" placeholder="0.0" value="${price}" class="extra-price w-full pl-6 pr-2 py-2 bg-zinc-800 rounded-lg border border-zinc-700 text-white text-sm outline-none focus:border-primary">
+    </div>
+    <button type="button" onclick="this.parentElement.remove()" class="p-2 text-zinc-500 hover:text-red-500 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+  `;
+  container.appendChild(row);
 }
 
 function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); document.getElementById('productModal').classList.remove('flex'); }
@@ -2180,8 +2257,16 @@ async function saveProduct(e) {
     imageUrl = existing ? (existing.image_url || existing.image) : '';
   }
 
+  const extrasRows = document.querySelectorAll('#adminExtrasContainer .flex');
+  const extrasList = [];
+  extrasRows.forEach(row => {
+    const nameVal = row.querySelector('.extra-name').value.trim();
+    const priceVal = parseFloat(row.querySelector('.extra-price').value) || 0;
+    if (nameVal) extrasList.push({ name: nameVal, price: priceVal });
+  });
+
   const customization = {
-    extras: document.getElementById('customExtras').value.split(',').map(e => e.trim()).filter(e => e !== ""),
+    extras: extrasList,
     allowNotes: document.getElementById('allowCustomerNotes').checked,
     allowSauces: document.getElementById('productAllowSauces')?.checked !== false
   };
