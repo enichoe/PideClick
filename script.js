@@ -1674,8 +1674,44 @@ async function submitOrder(e) {
       // WhatsApp Message Automático (Cliente -> Negocio)
       const businessPhone = restaurantData?.whatsapp_num || localStorage.getItem(storageKey('su_custom_whatsapp')) || "999999999";
       const itemList = cart.map(i => `${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}`).join('\\n');
-      const msg = encodeURIComponent(`¡Hola! Deseo realizar un pedido:\\n\\n*Pedido #${String(newOrder.id).substring(0,8)}*\\n${itemList}\\n\\n*Subtotal:* S/. ${subtotal.toFixed(2)}\\n*Delivery:* S/. ${orderData.delivery_fee.toFixed(2)}\\n*Total a pagar:* S/. ${newOrder.total.toFixed(2)}\\n\\n*Mis Datos:*\\nNombre: ${newOrder.customer_name}\\nTeléfono: ${newOrder.customer_phone}\\nDirección: ${newOrder.customer_address}\\nMétodo de pago: ${newOrder.payment_method}\\n\\nPor favor, confírmenme el pedido y avísenme cuando esté listo.`);
-      window.open(`https://wa.me/51${businessPhone}?text=${msg}`, '_blank');
+      const orderTime = new Date().toLocaleString();
+
+const msg = encodeURIComponent(
+`🧾 *PEDIDO ONLINE CONFIRMADO*
+
+━━━━━━━━━━━━━━━━━━
+🏪 *Pedido desde Menú Digital*
+📦 *Orden:* #${String(newOrder.id).substring(0,8)}
+⏰ *Hora:* ${orderTime}
+━━━━━━━━━━━━━━━━━━
+
+🍔 *DETALLE DEL PEDIDO*
+${itemList}
+
+━━━━━━━━━━━━━━━━━━
+💰 *RESUMEN DE PAGO*
+Subtotal: S/. ${subtotal.toFixed(2)}
+Delivery: S/. ${orderData.delivery_fee.toFixed(2)}
+
+💵 *TOTAL:* S/. ${newOrder.total.toFixed(2)}
+━━━━━━━━━━━━━━━━━━
+
+👤 *DATOS DEL CLIENTE*
+Nombre: ${newOrder.customer_name}
+📞 Teléfono: ${newOrder.customer_phone}
+📍 Dirección: ${newOrder.customer_address}
+💳 Método de pago: ${newOrder.payment_method}
+
+━━━━━━━━━━━━━━━━━━
+
+📲 *Mensaje automático del sistema de pedidos*
+
+Por favor confirmar el pedido y el tiempo aproximado de entrega. 🙏
+
+¡Gracias! 😊`
+);
+
+window.open(`https://wa.me/51${businessPhone}?text=${msg}`, '_blank');
       
       showNotification("¡Éxito!", "Pedido creado y enviado a cocina.");
     } catch (err) {
