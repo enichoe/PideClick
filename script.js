@@ -1692,52 +1692,52 @@ async function submitOrder(e) {
 
   showNotification("Procesando", "Enviando pedido...", "warning");
 
-  const fd = new FormData(e.target);
-  const subtotal = cart.reduce((s, i) => s + ((i.itemPrice || i.price) * i.quantity), 0);
-  const isDelivery = fd.get('deliveryType') === 'delivery';
-  const total = isDelivery ? subtotal + 2 : subtotal;
+  try {
+    const fd = new FormData(e.target);
+    const subtotal = cart.reduce((s, i) => s + ((i.itemPrice || i.price) * i.quantity), 0);
+    const isDelivery = fd.get('deliveryType') === 'delivery';
+    const total = isDelivery ? subtotal + 2 : subtotal;
 
-  let paymentImageUrl = null;
-  const paymentProofFile = fd.get('paymentProof');
-  if (paymentProofFile && paymentProofFile.name) {
-    paymentImageUrl = await uploadImageToSupabase(paymentProofFile, 'orders', 'order_proofs');
-  }
+    let paymentImageUrl = null;
+    const paymentProofFile = fd.get('paymentProof');
+    if (paymentProofFile && paymentProofFile.name) {
+      paymentImageUrl = await uploadImageToSupabase(paymentProofFile, 'orders', 'order_proofs');
+    }
 
-  const orderData = {
-    restaurant_id: restaurantData ? restaurantData.id : null,
-    customer_name: fd.get('customerName') || 'Cliente Local',
-    customer_phone: fd.get('customerPhone') || '000000000',
-    customer_address: fd.get('customerAddress') || 'Recojo en local',
-    gps_coords: { lat: fd.get('lat') || null, lng: fd.get('lng') || null },
-    items: [...cart],
-    subtotal: subtotal,
-    delivery_fee: isDelivery ? 2 : 0,
-    total: total,
-    payment_method: fd.get('paymentMethod'),
-    payment_details: fd.get('cashAmount') || fd.get('paymentProof')?.name || 'N/A',
-    payment_image_url: paymentImageUrl,
-    order_type: fd.get('deliveryType') || 'pickup',
-    status: 'pending'
-  };
+    const orderData = {
+      restaurant_id: restaurantData ? restaurantData.id : null,
+      customer_name: fd.get('customerName') || 'Cliente Local',
+      customer_phone: fd.get('customerPhone') || '000000000',
+      customer_address: fd.get('customerAddress') || 'Recojo en local',
+      gps_coords: { lat: fd.get('lat') || null, lng: fd.get('lng') || null },
+      items: [...cart],
+      subtotal: subtotal,
+      delivery_fee: isDelivery ? 2 : 0,
+      total: total,
+      payment_method: fd.get('paymentMethod'),
+      payment_details: fd.get('cashAmount') || fd.get('paymentProof')?.name || 'N/A',
+      payment_image_url: paymentImageUrl,
+      order_type: fd.get('deliveryType') || 'pickup',
+      status: 'pending'
+    };
 
-  // Guardar en Supabase si el restaurante existe en la DB
-  if (restaurantData && restaurantData.id) {
-    try {
-      const { data, error } = await window.supabaseClient
-        .from('orders')
-        .insert([orderData])
-        .select();
-      
-      if (error) throw error;
-      
-      const newOrder = data[0];
-      
-      // WhatsApp Message Automático (Cliente -> Negocio)
-      const businessPhone = restaurantData?.whatsapp_num || localStorage.getItem(storageKey('su_custom_whatsapp')) || "999999999";
-      const itemList = cart.map(i => `${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}`).join('\\n');
-      const orderTime = new Date().toLocaleString();
+    // Guardar en Supabase si el restaurante existe en la DB
+    if (restaurantData && restaurantData.id) {
+        const { data, error } = await window.supabaseClient
+          .from('orders')
+          .insert([orderData])
+          .select();
+        
+        if (error) throw error;
+        
+        const newOrder = data && data.length > 0 ? data[0] : { ...orderData, id: 'TEMPORAL' };
+        
+        // WhatsApp Message Automático (Cliente -> Negocio)
+        const businessPhone = restaurantData?.whatsapp_num || localStorage.getItem(storageKey('su_custom_whatsapp')) || "999999999";
+        const itemList = cart.map(i => `${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}`).join('\n');
+        const orderTime = new Date().toLocaleString();
 
-const msg = encodeURIComponent(
+        const msg = encodeURIComponent(
 `🧾 *PEDIDO ONLINE CONFIRMADO*
 
 ━━━━━━━━━━━━━━━━━━
@@ -1754,7 +1754,7 @@ ${itemList}
 Subtotal: S/. ${subtotal.toFixed(2)}
 Delivery: S/. ${orderData.delivery_fee.toFixed(2)}
 
-💵 *TOTAL:* S/. ${newOrder.total.toFixed(2)}
+💵 *TOTAL:* S/. ${(newOrder.total || total).toFixed(2)}
 ━━━━━━━━━━━━━━━━━━
 
 👤 *DATOS DEL CLIENTE*
@@ -1769,51 +1769,51 @@ Nombre: ${newOrder.customer_name}
 
 
 ¡Gracias! 😊`
-);
+        );
 
-window.open(`https://wa.me/51${businessPhone}?text=${msg}`, '_blank');
-      
-      showNotification("¡Éxito!", "Pedido creado y enviado a cocina.");
-    } catch (err) {
-      console.error("DEBUG ORDER ERROR DETAILED:", err);
-      // Limpieza en caso de error para permitir reintentar
-      window.isSubmittingOrder = false;
-      const submitBtn = e.target.querySelector('button[type="submit"]');
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = `Confirmar Pedido`;
-      }
-      
-      const errorMsg = `MSG: ${err.message}\nHINT: ${err.hint || 'N/A'}\nDETAILS: ${err.details || 'N/A'}\nCODE: ${err.code || 'N/A'}`;
-      customAlert("Error de Supabase", "Error al crear pedido:\n\n" + errorMsg, true);
-      showNotification("Error", "No se pudo crear el pedido. Revisa el alert.", "error");
-      return; 
+        window.open(`https://wa.me/51${businessPhone}?text=${msg}`, '_blank');
+        showNotification("¡Éxito!", "Pedido creado y enviado a cocina.");
+        
+    } else {
+      // Fallback local (si no hay restaurante de Supabase)
+      const order = { ...orderData, id: 1000 + orders.length + 1, createdAt: new Date().toISOString() };
+      orders.unshift(order);
+      saveData();
+      const businessPhone = localStorage.getItem(storageKey('su_custom_whatsapp')) || "999999999";
+      const itemList = cart.map(i => `${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}`).join('\n');
+      const msg = encodeURIComponent(`¡Hola! Deseo realizar un pedido:\n\n*Pedido #${order.id}*\n${itemList}\n\n*Total a pagar:* S/. ${order.total.toFixed(2)}\n\n*Mis Datos:*\nNombre: ${order.customer_name}\nTeléfono: ${order.customer_phone}\nDirección: ${order.customer_address}\nMétodo de pago: ${order.payment_method}\n\nPor favor, confírmenme el pedido y avísenme cuando esté listo.`);
+      window.open(`https://wa.me/51${businessPhone}?text=${msg}`, '_blank');
     }
-  } else {
-    // Fallback local (si no hay restaurante de Supabase)
-    const order = { ...orderData, id: 1000 + orders.length + 1, createdAt: new Date().toISOString() };
-    orders.unshift(order);
-    saveData();
-    const businessPhone = localStorage.getItem(storageKey('su_custom_whatsapp')) || "999999999";
-    const itemList = cart.map(i => `${i.quantity}x ${i.name}${i.extras ? ' (' + formatExtras(i.extras) + ')' : ''}`).join('\\n');
-    const msg = encodeURIComponent(`¡Hola! Deseo realizar un pedido:\\n\\n*Pedido #${order.id}*\\n${itemList}\\n\\n*Total a pagar:* S/. ${order.total.toFixed(2)}\\n\\n*Mis Datos:*\\nNombre: ${order.customer_name}\\nTeléfono: ${order.customer_phone}\\nDirección: ${order.customer_address}\\nMétodo de pago: ${order.payment_method}\\n\\nPor favor, confírmenme el pedido y avísenme cuando esté listo.`);
-    window.open(`https://wa.me/51${businessPhone}?text=${msg}`, '_blank');
-  }
 
-  // Limpieza y reinicio visual
-  cart = [];
-  updateCartUI();
-  
-  if (!restaurantData) {
-    renderOrders();
-    updateOrderCounts();
+    // Limpieza y reinicio visual
+    cart = [];
+    updateCartUI();
+    
+    if (!restaurantData) {
+      renderOrders();
+      updateOrderCounts();
+    }
+    
+    closeCheckoutModal();
+    const successModal = document.getElementById('successModal');
+    if (successModal) {
+      successModal.classList.remove('hidden');
+      successModal.classList.add('flex');
+    }
+
+  } catch (err) {
+    console.error("CRITICAL ORDER ERROR:", err);
+    const errorMsg = `MSG: ${err.message}\nCODE: ${err.code || 'N/A'}`;
+    customAlert("Error al Procesar Pedido", "Lo sentimos, el pedido no pudo ser procesado:\n\n" + errorMsg, true);
+    showNotification("Error", "No se pudo crear el pedido. Inténtalo de nuevo.", "error");
+  } finally {
+    window.isSubmittingOrder = false;
+    const submitBtnFinal = e.target ? e.target.querySelector('button[type="submit"]') : null;
+    if (submitBtnFinal) {
+      submitBtnFinal.disabled = false;
+      submitBtnFinal.innerHTML = `Confirmar Pedido`;
+    }
   }
-  
-  closeCheckoutModal();
-  document.getElementById('successModal').classList.remove('hidden');
-  document.getElementById('successModal').classList.add('flex');
-  
-  window.isSubmittingOrder = false;
 }
 
 function closeSuccessModal() {
