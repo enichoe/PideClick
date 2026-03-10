@@ -1259,7 +1259,7 @@ function handleAddToCart(id) {
                     <input type="checkbox" name="extra" value="${name}" data-price="${price}" onchange="updateCustomizeTotal()" class="w-5 h-5 text-primary rounded bg-zinc-950 border-zinc-700 focus:ring-primary">
                     <span class="text-sm font-medium text-white">${name}</span>
                   </div>
-                  ${price > 0 ? `<span class="text-xs font-bold text-primary">+ S/ ${price.toFixed(2)}</span>` : ''}
+                  ${price > 0 ? `<span class="text-xs font-bold text-white">+ S/ ${price.toFixed(2)}</span>` : ''}
                 </label>
               `;
             }).join('')}
