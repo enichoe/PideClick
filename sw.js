@@ -6,7 +6,6 @@ const ASSETS_TO_CACHE = [
   '/script.js',
   '/supabase-client.js',
   '/subscription-manager.js',
-  '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
 ];

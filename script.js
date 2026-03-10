@@ -307,6 +307,11 @@ async function initApp() {
 
       restaurantData = await fetchRestaurantFromSupabase(b);
       
+      // Iniciar PWA Dinámica con los datos del negocio
+      if (restaurantData) {
+        initDynamicPWA(restaurantData);
+      }
+      
       // Determinar si el usuario es administrador de ESTE negocio
       const isSuperAdmin = ['programador.web.ernesto@gmail.com', 'enichoe@gmail.com'].includes(userEmail?.toLowerCase());
       const isOwner = restaurantData && restaurantData.owner_email && userEmail && (restaurantData.owner_email.toLowerCase() === userEmail.toLowerCase());
@@ -2777,4 +2782,64 @@ async function deleteSauce(id, name) {
       }
     }
   );
+}
+/**
+ * Inicializa el Manifiesto PWA de forma dinámica según el negocio cargado
+ * @param {Object} data Datos del restaurante desde Supabase
+ */
+function initDynamicPWA(data) {
+  const name = data.name || 'PideClick';
+  const shortName = name.split(' ')[0] || 'PideClick';
+  const themeColor = data.primary_color || '#F97316';
+  const logoUrl = data.logo_url || '/icons/icon-192.png';
+
+  const manifest = {
+    "name": name,
+    "short_name": shortName,
+    "description": `Menú digital de ${name}. Realiza tu pedido online fácil y rápido.`,
+    "start_url": window.location.href,
+    "display": "standalone",
+    "background_color": "#09090B",
+    "theme_color": themeColor,
+    "icons": [
+      {
+        "src": logoUrl,
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": logoUrl,
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "maskable"
+      }
+    ]
+  };
+
+  // Convertir objeto a string JSON y crear un Blob
+  const stringManifest = JSON.stringify(manifest);
+  const blob = new Blob([stringManifest], {type: 'application/json'});
+  const manifestUrl = URL.createObjectURL(blob);
+
+  // Buscar el tag link del manifest actual o crear uno nuevo
+  let link = document.querySelector('link[rel="manifest"]');
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'manifest';
+    document.head.appendChild(link);
+  }
+  link.setAttribute('href', manifestUrl);
+
+  // Actualizar tags de Apple/iOS
+  const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+  if (appleTitle) appleTitle.setAttribute('content', shortName);
+
+  const appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+  if (appleIcon) appleIcon.setAttribute('href', logoUrl);
+
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta) themeMeta.setAttribute('content', themeColor);
+
+  console.log(`PWA Dinámica inicializada para: ${name}`);
 }
