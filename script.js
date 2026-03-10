@@ -1442,7 +1442,7 @@ function updateCartUI() {
         <div class="flex-1">
           <h4 class="font-bold text-white text-base">${item.name}</h4>
           <p class="text-xs text-zinc-400 mt-1">${formatExtras(item.extras)}</p>
-          <p class="text-lg text-primary font-bold mt-1">S/. ${priceToDisplay.toFixed(2)}</p>
+          <p class="text-lg text-white font-bold mt-1">S/. ${priceToDisplay.toFixed(2)}</p>
         </div>
         <div class="flex flex-col items-center gap-2">
           <div class="flex items-center gap-3 bg-zinc-950 rounded-xl border border-zinc-800 p-1">
